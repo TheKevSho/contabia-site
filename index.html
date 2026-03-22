@@ -285,6 +285,9 @@
 
   <script>
     function toggleNav() { document.getElementById('navLinks').classList.toggle('active'); }
+    document.querySelectorAll('.nav-dropdown > a').forEach(function(el) {
+      el.addEventListener('click', function(e) { e.preventDefault(); this.parentElement.classList.toggle('open'); });
+    });
     function toggleLang() { window.location.href='/en/'; }
 
     // Scroll reveal

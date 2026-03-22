@@ -174,11 +174,20 @@ h3 { font-size: clamp(1.4rem, 2.5vw, 1.75rem); }
   min-width: 200px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); z-index: 1001;
 }
 .nav-dropdown:hover .nav-dropdown-menu { display: block; }
+.nav-dropdown.open .nav-dropdown-menu { display: block; }
 .nav-dropdown-menu a {
   display: block; padding: 0.5rem 1.25rem; font-size: 0.88rem; color: var(--charcoal); transition: all 0.15s;
 }
 .nav-dropdown-menu a:hover { background: var(--cream); color: var(--ocean); }
 .nav-dropdown-menu .coming-soon { color: var(--warm-gray); font-size: 0.8rem; }
+
+@media (max-width: 768px) {
+  .nav-dropdown-menu {
+    position: static; box-shadow: none; border: none; border-radius: 0;
+    padding: 0 0 0 1rem; min-width: auto; background: transparent;
+  }
+  .nav-dropdown-menu a { padding: 0.4rem 0; font-size: 0.85rem; }
+}
 
 /* ---- Foreign Vendors Row ---- */
 .vendor-row {
