@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hotels & Hostels — ContabIA</title>
+  <meta name="description" content="ContabIA was built for hospitality. OTA reconciliation across three commission models, PMS integration, USALI reporting, labor tracking, seasonal cash flow — all handled by your AI agent.">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+  <style>
+    .ota-card { background: var(--white); border: 1px solid var(--light-gray); border-radius: 12px; padding: 2rem; }
+    .ota-card h3 { margin-bottom: 0.5rem; }
+    .ota-card .entity { font-family: var(--font-mono); font-size: 0.78rem; color: var(--warm-gray); margin-bottom: 1rem; }
+    .ota-flow { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin: 1rem 0; }
+    .ota-flow .step { background: var(--cream); border: 1px solid var(--light-gray); border-radius: 6px; padding: 0.4rem 0.75rem; font-size: 0.82rem; color: var(--charcoal); }
+    .ota-flow .arrow { color: var(--terracotta); font-weight: 700; font-size: 1.1rem; }
+    .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-top: 2rem; }
+    .kpi-box { background: var(--midnight); border-radius: 8px; padding: 1.25rem; text-align: center; }
+    .kpi-box .kpi-val { font-family: var(--font-mono); font-size: 1.3rem; font-weight: 700; color: var(--terracotta); }
+    .kpi-box .kpi-label { font-size: 0.78rem; color: rgba(255,248,240,0.6); margin-top: 0.3rem; }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a href="/" class="nav-logo">Contab<span>IA</span></a>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="/#owners">For Owners</a></li>
+        <li><a href="/#accountants">For Accountants</a></li>
+        <li class="nav-dropdown">
+          <a>Industries</a>
+          <div class="nav-dropdown-menu">
+            <a href="hotels-hostels.html">Hotels & Hostels</a>
+            <a href="tour-operators.html" >Tour Operators</a>
+            <a href="restaurants.html" class="coming-soon">Restaurants — soon</a>
+            <a href="any-pyme.html" >Any Colombian Pyme</a>
+          </div>
+        </li>
+        <li><a href="how-it-works.html">How It Works</a></li>
+        <li><a href="pricing.html">Pricing</a></li>
+        <li><a href="free-tools.html">Free Tools</a></li>
+        <li><a href="../blog/">Blog</a></li>
+      </ul>
+      <div class="nav-cta">
+        <button class="lang-toggle" onclick="toggleLang()">ES</button>
+        <a href="/#contact" class="btn btn-primary">Talk to your agent</a>
+      </div>
+      <button class="nav-toggle" onclick="toggleNav()" aria-label="Menu"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-content">
+        <p class="label fade-up fade-up-1">Built for hospitality</p>
+        <h1 class="fade-up fade-up-2">We know your OTAs, your PMS, your seasonality, and your&nbsp;pain.</h1>
+        <p class="lead fade-up fade-up-3">ContabIA was built by a hostel owner who needed it for his own properties. It understands Booking.com commissions, Hostelworld phantom charges, Airbnb net payouts, LobbyPMS data, Cloudbeds feeds, seasonal cash flow swings, and the 15-employee roster that turns over 40% a year. Because we lived it before we built it.</p>
+        <div class="hero-ctas fade-up fade-up-4">
+          <a href="/#contact" class="btn btn-whatsapp">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492a.75.75 0 00.917.917l4.458-1.495A11.952 11.952 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-2.33 0-4.49-.778-6.225-2.088l-.434-.334-2.665.893.893-2.665-.334-.434A9.96 9.96 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+            Talk to your agent
+          </a>
+          <a href="free-tools.html" class="btn btn-outline">Free book scan →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- The Three OTA Models -->
+  <section style="background: var(--white);">
+    <div class="container">
+      <div class="reveal">
+        <p class="label">OTA commission intelligence</p>
+        <h2>Three OTAs. Three commission models. Most bookkeepers get at least one wrong.</h2>
+        <p class="lead" style="margin-bottom: 0.5rem;">Each OTA handles commissions differently. If your books don't account for all three correctly, your P&L is distorted, your channel profitability is wrong, and you're making decisions on bad data. Your agent handles all three automatically.</p>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem; margin-top: 2.5rem; max-width: 800px;">
+
+        <!-- Booking.com -->
+        <div class="ota-card reveal">
+          <h3>Booking.com — Monthly Invoice Model</h3>
+          <div class="entity">Booking.com BV · Netherlands · Foreign entity → documento soporte required</div>
+          <div class="ota-flow">
+            <span class="step">Guest pays you directly</span>
+            <span class="arrow">→</span>
+            <span class="step">Booking invoices you monthly</span>
+            <span class="arrow">→</span>
+            <span class="step">You pay the invoice later</span>
+          </div>
+          <p style="font-size: 0.9rem; color: var(--charcoal); line-height: 1.6;"><strong>The problem:</strong> Most hostels expense the commission when they pay the invoice — not when the stay happens. This overstates profit in the stay month and understates it in the payment month. The agent accrues in the stay month, reclassifies when the invoice arrives, and clears when paid.</p>
+          <p style="font-size: 0.82rem; color: var(--warm-gray); margin-top: 0.5rem;"><strong>Bank visibility:</strong> Visible — you see the payment out.</p>
+        </div>
+
+        <!-- Hostelworld -->
+        <div class="ota-card reveal">
+          <h3>Hostelworld — Phantom Commission Model</h3>
+          <div class="entity">Hostelworld · Ireland · Foreign entity → documento soporte required</div>
+          <div class="ota-flow">
+            <span class="step">Guest pays deposit to HW</span>
+            <span class="arrow">→</span>
+            <span class="step">HW keeps their commission</span>
+            <span class="arrow">→</span>
+            <span class="step">Guest pays balance at checkout</span>
+          </div>
+          <p style="font-size: 0.9rem; color: var(--charcoal); line-height: 1.6;"><strong>The problem:</strong> The commission never flows through your bank. You only collect the checkout balance. If you don't gross up, your revenue is understated by every Hostelworld commission. ADR looks lower. RevPAR is wrong. Booking.com looks "expensive" (visible invoice) while Hostelworld looks "free" (no payment out). The error is invisible in bank reconciliation.</p>
+          <p style="font-size: 0.82rem; color: var(--warm-gray); margin-top: 0.5rem;"><strong>Bank visibility:</strong> INVISIBLE — no transaction to match. This is why it gets missed.</p>
+        </div>
+
+        <!-- Airbnb -->
+        <div class="ota-card reveal">
+          <h3>Airbnb — Pass-Through Model</h3>
+          <div class="entity">Airbnb · Ireland · Foreign entity → documento soporte required</div>
+          <div class="ota-flow">
+            <span class="step">Airbnb collects full amount</span>
+            <span class="arrow">→</span>
+            <span class="step">Deducts service fee</span>
+            <span class="arrow">→</span>
+            <span class="step">Sends you the net payout</span>
+          </div>
+          <p style="font-size: 0.9rem; color: var(--charcoal); line-height: 1.6;"><strong>The problem:</strong> Same gross-up requirement as Hostelworld. You receive the net amount, but your books need to show gross revenue minus commission. Without the gross-up, you understate revenue and can't accurately compare channel profitability.</p>
+          <p style="font-size: 0.82rem; color: var(--warm-gray); margin-top: 0.5rem;"><strong>Bank visibility:</strong> Partially visible — you see the net deposit but not the gross or the fee.</p>
+        </div>
+
+      </div>
+
+      <div class="reveal" style="margin-top: 2rem; padding: 1.5rem; background: var(--sand); border-radius: 8px; max-width: 800px;">
+        <p style="font-size: 0.95rem; color: var(--midnight);"><strong>All three are foreign entities.</strong> Every commission from every OTA requires a documento soporte for tax deductibility per DIAN Concepto 192/2025. Without it, you're paying the commission AND losing the tax deduction. Your agent generates these automatically.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PMS Integration -->
+  <section class="two-users">
+    <div class="container">
+      <div class="reveal">
+        <p class="label">PMS integration</p>
+        <h2>Your PMS talks to your agent. Every booking, every night.</h2>
+      </div>
+      <div class="users-grid" style="margin-top: 2rem;">
+        <div class="user-card reveal">
+          <h3>LobbyPMS</h3>
+          <ul>
+            <li>Bookings pulled by date range — every stay matched against accounting invoices</li>
+            <li>Channel detection: which OTA, which commission model, which rate</li>
+            <li>Occupancy and daily KPIs pulled directly from the API</li>
+            <li>POS products and services categorized automatically</li>
+            <li>Revenue gaps between PMS and accounting system flagged instantly</li>
+          </ul>
+        </div>
+        <div class="user-card reveal">
+          <h3>Cloudbeds</h3>
+          <ul>
+            <li>Full booking and revenue data from the Cloudbeds API</li>
+            <li>Multi-channel reconciliation across all connected OTAs</li>
+            <li>Rate plan and adjustment tracking</li>
+            <li>POS integration for F&B and ancillary revenue</li>
+            <li>Same reconciliation engine — different connector, same output</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- USALI + KPIs -->
+  <section style="background: var(--white);">
+    <div class="container">
+      <div class="reveal">
+        <p class="label">Hotel reporting standards</p>
+        <h2>USALI departmental reporting. Adapted for Colombian hostels.</h2>
+        <p class="lead" style="margin-bottom: 1rem;">The global hotel chains use USALI. Now you do too — adapted for a 15-room hostel, not a 500-room resort. See profit by department: rooms, F&B, tours, co-working. Know your GOP margin. Understand where your money actually goes.</p>
+        <p style="font-size: 0.92rem; color: var(--charcoal); margin-bottom: 0.5rem;">Your accounting system stays exactly as it is (PUC-based, whatever your contador set up). The agent maps your accounts to USALI categories and produces both formats automatically. PUC for DIAN compliance. USALI for operational insight.</p>
+      </div>
+
+      <div class="kpi-row reveal">
+        <div class="kpi-box">
+          <div class="kpi-val">RevPAR</div>
+          <div class="kpi-label">Revenue per available room</div>
+        </div>
+        <div class="kpi-box">
+          <div class="kpi-val">ADR</div>
+          <div class="kpi-label">Average daily rate</div>
+        </div>
+        <div class="kpi-box">
+          <div class="kpi-val">Occ%</div>
+          <div class="kpi-label">Occupancy rate</div>
+        </div>
+        <div class="kpi-box">
+          <div class="kpi-val">GOP</div>
+          <div class="kpi-label">Gross operating profit</div>
+        </div>
+        <div class="kpi-box">
+          <div class="kpi-val">CPOR</div>
+          <div class="kpi-label">Cost per occupied room</div>
+        </div>
+        <div class="kpi-box">
+          <div class="kpi-val">Ch.Mix</div>
+          <div class="kpi-label">Channel revenue mix</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Labor -->
+  <section class="problem">
+    <div class="container">
+      <div class="reveal">
+        <p class="label" style="color: var(--terracotta);">Labor intelligence</p>
+        <h2 style="color: var(--white);">15 employees. 40% turnover. Prestaciones for each one.</h2>
+        <p class="lead">Flat-percentage accruals drift from reality with every hire, departure, and salary change. The agent tracks per-employee: cesantías, intereses, prima, vacaciones — real amounts, not estimates. When someone leaves, the liquidación worksheet is ready. When prima hits in June and December, you see it coming 90 days out.</p>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-top: 2.5rem;">
+        <div class="reveal" style="background: rgba(255,255,255,0.08); border-radius: 8px; padding: 1.5rem;">
+          <p style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--terracotta); margin-bottom: 0.5rem;">SMMLV 2026</p>
+          <p style="font-family: var(--font-mono); font-size: 1.8rem; font-weight: 700; color: var(--white);">COP 1.750.905</p>
+          <p style="font-size: 0.82rem; color: rgba(255,248,240,0.5); margin-top: 0.35rem;">23.5% increase. Loaded cost ~COP 2.850.000. Payroll is 30-40% of your operating costs — this increase compresses every hostel's margins.</p>
+        </div>
+        <div class="reveal" style="background: rgba(255,255,255,0.08); border-radius: 8px; padding: 1.5rem;">
+          <p style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--terracotta); margin-bottom: 0.5rem;">CALENDAR ALERTS</p>
+          <p style="font-size: 0.92rem; color: rgba(255,248,240,0.8); line-height: 1.6;">Prima (Jun 30 & Dec 20), cesantías deposit (Feb 14), intereses (Jan 31), dotación (Apr/Aug/Dec). Your agent alerts you 90 days before each event with the estimated cash requirement.</p>
+        </div>
+        <div class="reveal" style="background: rgba(255,255,255,0.08); border-radius: 8px; padding: 1.5rem;">
+          <p style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--terracotta); margin-bottom: 0.5rem;">EXEMPTION APPLIED</p>
+          <p style="font-size: 0.92rem; color: rgba(255,248,240,0.8); line-height: 1.6;">Per Article 114-1 ET, employers with workers under 10 SMMLV are exempt from SENA and ICBF. That's virtually all your staff. Effective parafiscal rate: 4% (Caja only), not 9%. Your agent knows this.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Seasonal Cash Flow -->
+  <section style="background: var(--white);">
+    <div class="container">
+      <div class="reveal" style="max-width: 720px;">
+        <p class="label">Seasonal intelligence</p>
+        <h2>Temporada baja doesn't have to surprise you.</h2>
+        <p class="lead" style="margin-bottom: 1.5rem;">Hospitality cash flow is seasonal. Your agent knows this because it sees your historical patterns. The quincenal forecast incorporates occupancy trends, upcoming payroll events (prima months are effectively 2× payroll), tax deadlines, and OTA payout timing. You see what's coming before it hits your bank account.</p>
+        <p style="font-size: 0.95rem; color: var(--charcoal);">With backfill (closing your old books), the agent has 12-24 months of trailing data to forecast against. Without backfill, it learns your patterns starting from month one and improves every close.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Documento Soporte — Hospitality Specific -->
+  <section class="two-users">
+    <div class="container">
+      <div class="reveal" style="max-width: 720px;">
+        <p class="label">Tax recovery</p>
+        <h2>Your OTA commissions are probably not deductible right now.</h2>
+        <p class="lead" style="margin-bottom: 1.5rem;">Per DIAN Concepto 192/2025, bank statements and platform payment receipts are NOT valid fiscal support for foreign purchases. Every commission to Booking.com (Netherlands), Hostelworld (Ireland), and Airbnb (Ireland) requires a documento soporte to be tax-deductible.</p>
+        <p style="font-size: 0.95rem; color: var(--charcoal); margin-bottom: 1rem;">Most hostels don't generate them. That means you're paying 15-18% commission to Booking.com AND losing the 35% corporate tax deduction on that expense AND missing the IVA credit on OTA commissions.</p>
+        <p style="font-size: 0.95rem; color: var(--charcoal);">Your agent generates documento soporte for every foreign purchase automatically — OTAs, software subscriptions (LobbyPMS, Google Workspace, Canva), digital advertising (Meta, Google Ads), Amazon purchases. Every one of these becomes a deductible expense with IVA credit eligibility.</p>
+      </div>
+      <div class="reveal" style="max-width: 720px; margin-top: 2rem; padding: 1.5rem; background: var(--white); border-radius: 8px; border-left: 3px solid var(--terracotta);">
+        <p style="font-size: 0.95rem; color: var(--charcoal);"><strong>Typical impact:</strong> A hostel with COP 47-132M/year in foreign purchases that doesn't generate documentos soporte loses COP 16-46M/year in deductions plus COP 6-11.4M/year in unclaimed IVA credits on OTA commissions alone. The ContabIA service costs COP 6M/year.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Founded By -->
+  <section style="background: var(--white);">
+    <div class="container">
+      <div class="reveal" style="max-width: 680px;">
+        <p class="label">Built by an operator</p>
+        <h2>The founder owns a hostel. The accountant has 10 years on Colombian hospitality books.</h2>
+        <p style="font-size: 0.95rem; color: var(--charcoal); line-height: 1.7; margin-top: 1rem;">ContabIA was built by the owner of Cantamar Beach Hostel and Tayrona Sailing in Santa Marta, Colombia. Not by a software company guessing at hospitality needs. Not by a US startup localizing for LatAm. By someone who reconciles Booking.com commissions against Bancolombia statements against LobbyPMS bookings every month — and got tired of watching hours disappear into spreadsheets.</p>
+        <p style="font-size: 0.95rem; color: var(--charcoal); line-height: 1.7; margin-top: 1rem;">The motor is being refined by Angel, the founder's accountant of 10 years, who knows every edge case in Colombian hospitality accounting — from how Hostelworld phantom commissions distort the P&L to why flat-percentage prestaciones accruals fail with high-turnover staff.</p>
+        <p style="font-size: 0.95rem; color: var(--charcoal); line-height: 1.7; margin-top: 1rem;">We built it for ourselves first. Now it's available for every property like ours.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="container">
+      <div class="reveal">
+        <h2>Your hostel deserves an agent that understands hospitality.</h2>
+        <p class="lead">Not generic accounting software. Not a bookkeeper learning your business on your dime. An AI agent trained on hotels, armed with your data, ready to close your books.</p>
+        <div class="cta-buttons">
+          <a href="/#contact" class="btn btn-whatsapp">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492a.75.75 0 00.917.917l4.458-1.495A11.952 11.952 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-2.33 0-4.49-.778-6.225-2.088l-.434-.334-2.665.893.893-2.665-.334-.434A9.96 9.96 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+            Schedule a demo
+          </a>
+          <a href="free-tools.html" class="btn btn-outline">Free book scan →</a>
+          <a href="pricing.html" class="btn btn-outline">View pricing →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <a href="/" class="nav-logo">Contab<span>IA</span></a>
+      <ul class="footer-links">
+        <li><a href="how-it-works.html">How It Works</a></li>
+        <li><a href="pricing.html">Pricing</a></li>
+        <li><a href="../blog/">Blog</a></li>
+        <li><a href="/#contact">Contact</a></li>
+      </ul>
+      <p class="footer-copy">© 2026 ContabIA. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <a href="#" class="wa-float" aria-label="Chat on WhatsApp"><svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492a.75.75 0 00.917.917l4.458-1.495A11.952 11.952 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-2.33 0-4.49-.778-6.225-2.088l-.434-.334-2.665.893.893-2.665-.334-.434A9.96 9.96 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg></a>
+
+  <script>
+    function toggleNav() { document.getElementById('navLinks').classList.toggle('active'); }
+    function toggleLang() { alert('Spanish version coming soon'); }
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+    }, { threshold: 0.15 });
+    reveals.forEach(el => observer.observe(el));
+  </script>
+
+</body>
+</html>
