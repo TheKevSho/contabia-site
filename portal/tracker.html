@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ContabIA — Seguimiento de Cierre</title>
+  <link rel="stylesheet" href="css/portal.css">
+</head>
+<body>
+<div class="portal-shell">
+  <div id="sidebar-mount"></div>
+
+  <div class="main-content">
+    <div class="top-bar">
+      <div class="top-bar-title">Seguimiento de Cierre — 2026</div>
+      <div class="top-bar-actions">
+        <span class="text-sm text-muted">2 meses cerrados · 1 en progreso</span>
+      </div>
+    </div>
+
+    <div class="page-content">
+
+      <div class="month-grid">
+
+        <!-- January — closed -->
+        <div class="month-card">
+          <div class="month-card-header">
+            <div class="month-name">Enero 2026</div>
+            <span class="badge badge-closed">Cerrado</span>
+          </div>
+          <div class="month-card-modules">
+            <div class="module-row">
+              <div class="module-icon ok">✓</div>
+              <div class="module-label">Ingesta bancaria</div>
+              <div class="module-note">Sincronizado</div>
+            </div>
+            <div class="module-row">
+              <div class="module-icon ok">✓</div>
+              <div class="module-label">Categorización OTA</div>
+              <div class="module-note">4 canales</div>
+            </div>
+            <div class="module-row">
+              <div class="module-icon ok">✓</div>
+              <div class="module-label">Conciliación bancaria</div>
+              <div class="module-note">Balanceado</div>
+            </div>
+            <div class="module-row">
+              <div class="module-icon ok">✓</div>
+              <div class="module-label">Nómina y prestaciones</div>
+              <div class="module-note">5 empleados</div>
+            </div>
+            <div class="module-row">
+              <div class="module-icon ok">✓</div>
+              <div class="module-label">Informes generados</div>
+              <div class="module-note">Xlsx + PDF</div>
+            </div>
+          </div>
+          <div style="padding:10px 18px 14px; display:flex; gap:8px;">
+            <a href="deliverables.html" class="btn btn-ghost btn-sm">Ver entregables</a>
+          </div>
+        </div>
+
+        <!-- February — closed -->
+        <div class="month-card">
+          <div class="month-card-header">
+            <div class="month-name">Febrero 2026</div>
+            <span class="badge badge-closed">Cerrado</span>
+          </div>
+          <div class="month-card-modules">
+            <div class="module-row">
+              <div class="module-icon ok">✓</div>
+              <div class="module-label">Ingesta bancaria</div>
+              <div class="module-note">Sincronizado</div>
+            </div>
+            <div class="module-row">
+              <div class="module-icon ok">✓</div>
+              <div class="module-label">Categorización OTA</div>
+              <div class="module-note">5 canales</div>
+            </div>
+            <div class="module-row">
+              <div class="module-icon ok">✓</div>
+              <div class="module-label">Conciliación bancaria</div>
+              <div class="module-note">Balanceado</div>
+            </div>
+            <div class="module-row">
+              <div class="module-icon ok">✓</div>
+              <div class="module-label">Nómina y prestaciones</div>
+              <div class="module-note">5 empleados</div>
+            </div>
+            <div class="module-row">
+              <div class="module-icon ok">✓</div>
+              <div class="module-label">Informes generados</div>
+              <div class="module-note">Xlsx + PDF</div>
+            </div>
+          </div>
+          <div style="padding:10px 18px 14px; display:flex; gap:8px;">
+            <a href="deliverables.html" class="btn btn-ghost btn-sm">Ver entregables</a>
+          </div>
+        </div>
+
+        <!-- March — in progress -->
+        <div class="month-card" style="border:2px solid var(--terracotta);">
+          <div class="month-card-header" style="background:rgba(212,112,74,.05);">
+            <div class="month-name">Marzo 2026</div>
+            <span class="badge badge-progress">En progreso</span>
+          </div>
+          <div class="month-card-modules">
+            <div class="module-row">
+              <div class="module-icon ok">✓</div>
+              <div class="module-label">Ingesta bancaria</div>
+              <div class="module-note">Bancolombia OK</div>
+            </div>
+            <div class="module-row">
+              <div class="module-icon ok">✓</div>
+              <div class="module-label">Ingesta LobbyPMS + Alegra</div>
+              <div class="module-note">89 reservas</div>
+            </div>
+            <div class="module-row">
+              <div class="module-icon warn">!</div>
+              <div class="module-label">Conciliación bancaria</div>
+              <div class="module-note" style="color:#856404;">2 sin resolver</div>
+            </div>
+            <div class="module-row">
+              <div class="module-icon warn">!</div>
+              <div class="module-label">Excepciones</div>
+              <div class="module-note" style="color:#C0392B;">2 críticas abiertas</div>
+            </div>
+            <div class="module-row">
+              <div class="module-icon pending">…</div>
+              <div class="module-label">Nómina y prestaciones</div>
+              <div class="module-note">JE pendiente aprobación</div>
+            </div>
+            <div class="module-row">
+              <div class="module-icon pending">…</div>
+              <div class="module-label">Informes finales</div>
+              <div class="module-note" style="color:#999;">Bloqueado</div>
+            </div>
+          </div>
+          <div style="padding:10px 18px 14px; display:flex; gap:8px;">
+            <a href="exceptions.html" class="btn btn-primary btn-sm">Revisar excepciones</a>
+            <a href="journal-entries.html" class="btn btn-ghost btn-sm">Ver JEs</a>
+          </div>
+        </div>
+
+        <!-- April — pending -->
+        <div class="month-card" style="opacity:.5;">
+          <div class="month-card-header">
+            <div class="month-name">Abril 2026</div>
+            <span class="badge badge-pending">Pendiente</span>
+          </div>
+          <div class="month-card-modules">
+            <div class="module-row">
+              <div class="module-icon pending">…</div>
+              <div class="module-label">El agente iniciará el proceso</div>
+              <div class="module-note">al finalizar el mes</div>
+            </div>
+          </div>
+          <div style="padding:10px 18px 14px;">
+            <span class="text-xs text-muted">Disponible desde el 1 de mayo</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Year summary -->
+      <div class="card mt-24">
+        <div class="card-header">
+          <div class="card-title">Resumen del año — 2026</div>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Mes</th>
+                <th>Estado</th>
+                <th>Excepciones cerradas</th>
+                <th>JEs registrados</th>
+                <th>Recuperación tributaria</th>
+                <th>Entregables</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Enero 2026</strong></td>
+                <td><span class="badge badge-closed">Cerrado</span></td>
+                <td class="mono">11 / 11</td>
+                <td class="mono">16</td>
+                <td class="mono" style="color:#1E7E34;">+COP 1.084.200</td>
+                <td><a href="deliverables.html" class="text-sm">Descargar →</a></td>
+              </tr>
+              <tr>
+                <td><strong>Febrero 2026</strong></td>
+                <td><span class="badge badge-closed">Cerrado</span></td>
+                <td class="mono">9 / 9</td>
+                <td class="mono">14</td>
+                <td class="mono" style="color:#1E7E34;">+COP 976.400</td>
+                <td><a href="deliverables.html" class="text-sm">Descargar →</a></td>
+              </tr>
+              <tr>
+                <td><strong>Marzo 2026</strong></td>
+                <td><span class="badge badge-progress">En progreso</span></td>
+                <td class="mono" style="color:#C0392B;">7 / 14</td>
+                <td class="mono" style="color:#856404;">3 / 18</td>
+                <td class="mono text-muted">En cálculo…</td>
+                <td><span class="text-xs text-muted">Pendiente cierre</span></td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr style="background:var(--sand);">
+                <td><strong>Acumulado 2026</strong></td>
+                <td></td>
+                <td class="mono">27 / 34</td>
+                <td class="mono">33</td>
+                <td class="mono" style="color:#1E7E34;font-weight:700;">+COP 2.060.600</td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="js/portal.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/auth.js"></script>
+</body>
+</html>

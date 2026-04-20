@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ContabIA — Excepciones</title>
+  <link rel="stylesheet" href="css/portal.css">
+</head>
+<body>
+<div class="portal-shell">
+  <div id="sidebar-mount"></div>
+
+  <div class="main-content">
+    <div class="top-bar">
+      <div class="top-bar-title">Excepciones — Marzo 2026</div>
+      <div class="top-bar-actions">
+        <span class="text-sm text-muted">14 total · 2 críticas</span>
+        <button class="btn btn-ghost btn-sm">Exportar</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+
+      <div class="alert alert-critical">
+        <span>🔴</span>
+        <div><strong>2 excepciones críticas</strong> bloquean el cierre del mes. Deben resolverse antes de generar los informes.</div>
+      </div>
+
+      <!-- Filter row -->
+      <div class="filter-row" id="exc-filters">
+        <button class="filter-chip active" data-filter="all">Todas (14)</button>
+        <button class="filter-chip critical" data-filter="critical">Críticas (2)</button>
+        <button class="filter-chip" data-filter="high">Altas (5)</button>
+        <button class="filter-chip" data-filter="medium">Medias (4)</button>
+        <button class="filter-chip" data-filter="low">Bajas (3)</button>
+        <button class="filter-chip" data-filter="pending">Pendientes</button>
+        <button class="filter-chip" data-filter="needs_info">Necesita info</button>
+      </div>
+
+      <!-- Exceptions table -->
+      <div class="card">
+        <div style="overflow-x:auto;">
+          <table class="data-table" id="exc-table">
+            <thead>
+              <tr>
+                <th style="width:8px;"></th>
+                <th>Excepción</th>
+                <th>Prioridad</th>
+                <th>Estado</th>
+                <th>Confianza IA</th>
+                <th>Monto</th>
+                <th>Fecha</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="exc-tbody">
+              <!-- Rows injected by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Exception Detail Panel -->
+<div class="detail-overlay" id="exc-panel">
+  <div class="detail-panel">
+    <div class="detail-panel-header">
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <span id="panel-priority-badge"></span>
+          <span id="panel-status-badge"></span>
+        </div>
+        <div id="panel-title" style="font-family:var(--font-display);font-size:18px;color:var(--midnight);"></div>
+        <div id="panel-subtype" style="font-size:12px;color:var(--warm-gray);margin-top:3px;font-family:var(--font-mono);"></div>
+      </div>
+      <button class="close-panel" onclick="closePanel('exc-panel')">✕</button>
+    </div>
+    <div class="detail-panel-body">
+      <div style="margin-bottom:20px;">
+        <div class="text-xs text-muted" style="text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px;">Descripción</div>
+        <div id="panel-description" style="font-size:14px;line-height:1.7;color:var(--charcoal);"></div>
+      </div>
+
+      <div style="background:var(--sand);border-radius:8px;padding:14px 16px;margin-bottom:20px;">
+        <div class="flex-between" style="margin-bottom:8px;">
+          <div class="text-xs text-muted" style="text-transform:uppercase;letter-spacing:1px;font-weight:700;">Recomendación del agente</div>
+          <span id="panel-confidence-bar"></span>
+        </div>
+        <div id="panel-recommendation" style="font-size:13.5px;line-height:1.7;color:var(--charcoal);"></div>
+      </div>
+
+      <div id="panel-payload" style="margin-bottom:20px;"></div>
+
+      <div>
+        <div class="text-xs text-muted" style="text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:10px;">Comentarios</div>
+        <div style="display:flex;flex-direction:column;gap:10px;" id="panel-comments">
+          <div style="background:var(--midnight);color:var(--cream);padding:10px 14px;border-radius:8px;border-bottom-left-radius:2px;font-size:13.5px;max-width:85%;">
+            <div style="font-size:10px;opacity:.5;margin-bottom:4px;">Agente ContabIA · 01/04/2026</div>
+            Item creado automáticamente durante procesamiento del cierre de marzo.
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px;">
+          <input type="text" class="form-input" placeholder="Agregar comentario..." style="flex:1;padding:8px 12px;">
+          <button class="btn btn-secondary btn-sm">Enviar</button>
+        </div>
+      </div>
+    </div>
+    <div class="detail-panel-footer">
+      <button class="btn btn-ghost btn-sm" onclick="closePanel('exc-panel')">Cerrar</button>
+      <button class="btn btn-reject btn-sm">Rechazar</button>
+      <button class="btn btn-approve btn-sm">Aprobar resolución</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/portal.js"></script>
+<script src="js/nav.js"></script>
+<script>
+const AMOUNTS = {
+  'exc-001': 32000,
+  'exc-002': 620000,
+  'exc-003': 215000,
+  'exc-004': 1450000,
+  'exc-005': 1500000,
+  'exc-006': 87500,
+  'exc-007': 280000,
+  'exc-008': 340000,
+};
+
+function renderExcTable(filter) {
+  const tbody = document.getElementById('exc-tbody');
+  let rows = MOCK.exceptions;
+  if (filter && filter !== 'all') {
+    if (['critical','high','medium','low'].includes(filter)) {
+      rows = rows.filter(r => r.priority === filter);
+    } else {
+      rows = rows.filter(r => r.status === filter);
+    }
+  }
+
+  tbody.innerHTML = rows.map(exc => {
+    const amt = AMOUNTS[exc.id];
+    const isBlocked = false;
+    return `
+      <tr class="${isBlocked?'row-blocked':''}" style="cursor:pointer;" onclick="openExcDetail('${exc.id}')">
+        <td><span class="priority-dot ${exc.priority}"></span></td>
+        <td>
+          <div style="font-weight:600;font-size:13.5px;color:var(--midnight);">${exc.title}</div>
+          <div class="text-xs text-muted" style="font-family:var(--font-mono);margin-top:2px;">${exc.subtype}</div>
+        </td>
+        <td>${priorityBadge(exc.priority)}</td>
+        <td>${statusBadge(exc.status)}</td>
+        <td>${confidenceBar(exc.ai_confidence)}</td>
+        <td class="mono">${fmtCOP(amt)}</td>
+        <td class="text-xs text-muted">${fmtDate(exc.created_at)}</td>
+        <td>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-approve btn-xs" onclick="event.stopPropagation();">✓ Aprobar</button>
+            <button class="btn btn-reject btn-xs" onclick="event.stopPropagation();">✕</button>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+function openExcDetail(id) {
+  const exc = MOCK.exceptions.find(e => e.id === id);
+  if (!exc) return;
+  document.getElementById('panel-title').textContent = exc.title;
+  document.getElementById('panel-subtype').textContent = exc.subtype;
+  document.getElementById('panel-priority-badge').innerHTML = priorityBadge(exc.priority);
+  document.getElementById('panel-status-badge').innerHTML = statusBadge(exc.status);
+  document.getElementById('panel-description').textContent = exc.description;
+  document.getElementById('panel-recommendation').textContent = exc.ai_recommendation;
+  document.getElementById('panel-confidence-bar').innerHTML = confidenceBar(exc.ai_confidence);
+
+  // Render payload as key-value
+  const p = exc.payload;
+  const rows = Object.entries(p).map(([k,v]) => `
+    <div class="flex-between" style="padding:6px 0;border-bottom:1px solid var(--light-gray);">
+      <span class="text-xs text-muted" style="text-transform:uppercase;letter-spacing:.8px;font-weight:700;">${k}</span>
+      <span class="text-mono text-sm">${typeof v === 'number' ? fmtCOP(v) : v}</span>
+    </div>`).join('');
+  document.getElementById('panel-payload').innerHTML = `
+    <div class="text-xs text-muted" style="text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:8px;">Datos</div>
+    <div style="background:var(--white);border:1px solid var(--light-gray);border-radius:8px;padding:4px 14px;">${rows}</div>`;
+
+  openPanel('exc-panel');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderExcTable('all');
+  initFilterChips('#exc-filters', renderExcTable);
+});
+</script>
+<script src="js/auth.js"></script>
+</body>
+</html>

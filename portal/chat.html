@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ContabIA — Chat con el Agente</title>
+  <link rel="stylesheet" href="css/portal.css">
+</head>
+<body>
+<div class="portal-shell">
+  <div id="sidebar-mount"></div>
+
+  <div class="main-content">
+    <div class="top-bar">
+      <div class="top-bar-title">Chat con el Agente ContabIA</div>
+      <div class="top-bar-actions">
+        <span style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--warm-gray);">
+          <span style="width:8px;height:8px;border-radius:50%;background:#1E7E34;display:inline-block;"></span>
+          Agente activo · Marzo 2026
+        </span>
+      </div>
+    </div>
+
+    <div class="page-content" style="display:flex;flex-direction:column;height:calc(100vh - 60px);padding-bottom:0;">
+
+      <div class="chat-container">
+        <div class="chat-messages" id="chat-messages">
+
+          <!-- Agent greeting -->
+          <div>
+            <div class="chat-bubble agent">
+              <div class="bubble-meta">Agente ContabIA · hoy</div>
+              Buen día, Kevin. Acabo de terminar el procesamiento de marzo. Aquí el resumen:<br><br>
+              ✅ 147 transacciones bancarias procesadas<br>
+              ✅ 89 reservas LobbyPMS cruzadas con Alegra<br>
+              ⚠️ <strong>14 excepciones</strong> requieren su revisión — 2 críticas<br>
+              ⏳ <strong>7 comprobantes</strong> pendientes de aprobación<br><br>
+              Recuperación tributaria estimada del mes: <strong>COP 1.248.500</strong>. ¿Por dónde empezamos?
+            </div>
+          </div>
+
+          <!-- User message -->
+          <div style="align-self:flex-end;max-width:70%;">
+            <div class="chat-bubble user">
+              ¿Cuál es el estado de la comisión de Booking del mes?
+            </div>
+          </div>
+
+          <!-- Agent response -->
+          <div>
+            <div class="chat-bubble agent">
+              <div class="bubble-meta">Agente ContabIA</div>
+              Booking.com marzo 2026 (Modelo Factura Mensual):<br><br>
+              • <strong>Noches vendidas por Booking:</strong> 47<br>
+              • <strong>Ingreso bruto Booking:</strong> COP 8.920.000<br>
+              • <strong>Comisión accrual (10%):</strong> COP 892.000<br>
+              • <strong>Estado:</strong> Accrual generado (JE-002) — <em>pendiente de aprobación</em><br><br>
+              La factura de Booking llegará en abril. Cuando llegue, reclasificamos el accrual a cuentas por pagar. ¿Apruebo el JE ahora?
+            </div>
+          </div>
+
+          <!-- User message -->
+          <div style="align-self:flex-end;max-width:70%;">
+            <div class="chat-bubble user">
+              Sí, apruébalo. Y dime qué pasó con el crédito de COP 1.450.000 que no reconociste.
+            </div>
+          </div>
+
+          <!-- Agent response -->
+          <div>
+            <div class="chat-bubble agent">
+              <div class="bubble-meta">Agente ContabIA</div>
+              ✅ <strong>JE-002 aprobado.</strong> El asiento queda en cola para registrarse en Alegra.<br><br>
+              Sobre el crédito de <strong>COP 1.450.000</strong> (15/03/2026, "TRANSF MÓVIL"):<br><br>
+              Mi confianza es baja (38%) — la descripción "TRANSF MÓVIL" es demasiado genérica. Tres posibilidades que no pude descartar automáticamente:<br><br>
+              1. Anticipo de reserva grupal no registrado en LobbyPMS<br>
+              2. Pago Airbnb fuera de ciclo habitual<br>
+              3. Transferencia personal del propietario (si es así, va a aportes de capital o préstamo)<br><br>
+              ¿Sabe usted de qué se trata? Con esa info registro el asiento correcto.
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Suggested prompts -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+          <button class="filter-chip" onclick="sendPrompt(this)">¿Cuánto debo de IVA este mes?</button>
+          <button class="filter-chip" onclick="sendPrompt(this)">Muéstrame el flujo de caja proyectado</button>
+          <button class="filter-chip" onclick="sendPrompt(this)">¿Cuáles son las excepciones críticas?</button>
+          <button class="filter-chip" onclick="sendPrompt(this)">¿Qué pasa con la nómina de marzo?</button>
+        </div>
+
+        <div class="chat-input-row">
+          <input type="text" class="chat-input" id="chat-input"
+            placeholder="Pregúntele al agente sobre sus libros..." 
+            onkeypress="if(event.key==='Enter') sendMessage()">
+          <button class="chat-send" onclick="sendMessage()">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="js/portal.js"></script>
+<script src="js/nav.js"></script>
+<script>
+function sendMessage() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+  appendMessage(text, 'user');
+  input.value = '';
+  setTimeout(() => {
+    appendMessage('Estoy procesando su consulta sobre los libros de Cantamar Beach Hostel. En un sistema en vivo, el agente respondería aquí con datos reales de Alegra y LobbyPMS. (Demo)', 'agent');
+  }, 800);
+}
+
+function sendPrompt(btn) {
+  document.getElementById('chat-input').value = btn.textContent;
+  document.getElementById('chat-input').focus();
+}
+
+function appendMessage(text, role) {
+  const container = document.getElementById('chat-messages');
+  const wrapper = document.createElement('div');
+  if (role === 'user') wrapper.style.alignSelf = 'flex-end';
+  const bubble = document.createElement('div');
+  bubble.className = `chat-bubble ${role}`;
+  if (role === 'agent') {
+    const meta = document.createElement('div');
+    meta.className = 'bubble-meta';
+    meta.textContent = 'Agente ContabIA';
+    bubble.appendChild(meta);
+  }
+  bubble.appendChild(document.createTextNode(text));
+  wrapper.appendChild(bubble);
+  container.appendChild(wrapper);
+  container.scrollTop = container.scrollHeight;
+}
+</script>
+<script src="js/auth.js"></script>
+</body>
+</html>

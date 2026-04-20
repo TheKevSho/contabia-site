@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ContabIA — Comprobantes</title>
+  <link rel="stylesheet" href="css/portal.css">
+</head>
+<body>
+<div class="portal-shell">
+  <div id="sidebar-mount"></div>
+
+  <div class="main-content">
+    <div class="top-bar">
+      <div class="top-bar-title">Comprobantes Contables — Marzo 2026</div>
+      <div class="top-bar-actions">
+        <span class="text-sm text-muted">18 total · 7 pendientes</span>
+        <button class="btn btn-primary btn-sm">Aprobar todos pendientes</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+
+      <div class="alert alert-info">
+        <span>ℹ️</span>
+        <div>Ningún comprobante se registra en Alegra sin su aprobación. El agente propone — usted o <strong>Angel Morales</strong> aprueba.</div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs" id="je-tabs">
+        <div class="tab active" data-filter="all">Todos (18)</div>
+        <div class="tab" data-filter="pending">Pendientes (7)</div>
+        <div class="tab" data-filter="approved">Aprobados (8)</div>
+        <div class="tab" data-filter="posted">Registrados (3)</div>
+        <div class="tab" data-filter="blocked">Bloqueados (1)</div>
+      </div>
+
+      <!-- JE list -->
+      <div id="je-list" style="display:flex;flex-direction:column;gap:12px;"></div>
+
+    </div>
+  </div>
+</div>
+
+<!-- JE Detail Panel -->
+<div class="detail-overlay" id="je-panel">
+  <div class="detail-panel">
+    <div class="detail-panel-header">
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <span id="je-panel-priority"></span>
+          <span id="je-panel-status"></span>
+        </div>
+        <div id="je-panel-title" style="font-family:var(--font-display);font-size:18px;color:var(--midnight);"></div>
+        <div id="je-panel-subtype" style="font-size:12px;color:var(--warm-gray);margin-top:3px;font-family:var(--font-mono);"></div>
+      </div>
+      <button class="close-panel" onclick="closePanel('je-panel')">✕</button>
+    </div>
+    <div class="detail-panel-body">
+
+      <div style="margin-bottom:18px;">
+        <div class="text-xs text-muted" style="text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px;">Descripción</div>
+        <div id="je-panel-desc" style="font-size:14px;line-height:1.7;"></div>
+      </div>
+
+      <div style="margin-bottom:18px;">
+        <div class="flex-between" style="margin-bottom:8px;">
+          <div class="text-xs text-muted" style="text-transform:uppercase;letter-spacing:1px;font-weight:700;">Asiento contable</div>
+          <span id="je-panel-conf"></span>
+        </div>
+        <div id="je-panel-lines"></div>
+      </div>
+
+      <div id="je-panel-block-alert" style="display:none;"></div>
+
+      <div>
+        <div class="text-xs text-muted" style="text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px;">Notas del revisor</div>
+        <textarea class="form-input" rows="3" placeholder="Opcional — anote cualquier observación..."></textarea>
+      </div>
+    </div>
+    <div class="detail-panel-footer" id="je-panel-footer">
+      <button class="btn btn-ghost btn-sm" onclick="closePanel('je-panel')">Cerrar</button>
+      <button class="btn btn-secondary btn-sm">Modificar y aprobar</button>
+      <button class="btn btn-approve btn-sm">✓ Aprobar comprobante</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/portal.js"></script>
+<script src="js/nav.js"></script>
+<script>
+function renderJELines(lines) {
+  let debits = 0, credits = 0;
+  const rows = lines.map(l => {
+    if (l.debit) debits += l.debit;
+    if (l.credit) credits += l.credit;
+    return `
+      <tr>
+        <td style="font-family:var(--font-mono);font-size:12px;">${l.account}</td>
+        <td>${l.name}</td>
+        <td>${l.desc}</td>
+        <td class="right">${l.debit ? fmtCOP(l.debit) : '—'}</td>
+        <td class="right">${l.credit ? fmtCOP(l.credit) : '—'}</td>
+      </tr>`;
+  }).join('');
+
+  const balanced = debits === credits;
+  return `
+    <table class="je-table">
+      <thead>
+        <tr>
+          <th>Cuenta</th>
+          <th>Nombre</th>
+          <th>Descripción</th>
+          <th class="right">Débito</th>
+          <th class="right">Crédito</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+      <tfoot>
+        <tr>
+          <td colspan="3">
+            ${balanced
+              ? '<span class="je-balanced">✓ Comprobante balanceado</span>'
+              : '<span class="je-unbalanced">⚠ No balanceado</span>'}
+          </td>
+          <td class="right">${fmtCOP(debits)}</td>
+          <td class="right">${fmtCOP(credits)}</td>
+        </tr>
+      </tfoot>
+    </table>`;
+}
+
+function renderJECard(je) {
+  const totalDebit = (je.lines || []).reduce((s,l) => s + (l.debit||0), 0);
+  const isBlocked = je.status === 'blocked';
+  return `
+    <div class="card" style="${isBlocked?'opacity:.6;':''}" >
+      <div style="padding:16px 20px;">
+        <div class="flex-between">
+          <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;">
+            <span class="priority-dot ${je.priority}"></span>
+            <div style="min-width:0;">
+              <div style="font-weight:600;font-size:14px;color:var(--midnight);">${je.title}</div>
+              <div class="text-xs text-muted" style="font-family:var(--font-mono);margin-top:2px;">${je.subtype}</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+            ${confidenceBar(je.ai_confidence)}
+            ${statusBadge(je.status)}
+            <span class="mono text-sm" style="color:var(--midnight);min-width:100px;text-align:right;">${fmtCOP(totalDebit)}</span>
+            ${isBlocked
+              ? '<span class="badge badge-blocked">Bloqueado</span>'
+              : je.status === 'pending'
+                ? `<button class="btn btn-approve btn-xs" onclick="approveJE('${je.id}')">✓ Aprobar</button>
+                   <button class="btn btn-ghost btn-xs" onclick="openJEDetail('${je.id}')">Ver</button>`
+                : `<button class="btn btn-ghost btn-xs" onclick="openJEDetail('${je.id}')">Ver</button>`
+            }
+          </div>
+        </div>
+        ${isBlocked && je.blocked_by ? `
+          <div class="alert alert-warning" style="margin-top:10px;margin-bottom:0;padding:8px 12px;">
+            ⛔ Bloqueado hasta resolver excepción: <a href="exceptions.html">${je.blocked_by}</a>
+          </div>` : ''}
+      </div>
+    </div>`;
+}
+
+function approveJE(id) {
+  alert('✓ Comprobante aprobado. El agente registrará el asiento en Alegra. (Demo)');
+}
+
+function openJEDetail(id) {
+  const je = MOCK.journalEntries.find(j => j.id === id);
+  if (!je) return;
+  document.getElementById('je-panel-title').textContent = je.title;
+  document.getElementById('je-panel-subtype').textContent = je.subtype;
+  document.getElementById('je-panel-priority').innerHTML = priorityBadge(je.priority);
+  document.getElementById('je-panel-status').innerHTML = statusBadge(je.status);
+  document.getElementById('je-panel-desc').textContent = je.description;
+  document.getElementById('je-panel-conf').innerHTML = confidenceBar(je.ai_confidence);
+  document.getElementById('je-panel-lines').innerHTML = renderJELines(je.lines || []);
+
+  const blockAlert = document.getElementById('je-panel-block-alert');
+  if (je.blocked_by) {
+    blockAlert.style.display = 'block';
+    blockAlert.innerHTML = `<div class="alert alert-warning">⛔ Bloqueado hasta resolver: <a href="exceptions.html">${je.blocked_by}</a></div>`;
+    document.getElementById('je-panel-footer').style.display = 'none';
+  } else {
+    blockAlert.style.display = 'none';
+    document.getElementById('je-panel-footer').style.display = 'flex';
+  }
+  openPanel('je-panel');
+}
+
+function renderJEList(filter) {
+  const list = document.getElementById('je-list');
+  let entries = MOCK.journalEntries;
+  if (filter && filter !== 'all') {
+    entries = entries.filter(j => j.status === filter);
+  }
+  list.innerHTML = entries.length
+    ? entries.map(renderJECard).join('')
+    : '<div class="empty-state"><div class="empty-icon">📋</div><h3>Sin comprobantes</h3><p>No hay comprobantes en este estado.</p></div>';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderJEList('all');
+  // Tab switching
+  const tabs = document.querySelectorAll('#je-tabs .tab');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      renderJEList(tab.dataset.filter || 'all');
+    });
+  });
+});
+</script>
+<script src="js/auth.js"></script>
+</body>
+</html>
