@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ContabIA Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Source+Sans+3:wght@300;400;600;700&family=Source+Code+Pro:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --midnight:#1B2A4A; --ocean:#2D5F8A; --sky:#4A9FD4; --terracotta:#D4704A;
+  --sand:#F5E6D0; --cream:#FFF8F0; --white:#FFFFFF; --charcoal:#2C2C2C;
+  --warm-gray:#8B8178; --light-gray:#E8E2DB;
+  --sidebar-w:240px; --radius:8px; --radius-lg:12px;
+  --shadow-sm:0 1px 3px rgba(27,42,74,.08); --shadow-md:0 4px 12px rgba(27,42,74,.12); --shadow-lg:0 8px 24px rgba(27,42,74,.16);
+  --font-display:'DM Serif Display',Georgia,serif; --font-body:'Source Sans 3',system-ui,sans-serif; --font-mono:'Source Code Pro',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px}
+body{font-family:var(--font-body);background:var(--cream);color:var(--charcoal);line-height:1.5;-webkit-font-smoothing:antialiased;overflow:hidden;height:100vh}
+a{color:var(--ocean);text-decoration:none} a:hover{color:var(--sky)}
+button{font-family:var(--font-body);cursor:pointer;border:none}
+input,select,textarea{font-family:var(--font-body)}
+.portal-shell{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:var(--sidebar-w);background:var(--midnight);display:flex;flex-direction:column;height:100vh;z-index:100;overflow-y:auto;flex-shrink:0}
+.sidebar-logo{padding:24px 20px 20px;border-bottom:1px solid rgba(255,255,255,.08)}
+.wordmark{font-family:var(--font-display);font-size:22px;color:#FFF8F0;letter-spacing:-.3px}
+.wordmark span{color:var(--terracotta)}
+.tagline{font-size:11px;color:rgba(255,248,240,.45);margin-top:4px;letter-spacing:.3px}
+.sidebar-client{padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.08)}
+.client-name{font-size:13px;font-weight:600;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.period-badge{display:inline-block;margin-top:5px;font-size:11px;background:rgba(212,112,74,.2);color:#F0A07A;border:1px solid rgba(212,112,74,.3);border-radius:4px;padding:2px 7px;font-family:var(--font-mono)}
+.sidebar-nav{flex:1;padding:12px 0}
+.nav-section-label{font-size:10px;font-weight:700;color:rgba(255,248,240,.3);letter-spacing:1.5px;text-transform:uppercase;padding:12px 20px 4px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;color:rgba(255,248,240,.65);font-size:14px;transition:all .15s;position:relative;cursor:pointer;text-decoration:none}
+.nav-item:hover{background:rgba(255,255,255,.06);color:var(--cream)}
+.nav-item.active{background:rgba(212,112,74,.15);color:var(--cream);font-weight:600}
+.nav-item.active::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--terracotta);border-radius:0 2px 2px 0}
+.nav-icon{width:18px;height:18px;flex-shrink:0;opacity:.7}
+.nav-item.active .nav-icon{opacity:1}
+.nav-badge{margin-left:auto;font-size:11px;font-weight:700;background:var(--terracotta);color:white;border-radius:10px;padding:1px 7px;min-width:20px;text-align:center}
+.nav-badge.critical{background:#C0392B}
+.sidebar-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,.08);font-size:12px;color:rgba(255,248,240,.4)}
+.sidebar-footer .user-name{color:rgba(255,248,240,.7);font-weight:600}
+.main-content{flex:1;display:flex;flex-direction:column;min-height:100vh;overflow:hidden}
+.top-bar{background:var(--white);border-bottom:1px solid var(--light-gray);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;z-index:50}
+.top-bar-title{font-family:var(--font-display);font-size:20px;color:var(--midnight)}
+.top-bar-actions{display:flex;align-items:center;gap:10px}
+.page-content{padding:24px 28px;flex:1;overflow-y:auto}
+.screen{display:none}
+.screen.active{display:block}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(–radius);font-size:14px;font-weight:600;transition:all .15s;cursor:pointer;border:none}
+.btn-primary{background:var(–terracotta);color:white} .btn-primary:hover{background:#C05E3A}
+.btn-secondary{background:transparent;color:var(–ocean);border:1.5px solid var(–ocean)} .btn-secondary:hover{background:var(–ocean);color:white}
+.btn-ghost{background:transparent;color:var(–warm-gray);border:1.5px solid var(–light-gray)} .btn-ghost:hover{border-color:var(–ocean);color:var(–ocean)}
+.btn-approve{background:#1E7E34;color:white;font-size:13px;padding:6px 14px} .btn-approve:hover{background:#165A25}
+.btn-reject{background:transparent;color:#C0392B;border:1.5px solid #C0392B;font-size:13px;padding:6px 14px} .btn-reject:hover{background:#C0392B;color:white}
+.btn-sm{padding:5px 12px;font-size:13px} .btn-xs{padding:3px 9px;font-size:12px}
+
+/* Cards */
+.card{background:var(–white);border:1px solid var(–light-gray);border-radius:var(–radius-lg);box-shadow:var(–shadow-sm)}
+.card-header{padding:16px 20px 12px;border-bottom:1px solid var(–light-gray);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-family:var(–font-display);font-size:17px;color:var(–midnight)}
+.card-body{padding:20px}
+
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.kpi-tile{background:var(–white);border:1px solid var(–light-gray);border-radius:var(–radius-lg);padding:16px 18px;box-shadow:var(–shadow-sm)}
+.kpi-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(–warm-gray);margin-bottom:6px}
+.kpi-value{font-family:var(–font-mono);font-size:20px;font-weight:700;color:var(–midnight)}
+.kpi-sub{font-size:11px;color:var(–warm-gray);margin-top:3px}
+.kpi-tile.ta{border-left:4px solid var(–terracotta)}
+.kpi-tile.oc{border-left:4px solid var(–ocean)}
+.kpi-tile.gr{border-left:4px solid #1E7E34}
+.kpi-tile.re{border-left:4px solid #C0392B}
+
+/* Badges */
+.badge{display:inline-flex;align-items:center;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;padding:2px 8px;border-radius:20px}
+.badge-critical{background:#FDECEA;color:#C0392B} .badge-high{background:#FFF3CD;color:#856404}
+.badge-medium{background:#E3F0FF;color:#1A5276} .badge-low{background:#E8F8F5;color:#1A7A4A}
+.badge-approved{background:#D4EDDA;color:#155724} .badge-pending{background:#FFF3CD;color:#856404}
+.badge-posted{background:#D4EDDA;color:#155724} .badge-rejected{background:#FDECEA;color:#C0392B}
+.badge-blocked{background:#F0F0F0;color:#666} .badge-closed{background:#D4EDDA;color:#155724}
+.badge-progress{background:#E3F0FF;color:var(–ocean)} .badge-in_review{background:#E3F0FF;color:#1A5276}
+.badge-needs_info{background:#FFF3CD;color:#856404}
+
+/* Priority dot */
+.pdot{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0}
+.pdot.critical{background:#C0392B} .pdot.high{background:#E67E22} .pdot.medium{background:var(–ocean)} .pdot.low{background:#1A7A4A}
+
+/* Tables */
+.data-table{width:100%;border-collapse:collapse;font-size:13px}
+.data-table th{padding:9px 12px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(–warm-gray);border-bottom:2px solid var(–light-gray);text-align:left;white-space:nowrap}
+.data-table td{padding:10px 12px;border-bottom:1px solid var(–light-gray);vertical-align:middle}
+.data-table tbody tr:hover{background:rgba(245,230,208,.3);cursor:pointer}
+.data-table tbody tr:last-child td{border-bottom:none}
+
+/* Confidence bar */
+.cbar{display:flex;align-items:center;gap:6px;min-width:72px}
+.ctrack{flex:1;height:4px;background:var(–light-gray);border-radius:2px;overflow:hidden}
+.cfill{height:100%;border-radius:2px}
+.cfill.hc{background:#1E7E34} .cfill.mc{background:#E67E22} .cfill.lc{background:#C0392B}
+.cpct{font-family:var(–font-mono);font-size:10px;color:var(–warm-gray);min-width:26px}
+
+/* Alerts */
+.alert{padding:10px 14px;border-radius:var(–radius);font-size:13px;display:flex;align-items:flex-start;gap:10px;margin-bottom:14px}
+.alert-critical{background:#FDECEA;border-left:4px solid #C0392B;color:#7B241C}
+.alert-warning{background:#FFF8E1;border-left:4px solid #E67E22;color:#7D4E00}
+.alert-info{background:#E3F2FF;border-left:4px solid var(–ocean);color:#1A4A6A}
+
+/* Filter chips */
+.filter-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.chip{padding:4px 11px;border-radius:20px;font-size:11px;font-weight:600;border:1.5px solid var(–light-gray);background:var(–white);color:var(–warm-gray);cursor:pointer;transition:all .15s}
+.chip:hover,.chip.active{border-color:var(–ocean);background:var(–ocean);color:white}
+.chip.crit.active{background:#C0392B;border-color:#C0392B}
+
+/* Tabs */
+.tabs{display:flex;border-bottom:2px solid var(–light-gray);margin-bottom:16px}
+.tab{padding:9px 16px;font-size:13px;font-weight:600;color:var(–warm-gray);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s}
+.tab:hover{color:var(–ocean)} .tab.active{color:var(–terracotta);border-bottom-color:var(–terracotta)}
+
+/* Month tracker */
+.month-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.month-card{background:var(–white);border:1px solid var(–light-gray);border-radius:var(–radius-lg);overflow:hidden;box-shadow:var(–shadow-sm)}
+.month-card-header{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(–light-gray)}
+.month-name{font-family:var(–font-display);font-size:15px;color:var(–midnight)}
+.month-card-modules{padding:10px 16px}
+.mrow{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(232,226,219,.5)}
+.mrow:last-child{border-bottom:none}
+.micon{width:24px;height:24px;border-radius:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px}
+.micon.ok{background:#E8F8F5;color:#1A7A4A} .micon.warn{background:#FFF3CD;color:#856404} .micon.pend{background:#F0F0F0;color:#999}
+.mlabel{font-size:12px;color:var(–charcoal);flex:1} .mnote{font-size:10px;color:var(–warm-gray)}
+
+/* JE table */
+.je-table{width:100%;border-collapse:collapse;font-size:12px;margin:10px 0}
+.je-table th{background:var(–sand);padding:7px 10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(–midnight);text-align:left}
+.je-table th.r{text-align:right} .je-table td{padding:7px 10px;border-bottom:1px solid var(–light-gray)}
+.je-table td.r{text-align:right;font-family:var(–font-mono);font-size:12px}
+.je-table tfoot td{font-weight:700;border-top:2px solid var(–midnight);padding-top:8px}
+.je-ok{color:#1E7E34;font-size:11px}
+
+/* Deliverables */
+.drow{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(–light-gray)}
+.drow:last-child{border-bottom:none}
+.dicon{width:34px;height:34px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.dicon.xl{background:#E8F5E9;color:#1E7E34} .dicon.pdf{background:#FDECEA;color:#C0392B}
+.dname{font-size:13px;font-weight:600;color:var(–midnight)} .dmeta{font-size:11px;color:var(–warm-gray);margin-top:1px}
+
+/* Chat */
+.chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 130px)}
+.chat-msgs{flex:1;overflow-y:auto;padding:16px 0;display:flex;flex-direction:column;gap:12px}
+.bubble{max-width:68%;padding:10px 14px;border-radius:var(–radius-lg);font-size:13.5px;line-height:1.6}
+.bubble.agent{background:var(–midnight);color:var(–cream);border-bottom-left-radius:3px;align-self:flex-start}
+.bubble.user{background:var(–sand);color:var(–charcoal);border-bottom-right-radius:3px;align-self:flex-end}
+.bmeta{font-size:10px;opacity:.55;margin-bottom:4px}
+.chat-input-row{display:flex;gap:8px;padding-top:12px;border-top:1px solid var(–light-gray);flex-shrink:0}
+.chat-inp{flex:1;padding:10px 14px;border:1.5px solid var(–light-gray);border-radius:24px;font-size:13px;outline:none}
+.chat-inp:focus{border-color:var(–ocean)}
+.chat-send{width:40px;height:40px;border-radius:50%;background:var(–terracotta);color:white;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;border:none}
+
+/* Slide panel */
+.overlay{position:fixed;inset:0;background:rgba(27,42,74,.45);z-index:300;display:none;align-items:stretch;justify-content:flex-end}
+.overlay.open{display:flex}
+.panel{background:var(–white);width:min(560px,90vw);height:100vh;overflow-y:auto;display:flex;flex-direction:column;box-shadow:-8px 0 32px rgba(27,42,74,.2)}
+.panel-hdr{padding:18px 22px;border-bottom:1px solid var(–light-gray);display:flex;align-items:flex-start;gap:10px;position:sticky;top:0;background:var(–white);z-index:10}
+.panel-body{padding:22px;flex:1}
+.panel-ftr{padding:14px 22px;border-top:1px solid var(–light-gray);display:flex;gap:8px;justify-content:flex-end;position:sticky;bottom:0;background:var(–white)}
+.close-btn{margin-left:auto;background:none;border:none;font-size:19px;color:var(–warm-gray);cursor:pointer;padding:0 0 0 8px}
+
+/* Helpers */
+.mono{font-family:var(–font-mono)}
+.flex-between{display:flex;align-items:center;justify-content:space-between}
+.flex-center{display:flex;align-items:center}
+.gap-8{gap:8px} .gap-10{gap:10px} .gap-12{gap:12px}
+.mt-16{margin-top:16px} .mt-20{margin-top:20px}
+.text-sm{font-size:13px} .text-xs{font-size:11px} .text-muted{color:var(–warm-gray)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.negative{color:#C0392B} .positive{color:#1E7E34}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:var(–light-gray);border-radius:3px}
+
+/* Section header */
+.sec-hdr{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px}
+.sec-title{font-family:var(–font-display);font-size:19px;color:var(–midnight)}
+.sec-sub{font-size:12px;color:var(–warm-gray);margin-top:2px}
+</style>
+
+</head>
+<body>
+<div class="portal-shell">
+
+<!-- SIDEBAR -->
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="wordmark">Contab<span>IA</span></div>
+    <div class="tagline">Su agente cierra sus libros.</div>
+  </div>
+  <div class="sidebar-client">
+    <div class="client-name">Cantamar Beach Hostel</div>
+    <span class="period-badge">Marzo 2026</span>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Principal</div>
+    <a class="nav-item active" id="nav-dashboard" onclick="showScreen('dashboard')">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      Resumen
+    </a>
+    <a class="nav-item" id="nav-tracker" onclick="showScreen('tracker')">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+      Seguimiento de Cierre
+    </a>
+    <div class="nav-section-label">Revisión</div>
+    <a class="nav-item" id="nav-exceptions" onclick="showScreen('exceptions')">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+      Excepciones
+      <span class="nav-badge critical">7</span>
+    </a>
+    <a class="nav-item" id="nav-jes" onclick="showScreen('jes')">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      Comprobantes (JEs)
+      <span class="nav-badge">5</span>
+    </a>
+    <div class="nav-section-label">Informes</div>
+    <a class="nav-item" id="nav-deliverables" onclick="showScreen('deliverables')">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+      Entregables
+    </a>
+    <div class="nav-section-label">Agente</div>
+    <a class="nav-item" id="nav-chat" onclick="showScreen('chat')">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+      Chat con el Agente
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-name">Kevin Carey</div>
+    <div>Propietario</div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+
+<div class="main-content">
+
+  <!-- TOP BAR -->
+
+  <div class="top-bar" id="top-bar">
+    <div class="top-bar-title" id="top-title">Resumen</div>
+    <div class="top-bar-actions" id="top-actions">
+      <span class="text-sm text-muted">Procesado hace 2 horas</span>
+      <button class="btn btn-ghost btn-sm">↻ Actualizar</button>
+      <button class="btn btn-primary btn-sm" onclick="showScreen('exceptions')">Revisar pendientes</button>
+    </div>
+  </div>
+
+  <!-- ══════════════ DASHBOARD ══════════════ -->
+
+  <div class="page-content screen active" id="screen-dashboard">
+    <div class="alert alert-warning">
+      <span>⚠️</span>
+      <div><strong>Cierre de Marzo 2026 en progreso.</strong> Hay 2 excepciones críticas y 5 comprobantes pendientes. <a onclick="showScreen('exceptions')" style="font-weight:600;cursor:pointer;">Ver excepciones →</a></div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-tile ta"><div class="kpi-label">Excepciones abiertas</div><div class="kpi-value">14</div><div class="kpi-sub">2 críticas · 5 altas · 4 medias · 3 bajas</div></div>
+      <div class="kpi-tile oc"><div class="kpi-label">Comprobantes (JEs)</div><div class="kpi-value">18</div><div class="kpi-sub">7 pendientes · 8 aprobados · 3 registrados</div></div>
+      <div class="kpi-tile gr"><div class="kpi-label">Recuperación tributaria</div><div class="kpi-value">1.248.500</div><div class="kpi-sub">COP estimado — docs soporte + retefuente</div></div>
+      <div class="kpi-tile re"><div class="kpi-label">Estado del cierre</div><div class="kpi-value" style="font-size:16px;color:#C0392B;">No listo</div><div class="kpi-sub">Bloqueos: EXC-001, EXC-004</div></div>
+    </div>
+    <div class="grid-2" style="gap:16px">
+      <div class="card">
+        <div class="card-header"><div class="card-title">Progreso del cierre</div></div>
+        <table class="data-table">
+          <tbody>
+            <tr><td><span style="font-size:16px">✅</span> <strong style="font-size:13px">Ingesta bancaria</strong> <span class="text-xs text-muted">— Bancolombia OK</span></td><td style="text-align:right"><span class="badge badge-approved">Completo</span></td></tr>
+            <tr><td><span style="font-size:16px">✅</span> <strong style="font-size:13px">Categorización OTA</strong> <span class="text-xs text-muted">— LobbyPMS × Alegra</span></td><td style="text-align:right"><span class="badge badge-approved">Completo</span></td></tr>
+            <tr><td><span style="font-size:16px">⚠️</span> <strong style="font-size:13px">Conciliación bancaria</strong> <span class="text-xs text-muted">— 2 items abiertos</span></td><td style="text-align:right"><span class="badge badge-pending">En revisión</span></td></tr>
+            <tr><td><span style="font-size:16px">⏳</span> <strong style="font-size:13px">Nómina y prestaciones</strong> <span class="text-xs text-muted">— JE por aprobar</span></td><td style="text-align:right"><span class="badge badge-pending">Pendiente</span></td></tr>
+            <tr><td><span style="font-size:16px">⛔</span> <strong style="font-size:13px">Informes finales</strong> <span class="text-xs text-muted">— Bloqueado</span></td><td style="text-align:right"><span class="badge badge-blocked">Bloqueado</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Resumen tributario</div></div>
+        <table class="data-table">
+          <thead><tr><th>Concepto</th><th style="text-align:right">COP</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td><div style="font-weight:600;font-size:12px">IVA — Crédito fiscal</div><div class="text-xs text-muted">Saldo recuperable</div></td><td class="mono" style="text-align:right;color:#1E7E34">+842.300</td><td><span class="badge badge-progress">En cálculo</span></td></tr>
+            <tr><td><div style="font-weight:600;font-size:12px">Retefuente retenida</div><div class="text-xs text-muted">Como agente retenedor</div></td><td class="mono" style="text-align:right;color:#C0392B">−284.500</td><td><span class="badge badge-approved">Calculado</span></td></tr>
+            <tr><td><div style="font-weight:600;font-size:12px">ICA Accrual</div><div class="text-xs text-muted">Santa Marta · 5.5×1000</div></td><td class="mono" style="text-align:right;color:#C0392B">−412.500</td><td><span class="badge badge-pending">Por aprobar</span></td></tr>
+            <tr><td><div style="font-weight:600;font-size:12px">GMF</div><div class="text-xs text-muted">4×1000</div></td><td class="mono" style="text-align:right;color:#C0392B">−48.200</td><td><span class="badge badge-pending">Por aprobar</span></td></tr>
+            <tr><td><div style="font-weight:600;font-size:12px">Retefuente perdida ⚠️</div><div class="text-xs text-muted">EXC-001 — corrección req.</div></td><td class="mono" style="text-align:right;color:#C0392B">−32.000</td><td><span class="badge badge-critical">Crítico</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card mt-16">
+      <div class="card-header"><div class="card-title">Actividad reciente del agente</div></div>
+      <table class="data-table">
+        <tbody>
+          <tr><td class="text-xs text-muted" style="white-space:nowrap;width:130px">Hoy, 6:12 a.m.</td><td>Procesadas <strong>147 transacciones bancarias</strong> de marzo. 6 requieren revisión manual.</td><td style="text-align:right"><span class="badge badge-approved">Completado</span></td></tr>
+          <tr><td class="text-xs text-muted">Hoy, 6:08 a.m.</td><td>Cruce LobbyPMS × Alegra completo. <strong>2 reservas sin factura</strong> detectadas.</td><td style="text-align:right"><span class="badge badge-pending">Acción req.</span></td></tr>
+          <tr><td class="text-xs text-muted">Hoy, 5:55 a.m.</td><td>Cálculo de prestaciones completo. <strong>Drift COP 280.000</strong> en cesantías.</td><td style="text-align:right"><span class="badge badge-pending">Acción req.</span></td></tr>
+          <tr><td class="text-xs text-muted">Ayer, 11:40 p.m.</td><td>Ingesta LobbyPMS: <strong>89 reservas</strong>, <strong>5 canales OTA</strong>.</td><td style="text-align:right"><span class="badge badge-approved">Completado</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══════════════ TRACKER ══════════════ -->
+
+  <div class="page-content screen" id="screen-tracker">
+    <div class="month-grid">
+      <div class="month-card">
+        <div class="month-card-header"><div class="month-name">Enero 2026</div><span class="badge badge-closed">Cerrado</span></div>
+        <div class="month-card-modules">
+          <div class="mrow"><div class="micon ok">✓</div><div class="mlabel">Ingesta bancaria</div><div class="mnote">OK</div></div>
+          <div class="mrow"><div class="micon ok">✓</div><div class="mlabel">Categorización OTA</div><div class="mnote">4 canales</div></div>
+          <div class="mrow"><div class="micon ok">✓</div><div class="mlabel">Conciliación</div><div class="mnote">Balanceado</div></div>
+          <div class="mrow"><div class="micon ok">✓</div><div class="mlabel">Nómina</div><div class="mnote">5 empleados</div></div>
+          <div class="mrow"><div class="micon ok">✓</div><div class="mlabel">Informes</div><div class="mnote">Xlsx + PDF</div></div>
+        </div>
+        <div style="padding:8px 16px 12px"><button class="btn btn-ghost btn-sm" onclick="showScreen('deliverables')">Ver entregables</button></div>
+      </div>
+      <div class="month-card">
+        <div class="month-card-header"><div class="month-name">Febrero 2026</div><span class="badge badge-closed">Cerrado</span></div>
+        <div class="month-card-modules">
+          <div class="mrow"><div class="micon ok">✓</div><div class="mlabel">Ingesta bancaria</div><div class="mnote">OK</div></div>
+          <div class="mrow"><div class="micon ok">✓</div><div class="mlabel">Categorización OTA</div><div class="mnote">5 canales</div></div>
+          <div class="mrow"><div class="micon ok">✓</div><div class="mlabel">Conciliación</div><div class="mnote">Balanceado</div></div>
+          <div class="mrow"><div class="micon ok">✓</div><div class="mlabel">Nómina</div><div class="mnote">5 empleados</div></div>
+          <div class="mrow"><div class="micon ok">✓</div><div class="mlabel">Informes</div><div class="mnote">Xlsx + PDF</div></div>
+        </div>
+        <div style="padding:8px 16px 12px"><button class="btn btn-ghost btn-sm" onclick="showScreen('deliverables')">Ver entregables</button></div>
+      </div>
+      <div class="month-card" style="border:2px solid var(--terracotta)">
+        <div class="month-card-header" style="background:rgba(212,112,74,.05)"><div class="month-name">Marzo 2026</div><span class="badge badge-progress">En progreso</span></div>
+        <div class="month-card-modules">
+          <div class="mrow"><div class="micon ok">✓</div><div class="mlabel">Ingesta bancaria</div><div class="mnote">OK</div></div>
+          <div class="mrow"><div class="micon ok">✓</div><div class="mlabel">LobbyPMS + Alegra</div><div class="mnote">89 reservas</div></div>
+          <div class="mrow"><div class="micon warn">!</div><div class="mlabel">Conciliación</div><div class="mnote" style="color:#856404">2 abiertos</div></div>
+          <div class="mrow"><div class="micon warn">!</div><div class="mlabel">Excepciones</div><div class="mnote" style="color:#C0392B">2 críticas</div></div>
+          <div class="mrow"><div class="micon pend">…</div><div class="mlabel">Informes</div><div class="mnote" style="color:#999">Bloqueado</div></div>
+        </div>
+        <div style="padding:8px 16px 12px;display:flex;gap:6px"><button class="btn btn-primary btn-sm" onclick="showScreen('exceptions')">Revisar excepciones</button><button class="btn btn-ghost btn-sm" onclick="showScreen('jes')">Ver JEs</button></div>
+      </div>
+      <div class="month-card" style="opacity:.5">
+        <div class="month-card-header"><div class="month-name">Abril 2026</div><span class="badge badge-pending">Pendiente</span></div>
+        <div class="month-card-modules">
+          <div class="mrow"><div class="micon pend">…</div><div class="mlabel">El agente inicia al cerrar el mes</div></div>
+        </div>
+        <div style="padding:8px 16px 12px"><span class="text-xs text-muted">Disponible desde el 1 de mayo</span></div>
+      </div>
+    </div>
+    <div class="card mt-20">
+      <div class="card-header"><div class="card-title">Resumen del año — 2026</div></div>
+      <table class="data-table">
+        <thead><tr><th>Mes</th><th>Estado</th><th>Excepciones</th><th>JEs registrados</th><th>Recuperación tributaria</th><th>Entregables</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Enero 2026</strong></td><td><span class="badge badge-closed">Cerrado</span></td><td class="mono">11/11</td><td class="mono">16</td><td class="mono positive">+COP 1.084.200</td><td><a onclick="showScreen('deliverables')" style="cursor:pointer;font-size:12px">Descargar →</a></td></tr>
+          <tr><td><strong>Febrero 2026</strong></td><td><span class="badge badge-closed">Cerrado</span></td><td class="mono">9/9</td><td class="mono">14</td><td class="mono positive">+COP 976.400</td><td><a onclick="showScreen('deliverables')" style="cursor:pointer;font-size:12px">Descargar →</a></td></tr>
+          <tr><td><strong>Marzo 2026</strong></td><td><span class="badge badge-progress">En progreso</span></td><td class="mono negative">7/14</td><td class="mono" style="color:#856404">3/18</td><td class="mono text-muted">En cálculo…</td><td><span class="text-xs text-muted">Pendiente</span></td></tr>
+        </tbody>
+        <tfoot><tr style="background:var(--sand)"><td><strong>Acumulado 2026</strong></td><td></td><td class="mono">27/34</td><td class="mono">33</td><td class="mono positive" style="font-weight:700">+COP 2.060.600</td><td></td></tr></tfoot>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══════════════ EXCEPTIONS ══════════════ -->
+
+  <div class="page-content screen" id="screen-exceptions">
+    <div class="alert alert-critical"><span>🔴</span><div><strong>2 excepciones críticas</strong> bloquean el cierre del mes.</div></div>
+    <div class="filter-row" id="exc-filters">
+      <button class="chip active" data-f="all">Todas (8)</button>
+      <button class="chip crit" data-f="critical">Críticas (2)</button>
+      <button class="chip" data-f="high">Altas (3)</button>
+      <button class="chip" data-f="medium">Medias (1)</button>
+      <button class="chip" data-f="pending">Pendientes</button>
+    </div>
+    <div class="card">
+      <div style="overflow-x:auto">
+        <table class="data-table" id="exc-table">
+          <thead><tr><th style="width:8px"></th><th>Excepción</th><th>Prioridad</th><th>Estado</th><th>Confianza</th><th>Monto</th><th>Acciones</th></tr></thead>
+          <tbody id="exc-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ JEs ══════════════ -->
+
+  <div class="page-content screen" id="screen-jes">
+    <div class="alert alert-info"><span>ℹ️</span><div>Ningún comprobante se registra en Alegra sin su aprobación. El agente propone — usted o <strong>Angel Morales</strong> aprueba.</div></div>
+    <div class="tabs" id="je-tabs">
+      <div class="tab active" data-f="all">Todos (5)</div>
+      <div class="tab" data-f="pending">Pendientes (3)</div>
+      <div class="tab" data-f="approved">Aprobados (1)</div>
+      <div class="tab" data-f="blocked">Bloqueados (1)</div>
+    </div>
+    <div id="je-list" style="display:flex;flex-direction:column;gap:10px"></div>
+  </div>
+
+  <!-- ══════════════ DELIVERABLES ══════════════ -->
+
+  <div class="page-content screen" id="screen-deliverables">
+    <div class="alert alert-warning"><span>⚠️</span><div>Informes de <strong>Marzo 2026</strong> incompletos — se generarán al cerrar excepciones críticas.</div></div>
+    <div class="sec-hdr mt-16"><div><div class="sec-title">Marzo 2026</div><div class="sec-sub">Cierre en progreso</div></div><span class="badge badge-progress">En progreso</span></div>
+    <div class="card">
+      <div class="card-body" style="padding:4px 18px">
+        <div class="drow"><div class="dicon xl">📊</div><div style="flex:1"><div class="dname">Libro de Cierre — Marzo 2026</div><div class="dmeta">Xlsx · 284 KB · P&L USALI + Balances</div></div><div style="display:flex;gap:6px"><button class="btn btn-secondary btn-sm">↓ Descargar</button></div></div>
+        <div class="drow"><div class="dicon pdf">📄</div><div style="flex:1"><div class="dname">Resumen P&L USALI — Marzo 2026</div><div class="dmeta">PDF · 1.2 MB · Departamental GOP</div></div><div style="display:flex;gap:6px"><button class="btn btn-secondary btn-sm">↓ Descargar</button></div></div>
+        <div class="drow" style="opacity:.4"><div class="dicon" style="background:#f0f0f0;color:#999">📊</div><div style="flex:1"><div class="dname" style="color:var(--warm-gray)">Conciliación Bancaria — Marzo 2026</div><div class="dmeta">Pendiente — 2 items sin resolver</div></div><button class="btn btn-ghost btn-sm" disabled>No disponible</button></div>
+        <div class="drow" style="opacity:.4"><div class="dicon" style="background:#f0f0f0;color:#999">📄</div><div style="flex:1"><div class="dname" style="color:var(--warm-gray)">Resumen Tributario — Marzo 2026</div><div class="dmeta">Pendiente — requiere cierre completo</div></div><button class="btn btn-ghost btn-sm" disabled>No disponible</button></div>
+      </div>
+    </div>
+    <div class="sec-hdr mt-20"><div><div class="sec-title">Febrero 2026</div><div class="sec-sub">Cierre completado el 02/03/2026</div></div><span class="badge badge-closed">Cerrado</span></div>
+    <div class="card">
+      <div class="card-body" style="padding:4px 18px">
+        <div class="drow"><div class="dicon xl">📊</div><div style="flex:1"><div class="dname">Libro de Cierre — Febrero 2026</div><div class="dmeta">Xlsx · 271 KB · 02/03/2026</div></div><button class="btn btn-secondary btn-sm">↓ Descargar</button></div>
+        <div class="drow"><div class="dicon pdf">📄</div><div style="flex:1"><div class="dname">Resumen P&L USALI — Febrero 2026</div><div class="dmeta">PDF · 1.1 MB · 02/03/2026</div></div><button class="btn btn-secondary btn-sm">↓ Descargar</button></div>
+        <div class="drow"><div class="dicon xl">📊</div><div style="flex:1"><div class="dname">Conciliación Bancaria — Febrero 2026</div><div class="dmeta">Xlsx · 88 KB · 02/03/2026</div></div><button class="btn btn-secondary btn-sm">↓ Descargar</button></div>
+        <div class="drow"><div class="dicon pdf">📄</div><div style="flex:1"><div class="dname">Resumen Tributario — Febrero 2026</div><div class="dmeta">PDF · 395 KB · COP 976.400 recuperado</div></div><button class="btn btn-secondary btn-sm">↓ Descargar</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ CHAT ══════════════ -->
+
+  <div class="page-content screen" id="screen-chat" style="padding-bottom:0;display:none;flex-direction:column;height:calc(100vh - 60px)">
+    <div class="chat-wrap">
+      <div class="chat-msgs" id="chat-msgs">
+        <div><div class="bubble agent"><div class="bmeta">Agente ContabIA · hoy</div>Buen día, Kevin. Acabo de terminar el procesamiento de marzo. Aquí el resumen:<br><br>✅ 147 transacciones bancarias procesadas<br>✅ 89 reservas LobbyPMS cruzadas con Alegra<br>⚠️ <strong>14 excepciones</strong> requieren revisión — 2 críticas<br>⏳ <strong>7 comprobantes</strong> pendientes de aprobación<br><br>Recuperación tributaria estimada: <strong>COP 1.248.500</strong>. ¿Por dónde empezamos?</div></div>
+        <div style="align-self:flex-end"><div class="bubble user">¿Cuál es el estado de la comisión de Booking del mes?</div></div>
+        <div><div class="bubble agent"><div class="bmeta">Agente ContabIA</div>Booking.com marzo 2026 (Modelo Factura Mensual):<br><br>• <strong>Noches vendidas:</strong> 47<br>• <strong>Ingreso bruto Booking:</strong> COP 8.920.000<br>• <strong>Comisión accrual (10%):</strong> COP 892.000<br>• <strong>Estado:</strong> JE-002 generado — <em>pendiente de aprobación</em><br><br>La factura de Booking llega en abril. ¿Apruebo el JE ahora?</div></div>
+        <div style="align-self:flex-end"><div class="bubble user">Sí, apruébalo. ¿Y qué pasó con el crédito de COP 1.450.000?</div></div>
+        <div><div class="bubble agent"><div class="bmeta">Agente ContabIA</div>✅ <strong>JE-002 aprobado.</strong> En cola para registrarse en Alegra.<br><br>Sobre el crédito de <strong>COP 1.450.000</strong> (15/03, "TRANSF MÓVIL"):<br><br>Confianza baja (38%) — la descripción es genérica. Tres posibilidades que no pude descartar:<br><br>1. Anticipo de reserva grupal sin registrar<br>2. Pago Airbnb fuera de ciclo<br>3. Transferencia personal del propietario<br><br>¿Sabe usted de qué se trata?</div></div>
+      </div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px">
+        <button class="chip" onclick="fillChat(this)">¿Cuánto debo de IVA este mes?</button>
+        <button class="chip" onclick="fillChat(this)">Muéstrame el flujo de caja</button>
+        <button class="chip" onclick="fillChat(this)">¿Cuáles son las excepciones críticas?</button>
+        <button class="chip" onclick="fillChat(this)">¿Qué pasa con la nómina?</button>
+      </div>
+      <div class="chat-input-row">
+        <input type="text" class="chat-inp" id="chat-inp" placeholder="Pregúntele al agente sobre sus libros..." onkeypress="if(event.key==='Enter')sendChat()">
+        <button class="chat-send" onclick="sendChat()"><svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg></button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main-content -->
+</div><!-- /portal-shell -->
+
+<!-- EXCEPTION PANEL -->
+
+<div class="overlay" id="exc-panel" onclick="if(event.target===this)closePanel('exc-panel')">
+  <div class="panel">
+    <div class="panel-hdr">
+      <div>
+        <div style="display:flex;gap:6px;margin-bottom:4px" id="p-badges"></div>
+        <div id="p-title" style="font-family:var(--font-display);font-size:17px;color:var(--midnight)"></div>
+        <div id="p-subtype" style="font-size:11px;color:var(--warm-gray);margin-top:2px;font-family:var(--font-mono)"></div>
+      </div>
+      <button class="close-btn" onclick="closePanel('exc-panel')">✕</button>
+    </div>
+    <div class="panel-body">
+      <div style="margin-bottom:16px">
+        <div class="text-xs text-muted" style="text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:5px">Descripción</div>
+        <div id="p-desc" style="font-size:13.5px;line-height:1.7"></div>
+      </div>
+      <div style="background:var(--sand);border-radius:8px;padding:12px 14px;margin-bottom:16px">
+        <div class="flex-between" style="margin-bottom:6px">
+          <div class="text-xs text-muted" style="text-transform:uppercase;letter-spacing:1px;font-weight:700">Recomendación del agente</div>
+          <span id="p-conf"></span>
+        </div>
+        <div id="p-rec" style="font-size:13px;line-height:1.7"></div>
+      </div>
+      <div id="p-payload"></div>
+    </div>
+    <div class="panel-ftr">
+      <button class="btn btn-ghost btn-sm" onclick="closePanel('exc-panel')">Cerrar</button>
+      <button class="btn btn-reject btn-sm">✕ Rechazar</button>
+      <button class="btn btn-approve btn-sm">✓ Aprobar resolución</button>
+    </div>
+  </div>
+</div>
+
+<!-- JE PANEL -->
+
+<div class="overlay" id="je-panel" onclick="if(event.target===this)closePanel('je-panel')">
+  <div class="panel">
+    <div class="panel-hdr">
+      <div>
+        <div style="display:flex;gap:6px;margin-bottom:4px" id="jp-badges"></div>
+        <div id="jp-title" style="font-family:var(--font-display);font-size:17px;color:var(--midnight)"></div>
+        <div id="jp-subtype" style="font-size:11px;color:var(--warm-gray);margin-top:2px;font-family:var(--font-mono)"></div>
+      </div>
+      <button class="close-btn" onclick="closePanel('je-panel')">✕</button>
+    </div>
+    <div class="panel-body">
+      <div style="margin-bottom:16px">
+        <div class="text-xs text-muted" style="text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:5px">Descripción</div>
+        <div id="jp-desc" style="font-size:13.5px;line-height:1.7"></div>
+      </div>
+      <div style="margin-bottom:16px">
+        <div class="flex-between" style="margin-bottom:6px">
+          <div class="text-xs text-muted" style="text-transform:uppercase;letter-spacing:1px;font-weight:700">Asiento contable</div>
+          <span id="jp-conf"></span>
+        </div>
+        <div id="jp-lines"></div>
+      </div>
+      <div id="jp-block"></div>
+      <div>
+        <div class="text-xs text-muted" style="text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px">Notas del revisor</div>
+        <textarea style="width:100%;padding:8px 12px;border:1.5px solid var(--light-gray);border-radius:8px;font-size:13px;resize:vertical;outline:none" rows="3" placeholder="Opcional…"></textarea>
+      </div>
+    </div>
+    <div class="panel-ftr" id="jp-ftr">
+      <button class="btn btn-ghost btn-sm" onclick="closePanel('je-panel')">Cerrar</button>
+      <button class="btn btn-secondary btn-sm">Modificar y aprobar</button>
+      <button class="btn btn-approve btn-sm">✓ Aprobar comprobante</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── Data ── */
+const EXC = [
+  {id:'exc-001',subtype:'tax.retefuente_missed',status:'pending',priority:'critical',title:'Retefuente no aplicada — Seguridad Privada XYZ',description:'Pago de COP 800.000 a proveedor de vigilancia sin retención en la fuente (4%). Exposición fiscal: COP 32.000.',rec:'Registrar pasivo por retefuente pendiente COP 32.000. Notificar al cliente para corrección en próximo pago.',conf:0.96,amount:32000,payload:{vendor:'Seguridad Privada XYZ',pago:'COP 800.000',tasa:'4%',retefuente_perdida:'COP 32.000'}},
+  {id:'exc-002',subtype:'revenue.pms_alegra_gap',status:'in_review',priority:'critical',title:'Reserva Booking sin factura — Laura Martínez',description:'Reserva en LobbyPMS (checkout 28/03/2026) de COP 620.000 sin factura en Alegra.',rec:'Generar factura en Alegra por COP 620.000 (Booking.com, Modelo Factura Mensual). Verificar accrual comisión.',conf:0.91,amount:620000,payload:{huésped:'Laura Martínez',monto:'COP 620.000',canal:'Booking.com',checkout:'28/03/2026'}},
+  {id:'exc-003',subtype:'receipt.recoverable_candidate',status:'pending',priority:'high',title:'Documento soporte pendiente — Ferretería El Tornillo',description:'Compra a no-obligado a facturar (COP 215.000). IVA recuperable COP 34.412 no reclamado.',rec:'Generar documento soporte electrónico. IVA recuperable: COP 34.412. Impacto si no se recupera: ~COP 75.250.',conf:0.88,amount:215000,payload:{proveedor:'Ferretería El Tornillo',nit:'901234567-1',monto:'COP 215.000',iva_recuperable:'COP 34.412'}},
+  {id:'exc-004',subtype:'bank_rec.unmatched_credit',status:'pending',priority:'critical',title:'Crédito bancario sin identificar — COP 1.450.000',description:'Crédito Bancolombia 15/03/2026 de COP 1.450.000. Descripción: "TRANSF MÓVIL". Sin contrapartida en Alegra.',rec:'No identificado automáticamente (38%). Posible: anticipo grupal, pago Airbnb, o transferencia propietario.',conf:0.38,amount:1450000,payload:{banco:'Bancolombia',fecha:'15/03/2026',monto:'COP 1.450.000',descripción:'TRANSF MÓVIL'}},
+  {id:'exc-005',subtype:'revenue.phantom_commission_delta',status:'pending',priority:'high',title:'Gross-up requerido — Hostelworld (Modelo Phantom)',description:'Hostelworld retuvo comisión COP 250.000. Ingreso registrado: COP 1.250.000 (neto). Debe ser: COP 1.500.000 (bruto).',rec:'Registrar ingreso bruto COP 1.500.000 + gasto comisión COP 250.000 con documento soporte.',conf:0.94,amount:1500000,payload:{canal:'Hostelworld',bruto:'COP 1.500.000',comisión:'COP 250.000',registrado:'COP 1.250.000'}},
+  {id:'exc-006',subtype:'bank_rec.unmatched_debit',status:'in_review',priority:'high',title:'Débito sin contabilizar — Servicios Públicos',description:'Débito ACH 18/03/2026 COP 87.500. Descripción: "PAGO SERV PUBLICOS ACH". Sin entrada en Alegra.',rec:'Cuenta sugerida: 5215 (Servicios Públicos). Confianza 71%. Historial: feb/2026 COP 82.000 → misma cuenta.',conf:0.71,amount:87500,payload:{banco:'Bancolombia',fecha:'18/03/2026',monto:'COP 87.500',cuenta_sugerida:'5215'}},
+  {id:'exc-007',subtype:'payroll.provision_drift',status:'pending',priority:'high',title:'Drift cesantías — COP 280.000',description:'Provisiones individuales de cesantías difieren del saldo Alegra en COP 280.000 (umbral: COP 100.000).',rec:'Revisar Yaritza González — posible divisor 31 días vs. 30 estatutario (Art. 134 CST).',conf:0.82,amount:280000,payload:{concepto:'Cesantías',motor:'COP 4.820.000',alegra:'COP 5.100.000',diferencia:'COP 280.000'}},
+  {id:'exc-008',subtype:'receipt.ocr_low_confidence',status:'needs_info',priority:'medium',title:'OCR baja confianza — NIT proveedor',description:'Factura COP 340.000. NIT extraído con confianza 61% (umbral: 75%). Total y fecha OK.',rec:'Confirmar NIT. Valor extraído: 890.123.456-7 (puede ser 890.123.456-1).',conf:0.61,amount:340000,payload:{monto:'COP 340.000',nit_extraído:'890.123.456-7',confianza_nit:'61%'}},
+];
+const JES = [
+  {id:'je-001',subtype:'je.gmf_trueup',status:'pending',priority:'medium',title:'Ajuste GMF — Marzo 2026',desc:'Ajuste mensual Gravamen Movimientos Financieros. Calculado sobre movimientos totales del mes.',conf:0.99,lines:[{ac:'5115',name:'Gravamen Movimientos Financieros',debit:48200,credit:null,desc:'GMF marzo 2026'},{ac:'2365',name:'GMF por Pagar',debit:null,credit:48200,desc:'GMF marzo 2026'}]},
+  {id:'je-002',subtype:'je.ota_accrual.monthly_invoice',status:'approved',priority:'high',title:'Accrual comisión Booking.com — Marzo 2026',desc:'Accrual comisión Booking.com (Modelo Factura Mensual). Devengada en marzo, factura llega en abril.',conf:0.97,lines:[{ac:'5305',name:'Comisiones OTA — Rooms',debit:892000,credit:null,desc:'Comisión Booking.com marzo 2026'},{ac:'2805',name:'Comisiones OTA por Pagar',debit:null,credit:892000,desc:'Comisión Booking.com marzo 2026'}]},
+  {id:'je-003',subtype:'je.prestaciones_trueup',status:'pending',priority:'high',title:'True-up cesantías — Marzo 2026',desc:'Ajuste provisión cesantías. Divisor corregido a 30 (Art. 134 CST). Corrección drift COP 280.000.',conf:0.89,lines:[{ac:'5210',name:'Gasto Cesantías',debit:280000,credit:null,desc:'Corrección drift cesantías marzo 2026'},{ac:'2610',name:'Provisión Cesantías',debit:null,credit:280000,desc:'Corrección drift cesantías marzo 2026'}]},
+  {id:'je-004',subtype:'je.ica_accrual',status:'pending',priority:'medium',title:'Accrual ICA — Marzo 2026',desc:'Accrual ICA Santa Marta. Tarifa 5.5×1000. Base: ingresos brutos del mes.',conf:0.95,lines:[{ac:'5410',name:'Impuesto Industria y Comercio',debit:412500,credit:null,desc:'ICA accrual marzo 2026'},{ac:'2404',name:'ICA por Pagar',debit:null,credit:412500,desc:'ICA accrual marzo 2026'}]},
+  {id:'je-005',subtype:'je.ota_grossup.phantom_commission',status:'blocked',priority:'high',title:'Gross-up Hostelworld — Modelo Phantom',desc:'Bloqueado: requiere resolución de EXC-005 primero.',conf:0.94,blocked_by:'exc-005',lines:[{ac:'4105',name:'Ingresos Habitaciones — OTA',debit:null,credit:250000,desc:'Gross-up ingreso bruto Hostelworld'},{ac:'5305',name:'Comisiones OTA — Rooms',debit:250000,credit:null,desc:'Comisión Hostelworld (doc. soporte requerido)'}]},
+];
+
+/* ── Helpers ── */
+function fmtCOP(n){return 'COP '+(Math.abs(n)||0).toLocaleString('es-CO')}
+function cbar(s){const p=Math.round(s*100);const c=p>=85?'hc':p>=65?'mc':'lc';return`<div class="cbar"><div class="ctrack"><div class="cfill ${c}" style="width:${p}%"></div></div><span class="cpct">${p}%</span></div>`}
+function pbadge(p){return`<span class="badge badge-${p}">${p.toUpperCase()}</span>`}
+function sbadge(s){const m={pending:'Pendiente',in_review:'En revisión',approved:'Aprobado',rejected:'Rechazado',posted:'Registrado',blocked:'Bloqueado',needs_info:'Necesita info'};return`<span class="badge badge-${s}">${m[s]||s}</span>`}
+
+/* ── Navigation ── */
+const TITLES = {dashboard:'Resumen',tracker:'Seguimiento de Cierre',exceptions:'Excepciones — Marzo 2026',jes:'Comprobantes — Marzo 2026',deliverables:'Entregables',chat:'Chat con el Agente'};
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active');s.style.display='';});
+  const s = document.getElementById('screen-'+name);
+  if(s){s.classList.add('active'); if(name==='chat') s.style.display='flex';}
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const ni = document.getElementById('nav-'+name);
+  if(ni) ni.classList.add('active');
+  document.getElementById('top-title').textContent = TITLES[name]||name;
+  if(name==='exceptions') renderExc('all');
+  if(name==='jes') renderJEs('all');
+}
+
+/* ── Exception table ── */
+function renderExc(filter) {
+  const rows = filter==='all' ? EXC : filter==='pending' ? EXC.filter(e=>e.status==='pending') : EXC.filter(e=>e.priority===filter);
+  document.getElementById('exc-tbody').innerHTML = rows.map(e=>`
+    <tr onclick="openExcPanel('${e.id}')">
+      <td><span class="pdot ${e.priority}"></span></td>
+      <td><div style="font-weight:600;font-size:13px;color:var(--midnight)">${e.title}</div><div class="text-xs text-muted" style="font-family:var(--font-mono);margin-top:1px">${e.subtype}</div></td>
+      <td>${pbadge(e.priority)}</td>
+      <td>${sbadge(e.status)}</td>
+      <td>${cbar(e.conf)}</td>
+      <td class="mono" style="font-size:12px">${fmtCOP(e.amount)}</td>
+      <td><div style="display:flex;gap:5px"><button class="btn btn-approve btn-xs" onclick="event.stopPropagation();alert('✓ Aprobado (demo)')">✓</button><button class="btn btn-reject btn-xs" onclick="event.stopPropagation();">✕</button></div></td>
+    </tr>`).join('');
+  document.querySelectorAll('#exc-filters .chip').forEach(c=>{
+    c.onclick = function(){
+      document.querySelectorAll('#exc-filters .chip').forEach(x=>x.classList.remove('active'));
+      this.classList.add('active'); renderExc(this.dataset.f);
+    };
+  });
+}
+
+function openExcPanel(id) {
+  const e = EXC.find(x=>x.id===id); if(!e) return;
+  document.getElementById('p-badges').innerHTML = pbadge(e.priority)+sbadge(e.status);
+  document.getElementById('p-title').textContent = e.title;
+  document.getElementById('p-subtype').textContent = e.subtype;
+  document.getElementById('p-desc').textContent = e.description;
+  document.getElementById('p-rec').textContent = e.rec;
+  document.getElementById('p-conf').innerHTML = cbar(e.conf);
+  const rows = Object.entries(e.payload).map(([k,v])=>`<div class="flex-between" style="padding:5px 0;border-bottom:1px solid var(--light-gray)"><span class="text-xs text-muted" style="text-transform:uppercase;letter-spacing:.8px;font-weight:700">${k}</span><span class="mono text-sm">${v}</span></div>`).join('');
+  document.getElementById('p-payload').innerHTML=`<div class="text-xs text-muted" style="text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px">Datos</div><div style="background:var(--white);border:1px solid var(--light-gray);border-radius:8px;padding:2px 12px">${rows}</div>`;
+  document.getElementById('exc-panel').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+
+/* ── JE cards ── */
+function renderJEs(filter) {
+  const items = filter==='all' ? JES : JES.filter(j=>j.status===filter);
+  document.getElementById('je-list').innerHTML = items.map(j=>{
+    const tot = (j.lines||[]).reduce((s,l)=>s+(l.debit||0),0);
+    const blocked = j.status==='blocked';
+    return`<div class="card" style="${blocked?'opacity:.6':''}" onclick="openJEPanel('${j.id}')" style="cursor:pointer">
+      <div style="padding:14px 18px;cursor:pointer">
+        <div class="flex-between">
+          <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
+            <span class="pdot ${j.priority}"></span>
+            <div style="min-width:0"><div style="font-weight:600;font-size:13.5px;color:var(--midnight)">${j.title}</div><div class="text-xs text-muted" style="font-family:var(--font-mono);margin-top:1px">${j.subtype}</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+            ${cbar(j.conf)} ${sbadge(j.status)}
+            <span class="mono text-sm" style="color:var(--midnight);min-width:90px;text-align:right">${fmtCOP(tot)}</span>
+            ${blocked?'':`<button class="btn btn-approve btn-xs" onclick="event.stopPropagation();alert('✓ JE aprobado (demo)')">✓ Aprobar</button>`}
+          </div>
+        </div>
+        ${blocked&&j.blocked_by?`<div class="alert alert-warning" style="margin-top:10px;margin-bottom:0;padding:7px 11px;font-size:12px">⛔ Bloqueado hasta resolver excepción: ${j.blocked_by}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+  document.querySelectorAll('#je-tabs .tab').forEach(t=>{
+    t.onclick=function(){
+      document.querySelectorAll('#je-tabs .tab').forEach(x=>x.classList.remove('active'));
+      this.classList.add('active'); renderJEs(this.dataset.f||'all');
+    };
+  });
+}
+
+function openJEPanel(id) {
+  const j = JES.find(x=>x.id===id); if(!j) return;
+  document.getElementById('jp-badges').innerHTML = pbadge(j.priority)+sbadge(j.status);
+  document.getElementById('jp-title').textContent = j.title;
+  document.getElementById('jp-subtype').textContent = j.subtype;
+  document.getElementById('jp-desc').textContent = j.desc;
+  document.getElementById('jp-conf').innerHTML = cbar(j.conf);
+  let deb=0,cred=0;
+  const lrows=(j.lines||[]).map(l=>{if(l.debit)deb+=l.debit;if(l.credit)cred+=l.credit;return`<tr><td class="mono" style="font-size:11px">${l.ac}</td><td>${l.name}</td><td>${l.desc}</td><td class="r">${l.debit?fmtCOP(l.debit):'—'}</td><td class="r">${l.credit?fmtCOP(l.credit):'—'}</td></tr>`;}).join('');
+  document.getElementById('jp-lines').innerHTML=`<table class="je-table"><thead><tr><th>Cta.</th><th>Nombre</th><th>Descripción</th><th class="r">Débito</th><th class="r">Crédito</th></tr></thead><tbody>${lrows}</tbody><tfoot><tr><td colspan="3"><span class="je-ok">✓ Balanceado</span></td><td class="r">${fmtCOP(deb)}</td><td class="r">${fmtCOP(cred)}</td></tr></tfoot></table>`;
+  const blk = document.getElementById('jp-block');
+  if(j.blocked_by){blk.innerHTML=`<div class="alert alert-warning" style="margin-bottom:14px">⛔ Bloqueado hasta resolver: ${j.blocked_by}</div>`;document.getElementById('jp-ftr').style.display='none';}
+  else{blk.innerHTML='';document.getElementById('jp-ftr').style.display='flex';}
+  document.getElementById('je-panel').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+
+function closePanel(id){
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow='';
+}
+
+/* ── Chat ── */
+function fillChat(btn){document.getElementById('chat-inp').value=btn.textContent;document.getElementById('chat-inp').focus();}
+function sendChat(){
+  const inp=document.getElementById('chat-inp'),txt=inp.value.trim();
+  if(!txt)return;
+  const msgs=document.getElementById('chat-msgs');
+  msgs.innerHTML+=`<div style="align-self:flex-end"><div class="bubble user">${txt}</div></div>`;
+  inp.value='';
+  setTimeout(()=>{
+    msgs.innerHTML+=`<div><div class="bubble agent"><div class="bmeta">Agente ContabIA</div>Procesando su consulta sobre los libros de Cantamar Beach Hostel… En producción, el agente respondería con datos reales de Alegra y LobbyPMS.</div></div>`;
+    msgs.scrollTop=msgs.scrollHeight;
+  },700);
+  msgs.scrollTop=msgs.scrollHeight;
+}
+
+/* Init */
+renderExc('all');
+renderJEs('all');
+</script>
+
+</body>
+</html>
