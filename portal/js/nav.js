@@ -59,8 +59,40 @@ function renderSidebar(activeHref) {
 // Auto-inject sidebar on pages that have id="sidebar-mount"
 document.addEventListener('DOMContentLoaded', () => {
   const mount = document.getElementById('sidebar-mount');
-  if (mount) {
-    const page = window.location.pathname.split('/').pop() || 'index.html';
-    mount.innerHTML = renderSidebar(page);
+  if (!mount) return;
+
+  const page = window.location.pathname.split('/').pop() || 'index.html';
+  mount.innerHTML = renderSidebar(page);
+
+  // --- Mobile nav: hamburger button + backdrop (hidden on desktop via CSS) ---
+  if (!document.getElementById('sidebar-toggle')) {
+    const toggle = document.createElement('button');
+    toggle.id = 'sidebar-toggle';
+    toggle.className = 'sidebar-toggle';
+    toggle.setAttribute('aria-label', 'Abrir menú');
+    toggle.innerHTML = '<span></span><span></span><span></span>';
+    document.body.appendChild(toggle);
   }
+  if (!document.getElementById('sidebar-backdrop')) {
+    const backdrop = document.createElement('div');
+    backdrop.id = 'sidebar-backdrop';
+    backdrop.className = 'sidebar-backdrop';
+    document.body.appendChild(backdrop);
+  }
+
+  const sidebar  = document.querySelector('.sidebar');
+  const toggle   = document.getElementById('sidebar-toggle');
+  const backdrop = document.getElementById('sidebar-backdrop');
+
+  const openSidebar  = () => { sidebar.classList.add('open');  backdrop.classList.add('open');  document.body.classList.add('no-scroll'); };
+  const closeSidebar = () => { sidebar.classList.remove('open'); backdrop.classList.remove('open'); document.body.classList.remove('no-scroll'); };
+
+  toggle.addEventListener('click', () => {
+    sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+  });
+  backdrop.addEventListener('click', closeSidebar);
+  // Close after tapping any nav link (so navigation feels clean on mobile)
+  sidebar.querySelectorAll('.nav-item').forEach(a => a.addEventListener('click', closeSidebar));
+  // Close on Escape
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSidebar(); });
 });
