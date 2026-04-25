@@ -50,7 +50,7 @@ function renderSidebar(activeHref) {
   const meta = e.meta;
   const badges = navBadgeCounts();
   const entities = listEntitiesForUser();
-  const user = DATA.user;
+  const user = currentUser();
 
   /* nav sections, role-filtered */
   const navHtml = NAV_MODEL.map(sec => {

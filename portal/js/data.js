@@ -17,17 +17,31 @@
 
 const DATA = {
   user: {
+    /* legacy/default — actual user is now resolved per (entity, role) via USERS table below */
     id: 'user-kc',
     name: 'Kevin Carey',
     initials: 'KC',
     email: 'kevin@cantamar.co',
-    /* role defaults; overridden by login landing → sessionStorage */
     default_entity: 'cantamar-001',
     default_role: 'owner',
-    /* per-entity role mapping. one user, multiple NITs, one role per. */
+    /* which entities the OWNER user has access to (entity dropdown filter) */
     roles: {
       'cantamar-001': 'owner',
       'sonata-001':   'owner',
+    },
+  },
+
+  /* per-(entity, role) user identity. Drives the nav user chip. */
+  users: {
+    'cantamar-001': {
+      owner:      { name: 'Kevin Carey',      initials: 'KC', email: 'kevin@cantamar.co'   },
+      accountant: { name: 'Edwin Restrepo',   initials: 'ER', email: 'edwin@balinessa.co'  },
+      manager:    { name: 'Yaritza González', initials: 'YG', email: 'yaritza@cantamar.co' },
+    },
+    'sonata-001': {
+      owner:      { name: 'Kevin Carey',      initials: 'KC', email: 'kevin@cantamar.co'        },
+      accountant: { name: 'Edwin Restrepo',   initials: 'ER', email: 'edwin@balinessa.co'       },
+      manager:    { name: 'Nicolás Giraldo',  initials: 'NG', email: 'nick@tayronasailing.co'   },
     },
   },
 
@@ -627,6 +641,12 @@ function primaryCTA() {
 function actionQueue() {
   const e = currentEntityData();
   return e.action_queue[currentRole()] || e.action_queue.owner;
+}
+function currentUser() {
+  const eid  = currentEntityId();
+  const role = currentRole();
+  return (DATA.users[eid] && DATA.users[eid][role])
+      || { name: 'Usuario', initials: '?', email: '' };
 }
 
 /* COP formatter — periods as thousands separators */

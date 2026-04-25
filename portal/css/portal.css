@@ -55,7 +55,7 @@ input, select, textarea { font-family: var(--font-body); }
 img { max-width: 100%; display: block; }
 
 /* ============ SHELL ============ */
-.shell {
+.shell, .portal-shell {
   display: grid;
   grid-template-columns: var(--sidebar-w) 1fr;
   min-height: 100vh;
@@ -255,7 +255,7 @@ img { max-width: 100%; display: block; }
 .user-chip .signout:hover { color: var(--terracotta); }
 
 /* ============ MAIN ============ */
-.main { display: flex; flex-direction: column; min-height: 100vh; }
+.main, .main-content { display: flex; flex-direction: column; min-height: 100vh; }
 
 .topbar {
   background: var(--white);
