@@ -1,70 +1,197 @@
 /* ============================================================
    ContabIA Portal — nav.js
-   Injects shared sidebar into any page
+   Renders the shared shell: left nav (11 items, 4 sections,
+   role-filtered) + topbar (connector strip · lang toggle · CTA).
+   Auto-injects on any page that has #sidebar-mount + #topbar-mount.
+
+   Depends on data.js (currentRole, currentEntityData, etc.)
    ============================================================ */
 
+/* ------------------------------------------------------------
+   Nav model — single source of truth for the 11 items.
+   roles: array of roles allowed to see this item.
+   ------------------------------------------------------------ */
+const NAV_MODEL = [
+  { section: 'Principal', items: [
+    { id: 'resumen',         label: 'Resumen',                 href: 'index.html',           roles: ['owner','accountant'] },
+    { id: 'tracker',         label: 'Seguimiento de Cierre',   href: 'tracker.html',         roles: ['owner','accountant'] },
+  ]},
+  { section: 'Revisión', items: [
+    { id: 'exceptions',      label: 'Excepciones',             href: 'exceptions.html',      roles: ['owner','accountant'], badge: 'exceptions' },
+    { id: 'journal-entries', label: 'Comprobantes (JEs)',      href: 'journal-entries.html', roles: ['owner','accountant'], badge: 'jes', badgeClass: 'warn' },
+    { id: 'reconciliacion',  label: 'Reconciliación',          href: 'reconciliacion.html',  roles: ['owner','accountant'] },
+    { id: 'nomina',          label: 'Nómina',                  href: 'nomina.html',          roles: ['owner','accountant','manager'] },
+    { id: 'tributario',      label: 'Tributario',              href: 'tributario.html',      roles: ['owner','accountant'] },
+  ]},
+  { section: 'Resultados', items: [
+    { id: 'deliverables',    label: 'Entregables',             href: 'deliverables.html',    roles: ['owner','accountant'] },
+    { id: 'auditoria',       label: 'Auditoría',               href: 'auditoria.html',       roles: ['owner','accountant'] },
+  ]},
+  { section: 'Sistema', items: [
+    { id: 'configuracion',   label: 'Configuración',           href: 'configuracion.html',   roles: ['owner','accountant'] },
+    { id: 'chat',            label: 'Chat con el Agente',      href: 'chat.html',            roles: ['owner','accountant','manager'] },
+  ]},
+];
+
+/* role labels (Spanish) */
+const ROLE_LABELS = {
+  owner:      'Dueño',
+  accountant: 'Contador',
+  manager:    'Gerente',
+  internal:   'ContabIA',
+};
+
+/* ------------------------------------------------------------
+   Sidebar render
+   ------------------------------------------------------------ */
 function renderSidebar(activeHref) {
+  const role = currentRole();
+  const e    = currentEntityData();
+  const meta = e.meta;
+  const badges = navBadgeCounts();
+  const entities = listEntitiesForUser();
+  const user = DATA.user;
+
+  /* nav sections, role-filtered */
+  const navHtml = NAV_MODEL.map(sec => {
+    const items = sec.items.filter(i => i.roles.includes(role));
+    if (items.length === 0) return '';
+    const itemsHtml = items.map(i => {
+      const active = (i.href === activeHref) ? ' active' : '';
+      let badge = '';
+      if (i.badge && badges[i.badge] != null && badges[i.badge] > 0) {
+        const cls = i.badgeClass ? ` ${i.badgeClass}` : '';
+        badge = `<span class="nav-badge${cls}">${badges[i.badge]}</span>`;
+      }
+      return `<a href="${i.href}" class="nav-item${active}">${i.label}${badge}</a>`;
+    }).join('');
+    return `
+      <div class="nav-section-label">${sec.section}</div>
+      ${itemsHtml}`;
+  }).join('');
+
+  /* entity dropdown */
+  const entitiesHtml = entities.map(ent => {
+    const active = (ent.id === currentEntityId()) ? ' active' : '';
+    return `
+      <div class="entity-option${active}" onclick="event.stopPropagation(); setEntity('${ent.id}')">
+        <div class="ent-name">${ent.name}</div>
+        <div class="ent-meta">${ent.legal_name} · NIT ${ent.nit}</div>
+      </div>`;
+  }).join('');
+
   return `
-  <aside class="sidebar">
-    <div class="sidebar-logo">
-      <div class="wordmark">Contab<span>IA</span></div>
+  <nav class="nav">
+    <div class="nav-brand">
+      <div class="logo">Contab<span class="ia">IA</span></div>
       <div class="tagline">Su agente cierra sus libros.</div>
     </div>
-    <div class="sidebar-client">
-      <div class="client-name">Cantamar Beach Hostel</div>
-      <span class="period-badge">Marzo 2026</span>
+
+    <div class="entity-switcher" id="entity-switcher" onclick="toggleEntityDropdown(event)">
+      <div class="label">Entidad activa</div>
+      <div class="name">${meta.name} <span class="chevron">▾</span></div>
+      <div class="period">${meta.period.toUpperCase()}</div>
+      <div class="entity-dropdown" id="entity-dropdown">
+        ${entitiesHtml}
+      </div>
     </div>
-    <nav class="sidebar-nav">
-      <div class="nav-section-label">Principal</div>
-      <a href="index.html" class="nav-item${activeHref==='index.html'?' active':''}">
-        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-        Resumen
-      </a>
-      <a href="tracker.html" class="nav-item${activeHref==='tracker.html'?' active':''}">
-        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
-        Seguimiento de Cierre
-      </a>
 
-      <div class="nav-section-label">Revisión</div>
-      <a href="exceptions.html" class="nav-item${activeHref==='exceptions.html'?' active':''}">
-        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-        Excepciones
-        <span class="nav-badge critical">7</span>
-      </a>
-      <a href="journal-entries.html" class="nav-item${activeHref==='journal-entries.html'?' active':''}">
-        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-        Comprobantes (JEs)
-        <span class="nav-badge">5</span>
-      </a>
+    ${navHtml}
 
-      <div class="nav-section-label">Informes</div>
-      <a href="deliverables.html" class="nav-item${activeHref==='deliverables.html'?' active':''}">
-        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-        Entregables
-      </a>
-
-      <div class="nav-section-label">Agente</div>
-      <a href="chat.html" class="nav-item${activeHref==='chat.html'?' active':''}">
-        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
-        Chat con el Agente
-      </a>
-    </nav>
-    <div class="sidebar-footer">
-      <div class="user-name">Kevin Carey</div>
-      <div>Propietario · <a href="login.html" style="color:rgba(255,248,240,.4)">Salir</a></div>
+    <div class="nav-footer">
+      <div class="user-chip">
+        <div class="avatar">${user.initials}</div>
+        <div class="meta">
+          <div class="name">${user.name}</div>
+          <div class="role">${ROLE_LABELS[role]} · ${meta.name.split(' ')[0]}</div>
+          <a href="login.html" class="signout" onclick="signOut(event)">Cerrar sesión</a>
+        </div>
+      </div>
     </div>
-  </aside>`;
+  </nav>`;
 }
 
-// Auto-inject sidebar on pages that have id="sidebar-mount"
+/* ------------------------------------------------------------
+   Topbar render — connector strip + lang toggle + CTA
+   ------------------------------------------------------------ */
+function renderTopbar() {
+  const e = currentEntityData();
+  const cta = primaryCTA();
+
+  const connHtml = e.connectors.map(c => {
+    const cls = c.status === 'ok' ? '' : c.status === 'warn' ? ' warn' : ' fail';
+    return `<div class="conn" title="Última sincronización: ${c.last_sync}" onclick="location.href='configuracion.html?conn=${c.id}'">
+      <span class="dot${cls}"></span><span>${c.name}</span>
+    </div>`;
+  }).join('');
+
+  const ctaHtml = cta ? `<button class="btn btn-primary" onclick="location.href='${cta.href}'">${cta.text}</button>` : '';
+
+  return `
+    <div class="topbar">
+      <div class="connector-strip">${connHtml}</div>
+      <div class="topbar-right">
+        <div class="lang-toggle" onclick="toggleLang()">ES · EN</div>
+        ${ctaHtml}
+      </div>
+    </div>`;
+}
+
+/* ------------------------------------------------------------
+   Interactions
+   ------------------------------------------------------------ */
+function toggleEntityDropdown(ev) {
+  if (ev) ev.stopPropagation();
+  const dd = document.getElementById('entity-dropdown');
+  if (dd) dd.classList.toggle('open');
+}
+function closeEntityDropdown() {
+  const dd = document.getElementById('entity-dropdown');
+  if (dd) dd.classList.remove('open');
+}
+function toggleLang() {
+  const cur = sessionStorage.getItem('contabia_lang') || 'es';
+  const next = cur === 'es' ? 'en' : 'es';
+  sessionStorage.setItem('contabia_lang', next);
+  /* EN is UI-only; data stays Spanish. v1: visual feedback only. */
+  document.querySelectorAll('.lang-toggle').forEach(t => {
+    t.textContent = next === 'es' ? 'ES · EN' : 'EN · ES';
+  });
+}
+function signOut(ev) {
+  ev.preventDefault();
+  sessionStorage.removeItem('contabia_auth');
+  sessionStorage.removeItem('contabia_role');
+  sessionStorage.removeItem('contabia_entity');
+  location.href = 'login.html';
+}
+
+/* ------------------------------------------------------------
+   Auto-inject + mobile hamburger
+   ------------------------------------------------------------ */
 document.addEventListener('DOMContentLoaded', () => {
-  const mount = document.getElementById('sidebar-mount');
-  if (!mount) return;
+  const sidebarMount = document.getElementById('sidebar-mount');
+  const topbarMount  = document.getElementById('topbar-mount');
+  if (!sidebarMount) return;
 
   const page = window.location.pathname.split('/').pop() || 'index.html';
-  mount.innerHTML = renderSidebar(page);
 
-  // --- Mobile nav: hamburger button + backdrop (hidden on desktop via CSS) ---
+  /* manager-only enforcement: redirect off pages they shouldn't see */
+  const role = currentRole();
+  if (role === 'manager') {
+    const allowedHrefs = NAV_MODEL.flatMap(s => s.items)
+      .filter(i => i.roles.includes('manager'))
+      .map(i => i.href);
+    if (!allowedHrefs.includes(page) && page !== 'login.html' && page !== 'login-contador.html' && page !== 'login-gerente.html') {
+      location.replace('nomina.html');
+      return;
+    }
+  }
+
+  sidebarMount.innerHTML = renderSidebar(page);
+  if (topbarMount) topbarMount.innerHTML = renderTopbar();
+
+  /* mobile hamburger (hidden on desktop via CSS) */
   if (!document.getElementById('sidebar-toggle')) {
     const toggle = document.createElement('button');
     toggle.id = 'sidebar-toggle';
@@ -79,20 +206,22 @@ document.addEventListener('DOMContentLoaded', () => {
     backdrop.className = 'sidebar-backdrop';
     document.body.appendChild(backdrop);
   }
-
-  const sidebar  = document.querySelector('.sidebar');
-  const toggle   = document.getElementById('sidebar-toggle');
+  const sidebar  = document.querySelector('.nav');
+  const toggleEl = document.getElementById('sidebar-toggle');
   const backdrop = document.getElementById('sidebar-backdrop');
+  const open  = () => { sidebar.classList.add('open');  backdrop.classList.add('open');  document.body.classList.add('no-scroll'); };
+  const close = () => { sidebar.classList.remove('open'); backdrop.classList.remove('open'); document.body.classList.remove('no-scroll'); };
+  toggleEl.addEventListener('click', () => sidebar.classList.contains('open') ? close() : open());
+  backdrop.addEventListener('click', close);
+  sidebar.querySelectorAll('.nav-item').forEach(a => a.addEventListener('click', close));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
 
-  const openSidebar  = () => { sidebar.classList.add('open');  backdrop.classList.add('open');  document.body.classList.add('no-scroll'); };
-  const closeSidebar = () => { sidebar.classList.remove('open'); backdrop.classList.remove('open'); document.body.classList.remove('no-scroll'); };
+  /* close entity dropdown on outside click */
+  document.addEventListener('click', closeEntityDropdown);
 
-  toggle.addEventListener('click', () => {
-    sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+  /* restore lang state */
+  const lang = sessionStorage.getItem('contabia_lang') || 'es';
+  document.querySelectorAll('.lang-toggle').forEach(t => {
+    t.textContent = lang === 'es' ? 'ES · EN' : 'EN · ES';
   });
-  backdrop.addEventListener('click', closeSidebar);
-  // Close after tapping any nav link (so navigation feels clean on mobile)
-  sidebar.querySelectorAll('.nav-item').forEach(a => a.addEventListener('click', closeSidebar));
-  // Close on Escape
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSidebar(); });
 });

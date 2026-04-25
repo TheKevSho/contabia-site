@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ContabIA — Iniciar sesión</title>
+  <title>ContabIA — Iniciar sesión · Gerente</title>
   <link rel="stylesheet" href="css/portal.css">
 </head>
 <body>
@@ -11,11 +11,11 @@
   <div class="login-card">
     <div class="login-logo">Contab<span>IA</span></div>
     <div class="login-tagline">Su agente cierra sus libros.</div>
-    <div class="login-role-pill">Portal del <span class="accent">Dueño</span></div>
+    <div class="login-role-pill">Portal del <span class="accent">Gerente</span></div>
 
     <div class="form-group">
       <label class="form-label">Correo electrónico</label>
-      <input type="email" id="email" class="form-input" placeholder="usted@empresa.co" value="kevin@cantamar.co" autocomplete="email">
+      <input type="email" id="email" class="form-input" placeholder="usted@empresa.co" value="yaritza@cantamar.co" autocomplete="email">
     </div>
     <div class="form-group">
       <label class="form-label">Contraseña</label>
@@ -36,7 +36,7 @@
 
     <div class="login-switch">
       Soy
-      <a href="login-contador.html">Contador</a>·<a href="login-gerente.html">Gerente</a>
+      <a href="login.html">Dueño</a>·<a href="login-contador.html">Contador</a>
     </div>
   </div>
 </div>
@@ -44,8 +44,8 @@
 <script>
   (function() {
     const PASSWORD = 'Scrooge';
-    const ROLE     = 'owner';
-    const REDIRECT = 'index.html';
+    const ROLE     = 'manager';
+    const REDIRECT = 'nomina.html';
 
     function attemptLogin() {
       const pw = document.getElementById('password').value;
