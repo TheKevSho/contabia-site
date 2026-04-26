@@ -3,9 +3,137 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%231B2A4A%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27Georgia%27 font-size=%2718%27 fill=%27%23D4704A%27 text-anchor=%27middle%27 font-weight=%27bold%27%3EC%3C/text%3E%3C/svg%3E">
   <title>ContabIA — Reconciliación</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231B2A4A'/%3E%3Ctext x='16' y='22' font-family='Georgia' font-size='18' fill='%23D4704A' text-anchor='middle' font-weight='bold'%3EC%3C/text%3E%3C/svg%3E">
   <link rel="stylesheet" href="css/portal.css">
+  <style>
+    /* Page-specific layout */
+    .three-way-hero {
+      background: var(--white);
+      border: 1px solid var(--light-gray);
+      border-radius: var(--radius-xl);
+      padding: 30px;
+      margin-bottom: 16px;
+    }
+    .three-way-hero .hero-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 24px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .three-way-hero .hero-head h2 {
+      font-family: var(--font-display);
+      color: var(--midnight);
+      font-size: 26px;
+    }
+    .three-way-hero .hero-head .sub {
+      color: var(--warm-gray);
+      font-size: 13px;
+      margin-top: 4px;
+    }
+    .three-way-hero .three-way { margin-bottom: 18px; }
+    .three-way-hero .three-way-leg { padding: 18px; }
+    .three-way-hero .three-way-leg .leg-value { font-size: 22px; }
+
+    .ledger-table th, .ledger-table td {
+      padding: 12px 14px;
+      font-size: 13.5px;
+    }
+    .ledger-table .mono { font-family: var(--font-mono); }
+    .ledger-pill {
+      font-size: 10px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      padding: 4px 9px;
+      border-radius: 12px;
+      font-weight: 700;
+      display: inline-block;
+    }
+    .ledger-pill.ok            { background: #E0F0E5; color: var(--success); }
+    .ledger-pill.variance      { background: #FBE8C9; color: #876022; }
+    .ledger-pill.fe-missing    { background: #F7DCD7; color: var(--critical); }
+    .ledger-pill.bank-pending  { background: #DEEDF7; color: var(--ocean); }
+    .ledger-note {
+      font-size: 12px;
+      color: var(--warm-gray);
+      margin-top: 3px;
+    }
+
+    .bank-card {
+      background: var(--white);
+      border: 1px solid var(--light-gray);
+      border-radius: var(--radius-lg);
+      padding: 22px 24px;
+      margin-bottom: 12px;
+    }
+    .bank-card .head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .bank-card .acct {
+      font-family: var(--font-display);
+      color: var(--midnight);
+      font-size: 18px;
+    }
+    .bank-card .acct .type {
+      font-family: var(--font-body);
+      font-size: 12px;
+      color: var(--warm-gray);
+      font-weight: 400;
+      margin-left: 8px;
+    }
+    .bank-card .balances {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 10px;
+    }
+    .bank-card .bal {
+      background: var(--cream);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+    }
+    .bank-card .bal .label {
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--warm-gray);
+      font-weight: 700;
+    }
+    .bank-card .bal .v {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--midnight);
+      margin-top: 4px;
+    }
+    .bank-card .bal.variance .v { color: var(--critical); }
+    .bank-card .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding-top: 10px;
+      border-top: 1px solid var(--light-gray);
+      font-size: 13px;
+      color: var(--warm-gray);
+    }
+    .bank-card .footer .resolve {
+      color: var(--terracotta);
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    @media (max-width: 768px) {
+      .bank-card .balances { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
 <div class="shell">
@@ -15,32 +143,45 @@
     <div id="topbar-mount"></div>
 
     <div class="content">
+
       <div class="page-head">
         <div class="title-block">
           <h1>Reconciliación</h1>
-          <div class="meta">Conciliación 3 vías · próximamente</div>
+          <div class="meta" id="page-meta">…</div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-secondary" onclick="location.reload()">↻ Actualizar</button>
         </div>
       </div>
 
-      <div class="alert-banner">
-        <div class="alert-text">
-          <div class="icon">i</div>
-          <div class="copy">
-            <strong>Página en construcción.</strong> Esta es la página de conciliación 3 vías (PMS · FE · Banco) y conciliación bancaria por cuenta. Llega en la próxima fase.
-          </div>
-        </div>
+      <!-- 3-way reconciliation hero -->
+      <div class="section-label">Conciliación 3 vías · PMS · FE · Banco</div>
+      <div id="three-way-hero"></div>
+
+      <!-- Drill-down ledger -->
+      <div class="section-label">Detalle por reserva</div>
+      <div class="filter-chips" id="ledger-filters"></div>
+      <div class="panel" style="padding:0;">
+        <table class="data-table ledger-table">
+          <thead>
+            <tr>
+              <th>Reserva</th>
+              <th>Huésped</th>
+              <th>Canal</th>
+              <th class="text-right">PMS</th>
+              <th class="text-right">FE</th>
+              <th class="text-right">Banco</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="ledger-body"></tbody>
+        </table>
       </div>
 
-      <div class="panel">
-        <div class="panel-header"><h3>Vista previa — qué vivirá aquí</h3></div>
-        <ul style="list-style:disc;padding-left:22px;color:var(--charcoal);font-size:14px;line-height:1.8;">
-          <li>Hero de conciliación 3 vías: PMS → FE Emitida → Banco con totales por leg</li>
-          <li>Estado de match (CRUCE OK / VARIANCE) con monto y conteo de items</li>
-          <li>Drill-down ledger por reserva: PMS · FE · Banco · estado</li>
-          <li>Conciliación bancaria por cuenta: Bancolombia, BBVA, etc.</li>
-          <li>Botón Resolver → flujo de resolución de variance</li>
-        </ul>
-      </div>
+      <!-- Bank reconciliation per account -->
+      <div class="section-label">Conciliación bancaria por cuenta</div>
+      <div id="bank-recs"></div>
+
     </div>
   </main>
 </div>
@@ -48,5 +189,143 @@
 <script src="js/data.js"></script>
 <script src="js/nav.js"></script>
 <script src="js/auth.js"></script>
+<script>
+let currentLedgerFilter = 'all';
+
+document.addEventListener('DOMContentLoaded', () => {
+  const e = currentEntityData();
+  const meta = e.meta;
+
+  document.getElementById('page-meta').innerHTML =
+    `${meta.name} · ${meta.period.toLowerCase()} · procesado <strong>${meta.processed_at}</strong>`;
+
+  renderHero(e);
+  renderFilters(e);
+  renderLedger(e);
+  renderBankRecs(e);
+});
+
+function renderHero(e) {
+  const t = e.three_way_rec;
+  const parts = [];
+  t.legs.forEach((l, i) => {
+    parts.push(`
+      <div class="three-way-leg">
+        <div class="leg-label">${l.label}</div>
+        <div class="leg-value">${l.value.toLocaleString('es-CO')}</div>
+        <div class="leg-source">${l.source}</div>
+      </div>`);
+    if (i < t.legs.length - 1) {
+      const a = t.arrows[i] || 'ok';
+      parts.push(`<div class="three-way-arrow ${a==='ok'?'':a}">→</div>`);
+    }
+  });
+  document.getElementById('three-way-hero').innerHTML = `
+    <div class="three-way-hero">
+      <div class="hero-head">
+        <div>
+          <h2>Cruce de marzo</h2>
+          <div class="sub">Cada peso debe aparecer en las tres fuentes. Variances se resuelven antes de cerrar.</div>
+        </div>
+      </div>
+      <div class="three-way">${parts.join('')}</div>
+      <div class="three-way-status ${t.status}">
+        <span>${t.message}</span>
+        <span style="font-weight:700;cursor:pointer" onclick="document.getElementById('ledger-body').scrollIntoView({behavior:'smooth'})">${t.cta}</span>
+      </div>
+    </div>`;
+}
+
+function renderFilters(e) {
+  const ledger = e.three_way_rec.ledger;
+  const counts = {
+    all:            ledger.length,
+    ok:             ledger.filter(r => r.status === 'ok').length,
+    variance:       ledger.filter(r => r.status === 'variance').length,
+    'fe-missing':   ledger.filter(r => r.status === 'fe-missing').length,
+    'bank-pending': ledger.filter(r => r.status === 'bank-pending').length,
+  };
+  const chips = [
+    { key: 'all',          label: 'Todas' },
+    { key: 'variance',     label: 'Variance' },
+    { key: 'fe-missing',   label: 'FE faltante' },
+    { key: 'bank-pending', label: 'Banco pendiente' },
+    { key: 'ok',           label: 'OK' },
+  ];
+  document.getElementById('ledger-filters').innerHTML = chips.map(c => `
+    <div class="filter-chip ${c.key === currentLedgerFilter ? 'active' : ''}"
+         onclick="setLedgerFilter('${c.key}')">${c.label} (${counts[c.key]})</div>
+  `).join('');
+}
+
+function setLedgerFilter(key) {
+  currentLedgerFilter = key;
+  renderFilters(currentEntityData());
+  renderLedger(currentEntityData());
+}
+
+function renderLedger(e) {
+  const ledger = e.three_way_rec.ledger;
+  const filtered = currentLedgerFilter === 'all'
+    ? ledger
+    : ledger.filter(r => r.status === currentLedgerFilter);
+  const labels = {
+    ok:             'OK',
+    variance:       'Variance',
+    'fe-missing':   'FE faltante',
+    'bank-pending': 'Banco pendiente',
+  };
+  document.getElementById('ledger-body').innerHTML = filtered.length === 0
+    ? `<tr><td colspan="7" style="text-align:center;color:var(--warm-gray);padding:24px;">Sin items en este filtro.</td></tr>`
+    : filtered.map(r => `
+      <tr>
+        <td class="mono" style="font-weight:600;color:var(--midnight);">${r.res}</td>
+        <td>${r.guest}</td>
+        <td>${r.channel}</td>
+        <td class="text-right mono">${r.pms ? r.pms.toLocaleString('es-CO') : '—'}</td>
+        <td class="text-right mono">${r.fe ? r.fe.toLocaleString('es-CO') : '<span style="color:var(--critical)">—</span>'}</td>
+        <td class="text-right mono">${r.bank ? r.bank.toLocaleString('es-CO') : '<span style="color:var(--ocean)">—</span>'}</td>
+        <td>
+          <span class="ledger-pill ${r.status}">${labels[r.status]}</span>
+          ${r.note ? `<div class="ledger-note">${r.note}</div>` : ''}
+        </td>
+      </tr>`).join('');
+}
+
+function renderBankRecs(e) {
+  document.getElementById('bank-recs').innerHTML = e.bank_recs.map(b => {
+    const variance = b.variance;
+    const varianceCls = variance === 0 ? '' : 'variance';
+    const varianceLabel = variance === 0 ? 'Sin diferencia' : `Diferencia ${variance.toLocaleString('es-CO')}`;
+    return `
+      <div class="bank-card">
+        <div class="head">
+          <div class="acct">${b.account}<span class="type">· ${b.type}</span></div>
+          <span class="ledger-pill ${b.status === 'ok' ? 'ok' : 'variance'}">
+            ${b.status === 'ok' ? 'CRUCE OK' : 'POR RESOLVER'}
+          </span>
+        </div>
+        <div class="balances">
+          <div class="bal">
+            <div class="label">Saldo banco</div>
+            <div class="v">${b.bank_balance.toLocaleString('es-CO')}</div>
+          </div>
+          <div class="bal">
+            <div class="label">Saldo libros (GL)</div>
+            <div class="v">${b.gl_balance.toLocaleString('es-CO')}</div>
+          </div>
+          <div class="bal ${varianceCls}">
+            <div class="label">${varianceLabel.split(' ')[0]}</div>
+            <div class="v">${variance === 0 ? 'COP 0' : variance.toLocaleString('es-CO')}</div>
+          </div>
+        </div>
+        <div class="footer">
+          <span>${b.items} item${b.items===1?'':'s'} sin resolver</span>
+          ${b.items > 0 ? '<span class="resolve">Resolver →</span>' : '<span style="color:var(--success);font-weight:700;">✓ Reconciliado</span>'}
+        </div>
+      </div>`;
+  }).join('');
+}
+</script>
 </body>
 </html>

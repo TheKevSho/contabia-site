@@ -6,6 +6,67 @@
   <title>ContabIA — Tributario</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231B2A4A'/%3E%3Ctext x='16' y='22' font-family='Georgia' font-size='18' fill='%23D4704A' text-anchor='middle' font-weight='bold'%3EC%3C/text%3E%3C/svg%3E">
   <link rel="stylesheet" href="css/portal.css">
+  <style>
+    .filing-card {
+      background: var(--white);
+      border: 1px solid var(--light-gray);
+      border-radius: var(--radius-lg);
+      padding: 24px 26px;
+      margin-bottom: 14px;
+    }
+    .filing-card .head {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      gap: 12px; margin-bottom: 18px; flex-wrap: wrap;
+      padding-bottom: 14px; border-bottom: 1px solid var(--light-gray);
+    }
+    .filing-card .form-tag {
+      display: inline-block; background: var(--midnight); color: var(--cream);
+      padding: 4px 10px; border-radius: 5px; font-family: var(--font-mono);
+      font-size: 11.5px; font-weight: 700; letter-spacing: 1px;
+    }
+    .filing-card .name {
+      font-family: var(--font-display); color: var(--midnight);
+      font-size: 22px; margin-top: 8px;
+    }
+    .filing-card .meta {
+      font-size: 13px; color: var(--warm-gray); margin-top: 4px;
+    }
+    .filing-card .head-right { text-align: right; }
+    .filing-card .total-amt {
+      font-family: var(--font-mono); font-weight: 700;
+      font-size: 26px; color: var(--midnight);
+    }
+    .filing-card .due {
+      font-size: 12px; color: var(--warm-gray); margin-top: 2px;
+    }
+    .filing-card .due strong { color: var(--terracotta); }
+    .filing-card .lines { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+    .filing-card .lines td {
+      padding: 9px 6px; font-size: 13.5px;
+      border-bottom: 1px solid var(--light-gray);
+    }
+    .filing-card .lines tr.total td {
+      border-top: 2px solid var(--midnight);
+      border-bottom: none; font-weight: 700;
+      padding-top: 12px;
+    }
+    .filing-card .lines td:last-child {
+      font-family: var(--font-mono); text-align: right; font-weight: 600;
+    }
+    .filing-card .actions {
+      display: flex; gap: 8px; padding-top: 12px;
+      border-top: 1px solid var(--light-gray);
+    }
+
+    .filing-status {
+      font-size: 10px; letter-spacing: 1.2px; text-transform: uppercase;
+      padding: 4px 9px; border-radius: 12px; font-weight: 700;
+      display: inline-block; margin-left: 8px;
+    }
+    .filing-status.draft { background: #FBE8C9; color: #876022; }
+    .filing-status.ready { background: #E0F0E5; color: var(--success); }
+    .filing-status.filed { background: #DEEDF7; color: var(--ocean); }
+  </style>
 </head>
 <body>
 <div class="shell">
@@ -15,33 +76,26 @@
     <div id="topbar-mount"></div>
 
     <div class="content">
+
       <div class="page-head">
         <div class="title-block">
           <h1>Tributario</h1>
-          <div class="meta">Preparación F300 · F350 · ICA · próximamente</div>
+          <div class="meta" id="page-meta">…</div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-secondary" onclick="alert('Paquete ZIP listo para enviar al contador.')">↓ Paquete completo</button>
         </div>
       </div>
 
       <div class="alert-banner">
         <div class="alert-text">
           <div class="icon">i</div>
-          <div class="copy">
-            <strong>Página en construcción.</strong> Aquí vivirá la preparación tributaria mensual: formularios listos para que el contador presente en MUISCA.
-          </div>
+          <div class="copy">El motor prepara las declaraciones; <strong>su contador las presenta en MUISCA</strong>. Borradores listos para revisión y firma.</div>
         </div>
       </div>
 
-      <div class="panel">
-        <div class="panel-header"><h3>Vista previa — qué vivirá aquí</h3></div>
-        <ul style="list-style:disc;padding-left:22px;color:var(--charcoal);font-size:14px;line-height:1.8;">
-          <li>F300 (IVA) — borrador con cálculo del periodo</li>
-          <li>F350 (Retefuente) — borrador con detalle por concepto</li>
-          <li>ICA Santa Marta — accrual y declaración</li>
-          <li>Documento soporte generados en el periodo (con su CUFE)</li>
-          <li>Saldos a favor / por pagar consolidados</li>
-          <li>Descarga lista para presentación + paquete para el contador</li>
-        </ul>
-      </div>
+      <div id="filings"></div>
+
     </div>
   </main>
 </div>
@@ -49,5 +103,51 @@
 <script src="js/data.js"></script>
 <script src="js/nav.js"></script>
 <script src="js/auth.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const e = currentEntityData();
+  const meta = e.meta;
+  const t = e.tributario;
+
+  document.getElementById('page-meta').innerHTML =
+    `${meta.name} · ${meta.period.toLowerCase()} · ${t.filings.length} declaración${t.filings.length===1?'':'es'} en preparación`;
+
+  document.getElementById('filings').innerHTML = t.filings.map(f => renderFiling(f)).join('');
+});
+
+function renderFiling(f) {
+  const linesHtml = f.lines.map(l => `
+    <tr class="${l.total ? 'total' : ''}">
+      <td>${l.row}</td>
+      <td>${(l.amount < 0 ? '−' : '') + 'COP ' + Math.abs(l.amount).toLocaleString('es-CO')}</td>
+    </tr>`).join('');
+  const statusLabel = ({draft:'Borrador', ready:'Listo para presentar', filed:'Presentada'})[f.status] || f.status;
+  return `
+    <div class="filing-card">
+      <div class="head">
+        <div>
+          <span class="form-tag">${f.form}</span>
+          <span class="filing-status ${f.status}">${statusLabel}</span>
+          <div class="name">${f.name}</div>
+          <div class="meta">Periodo ${f.period}</div>
+        </div>
+        <div class="head-right">
+          <div class="total-amt">COP ${f.total.toLocaleString('es-CO')}</div>
+          <div class="due">Vence <strong>${f.due}</strong></div>
+        </div>
+      </div>
+
+      <table class="lines"><tbody>${linesHtml}</tbody></table>
+
+      <div class="actions">
+        <button class="btn btn-secondary" onclick="alert('Detalle abierto (mockup).')">Ver detalle por línea</button>
+        <button class="btn btn-secondary" onclick="alert('XML/PDF descargado (mockup).')">↓ Descargar borrador</button>
+        ${f.status === 'ready'
+          ? `<button class="btn btn-primary" onclick="alert('Marcado como presentado (simulado). Contador confirma desde MUISCA.')">Marcar presentado</button>`
+          : `<button class="btn btn-primary" onclick="alert('Recálculo solicitado (simulado).')">Solicitar recálculo</button>`}
+      </div>
+    </div>`;
+}
+</script>
 </body>
 </html>

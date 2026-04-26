@@ -6,6 +6,59 @@
   <title>ContabIA — Auditoría</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231B2A4A'/%3E%3Ctext x='16' y='22' font-family='Georgia' font-size='18' fill='%23D4704A' text-anchor='middle' font-weight='bold'%3EC%3C/text%3E%3C/svg%3E">
   <link rel="stylesheet" href="css/portal.css">
+  <style>
+    .audit-controls {
+      display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    .search-box {
+      flex: 1; min-width: 260px;
+      padding: 10px 14px;
+      border: 1px solid var(--light-gray);
+      border-radius: var(--radius);
+      background: var(--white);
+      font-size: 14px;
+      font-family: var(--font-body);
+      color: var(--midnight);
+      outline: none;
+    }
+    .search-box:focus { border-color: var(--terracotta); }
+
+    .audit-table { width: 100%; border-collapse: collapse; }
+    .audit-table th, .audit-table td {
+      padding: 11px 14px; font-size: 13px;
+      border-bottom: 1px solid var(--light-gray);
+      text-align: left;
+    }
+    .audit-table th {
+      font-size: 10.5px; text-transform: uppercase;
+      letter-spacing: 1.2px; color: var(--warm-gray);
+      font-weight: 700; background: var(--cream);
+    }
+    .audit-table .ts { font-family: var(--font-mono); color: var(--warm-gray); white-space: nowrap; }
+    .audit-table .source-tag {
+      display: inline-block; font-family: var(--font-mono);
+      font-size: 11px; font-weight: 700; letter-spacing: .5px;
+      padding: 3px 8px; border-radius: 4px;
+      background: var(--sand); color: var(--midnight);
+    }
+    .audit-table .source-tag.motor   { background: #FBE8C9; color: #876022; }
+    .audit-table .source-tag.system  { background: #DEEDF7; color: var(--ocean); }
+    .audit-table .type-tag {
+      font-size: 10.5px; color: var(--warm-gray);
+      font-family: var(--font-mono); margin-top: 2px; display: block;
+    }
+    .audit-table .desc { color: var(--midnight); }
+    .audit-table .hash {
+      font-family: var(--font-mono); font-size: 11.5px;
+      color: var(--ocean); cursor: pointer;
+    }
+    .audit-table .hash:hover { color: var(--terracotta); text-decoration: underline; }
+    .audit-table .user {
+      font-size: 11.5px; color: var(--warm-gray);
+      text-transform: uppercase; letter-spacing: .8px;
+    }
+  </style>
 </head>
 <body>
 <div class="shell">
@@ -15,32 +68,45 @@
     <div id="topbar-mount"></div>
 
     <div class="content">
+
       <div class="page-head">
         <div class="title-block">
           <h1>Auditoría</h1>
-          <div class="meta">Trail completo · cada dato con origen · próximamente</div>
+          <div class="meta" id="page-meta">…</div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-secondary" onclick="alert('Paquete completo exportado (mockup) — para auditor externo o DIAN.')">↓ Exportar paquete</button>
         </div>
       </div>
 
       <div class="alert-banner">
         <div class="alert-text">
           <div class="icon">i</div>
-          <div class="copy">
-            <strong>Página en construcción.</strong> Registro buscable de todos los datos del motor — cada uno con fuente, timestamp y hash. La transparencia que justifica la confianza.
-          </div>
+          <div class="copy">Cada dato del cierre tiene <strong>fuente, timestamp y hash</strong>. Esta es la trazabilidad que respalda cada cifra.</div>
         </div>
       </div>
 
-      <div class="panel">
-        <div class="panel-header"><h3>Vista previa — qué vivirá aquí</h3></div>
-        <ul style="list-style:disc;padding-left:22px;color:var(--charcoal);font-size:14px;line-height:1.8;">
-          <li>Búsqueda por concepto, fecha, cuenta, monto, NIT</li>
-          <li>Cada registro con: fuente · timestamp · hash · usuario que aprobó</li>
-          <li>Trail de cambios: quién aprobó qué, cuándo, con qué nota</li>
-          <li>Exportar paquete completo para auditoría externa o DIAN</li>
-          <li>Filtros por cierre, conector, tipo de evento</li>
-        </ul>
+      <div class="audit-controls">
+        <input type="text" class="search-box" id="audit-search" placeholder="Buscar por descripción, fuente o hash…">
       </div>
+
+      <div class="filter-chips" id="audit-filters"></div>
+
+      <div class="panel" style="padding:0;overflow-x:auto;">
+        <table class="audit-table">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Fuente · Tipo</th>
+              <th>Descripción</th>
+              <th>Hash</th>
+              <th>Por</th>
+            </tr>
+          </thead>
+          <tbody id="audit-body"></tbody>
+        </table>
+      </div>
+
     </div>
   </main>
 </div>
@@ -48,5 +114,66 @@
 <script src="js/data.js"></script>
 <script src="js/nav.js"></script>
 <script src="js/auth.js"></script>
+<script>
+let currentSourceFilter = 'all';
+let currentSearch = '';
+
+document.addEventListener('DOMContentLoaded', () => {
+  const e = currentEntityData();
+  const meta = e.meta;
+
+  document.getElementById('page-meta').innerHTML =
+    `${meta.name} · ${meta.period.toLowerCase()} · ${e.audit_log.length} eventos registrados`;
+
+  document.getElementById('audit-search').addEventListener('input', ev => {
+    currentSearch = ev.target.value.toLowerCase();
+    renderAuditTable(e);
+  });
+
+  renderFilters(e);
+  renderAuditTable(e);
+});
+
+function renderFilters(e) {
+  const sources = ['all', ...new Set(e.audit_log.map(x => x.source))];
+  document.getElementById('audit-filters').innerHTML = sources.map(s => {
+    const count = s === 'all' ? e.audit_log.length : e.audit_log.filter(x => x.source === s).length;
+    return `<div class="filter-chip ${s===currentSourceFilter?'active':''}" onclick="setSrcFilter('${s}')">${s === 'all' ? 'Todas' : s} (${count})</div>`;
+  }).join('');
+}
+
+function setSrcFilter(s) {
+  currentSourceFilter = s;
+  const e = currentEntityData();
+  renderFilters(e);
+  renderAuditTable(e);
+}
+
+function renderAuditTable(e) {
+  let rows = e.audit_log;
+  if (currentSourceFilter !== 'all') rows = rows.filter(r => r.source === currentSourceFilter);
+  if (currentSearch) {
+    rows = rows.filter(r =>
+      r.desc.toLowerCase().includes(currentSearch) ||
+      r.source.toLowerCase().includes(currentSearch) ||
+      r.hash.toLowerCase().includes(currentSearch)
+    );
+  }
+
+  document.getElementById('audit-body').innerHTML = rows.length === 0
+    ? `<tr><td colspan="5" style="text-align:center;color:var(--warm-gray);padding:24px;">Sin eventos con este filtro.</td></tr>`
+    : rows.map(r => `
+      <tr>
+        <td class="ts">${r.ts}</td>
+        <td>
+          <span class="source-tag ${(r.source==='motor'||r.user==='system')?'motor':''}">${r.source}</span>
+          <span class="type-tag">${r.type}</span>
+        </td>
+        <td class="desc">${r.desc}</td>
+        <td><span class="hash" onclick="alert('Hash completo:\\n\\nSHA-256: ${r.hash}xxxxxxxxxxxxxxxxxxxxxxxx\\n\\n(En producción, click abre el archivo fuente.)')">${r.hash}</span></td>
+        <td class="user">${r.user}</td>
+      </tr>`).join('');
+}
+</script>
 </body>
 </html>

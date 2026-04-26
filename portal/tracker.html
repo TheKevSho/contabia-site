@@ -6,227 +6,288 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%231B2A4A%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27Georgia%27 font-size=%2718%27 fill=%27%23D4704A%27 text-anchor=%27middle%27 font-weight=%27bold%27%3EC%3C/text%3E%3C/svg%3E">
   <title>ContabIA — Seguimiento de Cierre</title>
   <link rel="stylesheet" href="css/portal.css">
+  <style>
+    .month-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .month-card {
+      background: var(--white);
+      border: 1px solid var(--light-gray);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .month-card.current {
+      border: 2px solid var(--terracotta);
+    }
+    .month-card.pending { opacity: .55; }
+    .month-card .head {
+      padding: 14px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--light-gray);
+    }
+    .month-card.current .head { background: rgba(212,112,74,.05); }
+    .month-card .month-name {
+      font-family: var(--font-display);
+      color: var(--midnight);
+      font-size: 17px;
+    }
+    .month-card .modules {
+      padding: 12px 18px;
+      flex: 1;
+    }
+    .module-row {
+      display: grid;
+      grid-template-columns: 24px 1fr auto;
+      gap: 10px;
+      padding: 6px 0;
+      align-items: center;
+      font-size: 13px;
+    }
+    .module-row .icon {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 11.5px;
+      font-family: var(--font-mono);
+    }
+    .module-row .icon.ok      { background: var(--success);    color: var(--cream); }
+    .module-row .icon.warn    { background: var(--warning);    color: var(--midnight); }
+    .module-row .icon.fail    { background: var(--critical);   color: var(--cream); }
+    .module-row .icon.pending { background: var(--light-gray); color: var(--warm-gray); }
+    .module-row .label { color: var(--charcoal); }
+    .module-row .note  { font-size: 11.5px; color: var(--warm-gray); font-family: var(--font-mono); }
+    .module-row .note.warn { color: #876022; }
+    .module-row .note.crit { color: var(--critical); }
+    .month-card .actions {
+      padding: 10px 18px 14px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .summary-row { background: var(--sand); }
+    .summary-row td { font-weight: 700; }
+  </style>
 </head>
 <body>
-<div class="portal-shell">
+<div class="shell">
   <div id="sidebar-mount"></div>
 
-  <div class="main-content">
-    <div class="top-bar">
-      <div class="top-bar-title">Seguimiento de Cierre — 2026</div>
-      <div class="top-bar-actions">
-        <span class="text-sm text-muted">2 meses cerrados · 1 en progreso</span>
-      </div>
-    </div>
+  <main class="main">
+    <div id="topbar-mount"></div>
 
-    <div class="page-content">
+    <div class="content">
 
-      <div class="month-grid">
-
-        <!-- January — closed -->
-        <div class="month-card">
-          <div class="month-card-header">
-            <div class="month-name">Enero 2026</div>
-            <span class="badge badge-closed">Cerrado</span>
-          </div>
-          <div class="month-card-modules">
-            <div class="module-row">
-              <div class="module-icon ok">✓</div>
-              <div class="module-label">Ingesta bancaria</div>
-              <div class="module-note">Sincronizado</div>
-            </div>
-            <div class="module-row">
-              <div class="module-icon ok">✓</div>
-              <div class="module-label">Categorización OTA</div>
-              <div class="module-note">4 canales</div>
-            </div>
-            <div class="module-row">
-              <div class="module-icon ok">✓</div>
-              <div class="module-label">Conciliación bancaria</div>
-              <div class="module-note">Balanceado</div>
-            </div>
-            <div class="module-row">
-              <div class="module-icon ok">✓</div>
-              <div class="module-label">Nómina y prestaciones</div>
-              <div class="module-note">5 empleados</div>
-            </div>
-            <div class="module-row">
-              <div class="module-icon ok">✓</div>
-              <div class="module-label">Informes generados</div>
-              <div class="module-note">Xlsx + PDF</div>
-            </div>
-          </div>
-          <div style="padding:10px 18px 14px; display:flex; gap:8px;">
-            <a href="deliverables.html" class="btn btn-ghost btn-sm">Ver entregables</a>
-          </div>
+      <div class="page-head">
+        <div class="title-block">
+          <h1>Seguimiento de Cierre</h1>
+          <div class="meta" id="page-meta">…</div>
         </div>
-
-        <!-- February — closed -->
-        <div class="month-card">
-          <div class="month-card-header">
-            <div class="month-name">Febrero 2026</div>
-            <span class="badge badge-closed">Cerrado</span>
-          </div>
-          <div class="month-card-modules">
-            <div class="module-row">
-              <div class="module-icon ok">✓</div>
-              <div class="module-label">Ingesta bancaria</div>
-              <div class="module-note">Sincronizado</div>
-            </div>
-            <div class="module-row">
-              <div class="module-icon ok">✓</div>
-              <div class="module-label">Categorización OTA</div>
-              <div class="module-note">5 canales</div>
-            </div>
-            <div class="module-row">
-              <div class="module-icon ok">✓</div>
-              <div class="module-label">Conciliación bancaria</div>
-              <div class="module-note">Balanceado</div>
-            </div>
-            <div class="module-row">
-              <div class="module-icon ok">✓</div>
-              <div class="module-label">Nómina y prestaciones</div>
-              <div class="module-note">5 empleados</div>
-            </div>
-            <div class="module-row">
-              <div class="module-icon ok">✓</div>
-              <div class="module-label">Informes generados</div>
-              <div class="module-note">Xlsx + PDF</div>
-            </div>
-          </div>
-          <div style="padding:10px 18px 14px; display:flex; gap:8px;">
-            <a href="deliverables.html" class="btn btn-ghost btn-sm">Ver entregables</a>
-          </div>
+        <div class="actions">
+          <button class="btn btn-secondary" onclick="location.reload()">↻ Actualizar</button>
         </div>
-
-        <!-- March — in progress -->
-        <div class="month-card" style="border:2px solid var(--terracotta);">
-          <div class="month-card-header" style="background:rgba(212,112,74,.05);">
-            <div class="month-name">Marzo 2026</div>
-            <span class="badge badge-progress">En progreso</span>
-          </div>
-          <div class="month-card-modules">
-            <div class="module-row">
-              <div class="module-icon ok">✓</div>
-              <div class="module-label">Ingesta bancaria</div>
-              <div class="module-note">Bancolombia OK</div>
-            </div>
-            <div class="module-row">
-              <div class="module-icon ok">✓</div>
-              <div class="module-label">Ingesta LobbyPMS + Alegra</div>
-              <div class="module-note">89 reservas</div>
-            </div>
-            <div class="module-row">
-              <div class="module-icon warn">!</div>
-              <div class="module-label">Conciliación bancaria</div>
-              <div class="module-note" style="color:#856404;">2 sin resolver</div>
-            </div>
-            <div class="module-row">
-              <div class="module-icon warn">!</div>
-              <div class="module-label">Excepciones</div>
-              <div class="module-note" style="color:#C0392B;">2 críticas abiertas</div>
-            </div>
-            <div class="module-row">
-              <div class="module-icon pending">…</div>
-              <div class="module-label">Nómina y prestaciones</div>
-              <div class="module-note">JE pendiente aprobación</div>
-            </div>
-            <div class="module-row">
-              <div class="module-icon pending">…</div>
-              <div class="module-label">Informes finales</div>
-              <div class="module-note" style="color:#999;">Bloqueado</div>
-            </div>
-          </div>
-          <div style="padding:10px 18px 14px; display:flex; gap:8px;">
-            <a href="exceptions.html" class="btn btn-primary btn-sm">Revisar excepciones</a>
-            <a href="journal-entries.html" class="btn btn-ghost btn-sm">Ver JEs</a>
-          </div>
-        </div>
-
-        <!-- April — pending -->
-        <div class="month-card" style="opacity:.5;">
-          <div class="month-card-header">
-            <div class="month-name">Abril 2026</div>
-            <span class="badge badge-pending">Pendiente</span>
-          </div>
-          <div class="month-card-modules">
-            <div class="module-row">
-              <div class="module-icon pending">…</div>
-              <div class="module-label">El agente iniciará el proceso</div>
-              <div class="module-note">al finalizar el mes</div>
-            </div>
-          </div>
-          <div style="padding:10px 18px 14px;">
-            <span class="text-xs text-muted">Disponible desde el 1 de mayo</span>
-          </div>
-        </div>
-
       </div>
 
-      <!-- Year summary -->
-      <div class="card mt-24">
-        <div class="card-header">
-          <div class="card-title">Resumen del año — 2026</div>
-        </div>
-        <div class="card-body" style="padding:0;">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Mes</th>
-                <th>Estado</th>
-                <th>Excepciones cerradas</th>
-                <th>JEs registrados</th>
-                <th>Recuperación tributaria</th>
-                <th>Entregables</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>Enero 2026</strong></td>
-                <td><span class="badge badge-closed">Cerrado</span></td>
-                <td class="mono">11 / 11</td>
-                <td class="mono">16</td>
-                <td class="mono" style="color:#1E7E34;">+COP 1.084.200</td>
-                <td><a href="deliverables.html" class="text-sm">Descargar →</a></td>
-              </tr>
-              <tr>
-                <td><strong>Febrero 2026</strong></td>
-                <td><span class="badge badge-closed">Cerrado</span></td>
-                <td class="mono">9 / 9</td>
-                <td class="mono">14</td>
-                <td class="mono" style="color:#1E7E34;">+COP 976.400</td>
-                <td><a href="deliverables.html" class="text-sm">Descargar →</a></td>
-              </tr>
-              <tr>
-                <td><strong>Marzo 2026</strong></td>
-                <td><span class="badge badge-progress">En progreso</span></td>
-                <td class="mono" style="color:#C0392B;">7 / 14</td>
-                <td class="mono" style="color:#856404;">3 / 18</td>
-                <td class="mono text-muted">En cálculo…</td>
-                <td><span class="text-xs text-muted">Pendiente cierre</span></td>
-              </tr>
-            </tbody>
-            <tfoot>
-              <tr style="background:var(--sand);">
-                <td><strong>Acumulado 2026</strong></td>
-                <td></td>
-                <td class="mono">27 / 34</td>
-                <td class="mono">33</td>
-                <td class="mono" style="color:#1E7E34;font-weight:700;">+COP 2.060.600</td>
-                <td></td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
+      <div class="section-label">2026 — meses</div>
+      <div class="month-grid" id="month-grid"></div>
+
+      <div class="section-label">Resumen del año</div>
+      <div class="panel" style="padding:0;overflow-x:auto;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Mes</th>
+              <th>Estado</th>
+              <th class="text-right">Excepciones</th>
+              <th class="text-right">JEs</th>
+              <th class="text-right">Recuperación tributaria</th>
+              <th>Entregables</th>
+            </tr>
+          </thead>
+          <tbody id="year-body"></tbody>
+          <tfoot id="year-foot"></tfoot>
+        </table>
       </div>
 
     </div>
-  </div>
+  </main>
 </div>
 
-<script src="js/portal.js"></script>
 <script src="js/data.js"></script>
 <script src="js/nav.js"></script>
 <script src="js/auth.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const e = currentEntityData();
+  const meta = e.meta;
+
+  const closed   = e.months.filter(m => m.status === 'closed').length;
+  const inProg   = e.months.filter(m => m.status === 'in_progress').length;
+  const pending  = e.months.filter(m => m.status === 'pending').length;
+
+  document.getElementById('page-meta').innerHTML =
+    `${meta.name} · ${closed} cerrado${closed===1?'':'s'} · ${inProg} en progreso · ${pending} pendiente${pending===1?'':'s'}`;
+
+  renderMonthGrid(e);
+  renderYearTable(e);
+});
+
+const STATUS_LABEL = {
+  closed:      'Cerrado',
+  in_progress: 'En progreso',
+  pending:     'Pendiente',
+};
+const STATUS_BADGE_CLASS = {
+  closed:      'badge-approved',
+  in_progress: 'badge-pending',
+  pending:     'badge-blocked',
+};
+
+const MODULE_LABELS = {
+  bank_feed:      { label: 'Ingesta bancaria',      ok_note: 'Sincronizado', warn_note: 'Con avisos' },
+  categorization: { label: 'Categorización OTA',    ok_note: 'Cruzada',      warn_note: 'Por revisar' },
+  reconciliation: { label: 'Conciliación bancaria', ok_note: 'Balanceado',   warn_note: 'Sin resolver' },
+  reports:        { label: 'Informes generados',    ok_note: 'Xlsx + PDF',   warn_note: 'En cálculo' },
+};
+
+function renderMonthGrid(e) {
+  const cs = e.closeSummary;
+  document.getElementById('month-grid').innerHTML = e.months.map(m => {
+    const isCurrent = m.status === 'in_progress';
+    const isPending = m.status === 'pending';
+    const cardCls   = isCurrent ? 'current' : isPending ? 'pending' : '';
+
+    let modules = '';
+    if (isPending) {
+      modules = `
+        <div class="module-row">
+          <div class="icon pending">…</div>
+          <div class="label">El agente iniciará el proceso</div>
+          <div class="note">al finalizar el mes</div>
+        </div>`;
+    } else {
+      modules = Object.entries(m.modules).map(([key, status]) => {
+        const meta = MODULE_LABELS[key] || { label: key, ok_note: '✓', warn_note: 'Por revisar' };
+        const iconCls = status === 'ok' ? 'ok' : status === 'warn' ? 'warn' : status === 'pending' ? 'pending' : 'fail';
+        const iconChar = status === 'ok' ? '✓' : status === 'warn' ? '!' : status === 'pending' ? '…' : '×';
+        const noteCls = status === 'warn' ? 'warn' : status === 'pending' ? '' : '';
+        const noteText = status === 'ok' ? meta.ok_note
+                        : status === 'warn' ? meta.warn_note
+                        : status === 'pending' ? 'Bloqueado' : '—';
+        return `
+          <div class="module-row">
+            <div class="icon ${iconCls}">${iconChar}</div>
+            <div class="label">${meta.label}</div>
+            <div class="note ${noteCls}">${noteText}</div>
+          </div>`;
+      }).join('');
+      /* add current-month exception/JE rollup */
+      if (isCurrent && (m.critical || m.open)) {
+        if (m.critical) {
+          modules += `
+            <div class="module-row">
+              <div class="icon fail">×</div>
+              <div class="label">Excepciones críticas</div>
+              <div class="note crit">${m.critical} sin resolver</div>
+            </div>`;
+        }
+        if (m.open && m.open > m.critical) {
+          modules += `
+            <div class="module-row">
+              <div class="icon warn">!</div>
+              <div class="label">Excepciones abiertas</div>
+              <div class="note warn">${m.open} en cola</div>
+            </div>`;
+        }
+      }
+    }
+
+    let actions = '';
+    if (isCurrent) {
+      actions = `
+        <a class="btn btn-primary btn-sm" href="exceptions.html">Revisar excepciones</a>
+        <a class="btn btn-secondary btn-sm" href="journal-entries.html">Ver JEs</a>`;
+    } else if (m.status === 'closed') {
+      actions = `<a class="btn btn-secondary btn-sm" href="deliverables.html">Ver entregables</a>`;
+    } else {
+      actions = `<span class="text-xs text-muted">Disponible al finalizar el mes</span>`;
+    }
+
+    return `
+      <div class="month-card ${cardCls}">
+        <div class="head">
+          <div class="month-name">${m.month}</div>
+          <span class="badge ${STATUS_BADGE_CLASS[m.status]}">${STATUS_LABEL[m.status]}</span>
+        </div>
+        <div class="modules">${modules}</div>
+        <div class="actions">${actions}</div>
+      </div>`;
+  }).join('');
+}
+
+function renderYearTable(e) {
+  /* synthesize year-summary rows from months + closeSummary; closed months get
+     mock numbers (would come from historical aggregates in production). */
+  const closedMonthNums = e.months.filter(m => m.status === 'closed').map((m, i) => {
+    /* deterministic fake history per entity */
+    const eid = e.meta.id;
+    const base = eid === 'cantamar-001' ? 1000000 : 700000;
+    return {
+      month:    m.month,
+      status:   m.status,
+      excs:     `${10 + i*2} / ${10 + i*2}`,
+      jes:      `${14 + i*2}`,
+      recovery: `+COP ${(base + i*120000).toLocaleString('es-CO')}`,
+      ready:    true,
+    };
+  });
+  const cur = e.months.find(m => m.status === 'in_progress');
+  const cs  = e.closeSummary;
+  const curRow = cur ? {
+    month:    cur.month,
+    status:   cur.status,
+    excs:     `${cs.total_exceptions - cs.open_critical - cs.open_high - cs.open_medium - cs.open_low} / ${cs.total_exceptions}`,
+    jes:      `${cs.jes_approved + cs.jes_posted} / ${cs.total_jes}`,
+    recovery: 'En cálculo…',
+    ready:    false,
+  } : null;
+  const rows = [...closedMonthNums, ...(curRow ? [curRow] : [])];
+
+  document.getElementById('year-body').innerHTML = rows.map(r => `
+    <tr>
+      <td><strong>${r.month}</strong></td>
+      <td><span class="badge ${STATUS_BADGE_CLASS[r.status]}">${STATUS_LABEL[r.status]}</span></td>
+      <td class="text-right mono ${r.status==='in_progress'?'':''}" style="color:${r.status==='in_progress'?'var(--warning)':'var(--midnight)'};">${r.excs}</td>
+      <td class="text-right mono">${r.jes}</td>
+      <td class="text-right mono" style="color:${r.recovery.startsWith('+')?'var(--success)':'var(--warm-gray)'};">${r.recovery}</td>
+      <td>${r.ready ? '<a href="deliverables.html" class="text-sm" style="color:var(--ocean);">Descargar →</a>' : '<span class="text-xs text-muted">Pendiente cierre</span>'}</td>
+    </tr>`).join('');
+
+  /* footer: accumulated recovery for closed months only */
+  const totalRecovery = closedMonthNums.reduce((s, r) => {
+    const n = parseInt(r.recovery.replace(/[^\d]/g, ''), 10) || 0;
+    return s + n;
+  }, 0);
+  const totalExcs = closedMonthNums.reduce((s, r) => s + parseInt(r.excs.split('/')[0], 10) || 0, 0);
+  const totalJEs  = closedMonthNums.reduce((s, r) => s + parseInt(r.jes, 10) || 0, 0);
+  document.getElementById('year-foot').innerHTML = `
+    <tr class="summary-row">
+      <td>Acumulado 2026 (cerrado)</td>
+      <td></td>
+      <td class="text-right mono">${totalExcs}</td>
+      <td class="text-right mono">${totalJEs}</td>
+      <td class="text-right mono" style="color:var(--success);">+COP ${totalRecovery.toLocaleString('es-CO')}</td>
+      <td></td>
+    </tr>`;
+}
+</script>
 </body>
 </html>

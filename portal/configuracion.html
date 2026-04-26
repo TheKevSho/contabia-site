@@ -6,6 +6,112 @@
   <title>ContabIA — Configuración</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231B2A4A'/%3E%3Ctext x='16' y='22' font-family='Georgia' font-size='18' fill='%23D4704A' text-anchor='middle' font-weight='bold'%3EC%3C/text%3E%3C/svg%3E">
   <link rel="stylesheet" href="css/portal.css">
+  <style>
+    .conf-tabs {
+      display: flex; gap: 0; border-bottom: 1px solid var(--light-gray);
+      margin-bottom: 22px; overflow-x: auto;
+    }
+    .conf-tab {
+      padding: 12px 18px; font-size: 13.5px; font-weight: 600;
+      color: var(--warm-gray); border-bottom: 2px solid transparent;
+      cursor: pointer; background: none; white-space: nowrap;
+    }
+    .conf-tab:hover { color: var(--midnight); }
+    .conf-tab.active { color: var(--terracotta); border-bottom-color: var(--terracotta); }
+
+    .conf-section { display: none; }
+    .conf-section.active { display: block; }
+
+    .field-row {
+      display: grid; grid-template-columns: 200px 1fr;
+      gap: 14px; padding: 12px 0;
+      border-bottom: 1px solid var(--light-gray);
+      align-items: center;
+    }
+    .field-row:last-child { border-bottom: none; }
+    .field-row .label {
+      font-size: 12px; text-transform: uppercase; letter-spacing: 1px;
+      color: var(--warm-gray); font-weight: 700;
+    }
+    .field-row .value {
+      font-size: 14.5px; color: var(--midnight); font-weight: 500;
+    }
+    .field-row .value.mono { font-family: var(--font-mono); }
+
+    .conn-card {
+      background: var(--white); border: 1px solid var(--light-gray);
+      border-radius: var(--radius-lg); padding: 16px 20px;
+      margin-bottom: 10px; display: flex;
+      justify-content: space-between; align-items: center; gap: 12px;
+      flex-wrap: wrap;
+    }
+    .conn-card .left { display: flex; align-items: center; gap: 14px; }
+    .conn-card .dot {
+      width: 12px; height: 12px; border-radius: 50%;
+      background: var(--success); box-shadow: 0 0 0 4px rgba(74,139,111,.15);
+    }
+    .conn-card .dot.warn { background: var(--warning); box-shadow: 0 0 0 4px rgba(212,160,74,.18); }
+    .conn-card .dot.fail { background: var(--critical); box-shadow: 0 0 0 4px rgba(196,74,58,.18); }
+    .conn-card .name { font-family: var(--font-display); font-size: 17px; color: var(--midnight); }
+    .conn-card .sync { font-size: 12px; color: var(--warm-gray); margin-top: 2px; font-family: var(--font-mono); }
+
+    .rule-card {
+      background: var(--white); border: 1px solid var(--light-gray);
+      border-radius: var(--radius); padding: 14px 18px; margin-bottom: 8px;
+      display: grid; grid-template-columns: auto 1fr auto;
+      gap: 14px; align-items: center;
+    }
+    .rule-toggle {
+      width: 38px; height: 22px; background: var(--light-gray);
+      border-radius: 11px; position: relative; cursor: pointer;
+      transition: background .15s ease;
+    }
+    .rule-toggle.on { background: var(--success); }
+    .rule-toggle::after {
+      content: ""; position: absolute; top: 2px; left: 2px;
+      width: 18px; height: 18px; background: var(--white);
+      border-radius: 50%; transition: left .15s ease;
+    }
+    .rule-toggle.on::after { left: 18px; }
+    .rule-when { font-family: var(--font-mono); font-size: 12.5px; color: var(--ocean); margin-bottom: 3px; font-weight: 600; }
+    .rule-action { font-size: 13.5px; color: var(--midnight); }
+    .rule-meta { font-size: 11px; color: var(--warm-gray); margin-top: 4px; }
+    .rule-tag {
+      font-size: 10px; letter-spacing: 1px; text-transform: uppercase;
+      padding: 3px 8px; border-radius: 10px; font-weight: 700;
+      background: var(--sand); color: var(--midnight);
+    }
+
+    .team-row {
+      display: grid; grid-template-columns: 38px 1fr auto auto;
+      gap: 14px; align-items: center; padding: 12px 0;
+      border-bottom: 1px solid var(--light-gray);
+    }
+    .team-row:last-child { border-bottom: none; }
+    .team-row .av {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--terracotta); color: var(--cream);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 13px;
+    }
+    .team-row .name { font-weight: 600; color: var(--midnight); font-size: 14px; }
+    .team-row .email { font-size: 12px; color: var(--warm-gray); }
+    .team-row .role { font-size: 11.5px; padding: 4px 10px; border-radius: 10px; background: var(--sand); color: var(--midnight); font-weight: 700; letter-spacing: .8px; text-transform: uppercase; font-family: var(--font-mono); }
+    .team-row .login { font-size: 11.5px; color: var(--warm-gray); font-family: var(--font-mono); }
+
+    .notif-table { width: 100%; border-collapse: collapse; }
+    .notif-table th, .notif-table td {
+      padding: 11px 12px; font-size: 13px; text-align: left;
+      border-bottom: 1px solid var(--light-gray);
+    }
+    .notif-table th {
+      font-size: 10.5px; text-transform: uppercase; letter-spacing: 1.2px;
+      color: var(--warm-gray); font-weight: 700;
+    }
+    .notif-table .check { font-family: var(--font-mono); font-weight: 700; }
+    .notif-table .check.yes { color: var(--success); }
+    .notif-table .check.no  { color: var(--warm-gray); opacity: .4; }
+  </style>
 </head>
 <body>
 <div class="shell">
@@ -15,35 +121,30 @@
     <div id="topbar-mount"></div>
 
     <div class="content">
+
       <div class="page-head">
         <div class="title-block">
           <h1>Configuración</h1>
-          <div class="meta">Entidad · conectores · reglas · equipo · próximamente</div>
+          <div class="meta" id="page-meta">…</div>
         </div>
       </div>
 
-      <div class="alert-banner">
-        <div class="alert-text">
-          <div class="icon">i</div>
-          <div class="copy">
-            <strong>Página en construcción.</strong> Centro de configuración de la entidad activa: conectores, reglas del contador, equipo, OTAs y onboarding.
-          </div>
-        </div>
+      <div class="conf-tabs" id="conf-tabs">
+        <button class="conf-tab active" data-tab="entidad">Entidad</button>
+        <button class="conf-tab" data-tab="conectores">Conectores</button>
+        <button class="conf-tab" data-tab="reglas">Reglas del contador</button>
+        <button class="conf-tab" data-tab="otas">OTAs</button>
+        <button class="conf-tab" data-tab="equipo">Equipo</button>
+        <button class="conf-tab" data-tab="notif">Notificaciones</button>
       </div>
 
-      <div class="panel">
-        <div class="panel-header"><h3>Vista previa — qué vivirá aquí</h3></div>
-        <ul style="list-style:disc;padding-left:22px;color:var(--charcoal);font-size:14px;line-height:1.8;">
-          <li><strong>Entidad</strong> — NIT, razón social, régimen tributario, ICA municipio</li>
-          <li><strong>Conectores</strong> — LobbyPMS, Prometeo, Alegra/WO/Siigo, RADIAN, WhatsApp (auth, sync, salud)</li>
-          <li><strong>Reglas del contador</strong> — categorización, tratamientos, umbrales de aprobación (per-cliente)</li>
-          <li><strong>Reglas del sistema</strong> — ley tributaria, USALI, conectores (read-only, transparencia)</li>
-          <li><strong>OTAs</strong> — tarifas y modelos de comisión por canal</li>
-          <li><strong>Equipo</strong> — usuarios, roles, accesos por entidad</li>
-          <li><strong>Onboarding</strong> — captura de posición fiscal del cliente (primer mes)</li>
-          <li><strong>Notificaciones</strong> — qué eventos disparan WhatsApp / email</li>
-        </ul>
-      </div>
+      <div class="conf-section active" id="sec-entidad"></div>
+      <div class="conf-section" id="sec-conectores"></div>
+      <div class="conf-section" id="sec-reglas"></div>
+      <div class="conf-section" id="sec-otas"></div>
+      <div class="conf-section" id="sec-equipo"></div>
+      <div class="conf-section" id="sec-notif"></div>
+
     </div>
   </main>
 </div>
@@ -51,5 +152,149 @@
 <script src="js/data.js"></script>
 <script src="js/nav.js"></script>
 <script src="js/auth.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const e = currentEntityData();
+  const meta = e.meta;
+
+  document.getElementById('page-meta').innerHTML =
+    `${meta.name} · ${meta.legal_name} · NIT ${meta.nit}`;
+
+  /* Entidad */
+  document.getElementById('sec-entidad').innerHTML = `
+    <div class="panel">
+      ${field('Razón social',     meta.legal_name)}
+      ${field('Nombre comercial', meta.name)}
+      ${field('NIT',              meta.nit, true)}
+      ${field('Régimen tributario','Responsable de IVA · Régimen ordinario')}
+      ${field('Municipio ICA',    'Santa Marta · 5,5 × 1.000')}
+      ${field('Sistema contable', meta.accounting_system)}
+      ${field('PMS',              meta.pms)}
+      ${field('Banco principal',  meta.bank_primary)}
+      ${field('Periodo activo',   meta.period)}
+    </div>
+    <div style="margin-top:14px;display:flex;gap:8px;">
+      <button class="btn btn-secondary" onclick="alert('Edición bloqueada en mockup. Cambios pasan por Angel.')">Editar datos</button>
+    </div>`;
+
+  /* Conectores */
+  document.getElementById('sec-conectores').innerHTML = e.connectors.map(c => `
+    <div class="conn-card">
+      <div class="left">
+        <span class="dot ${c.status==='ok'?'':c.status}"></span>
+        <div>
+          <div class="name">${c.name}</div>
+          <div class="sync">Última sincronización: ${c.last_sync}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-secondary" onclick="syncConn()">Sincronizar ahora</button>
+        ${c.status === 'ok' ? '' : '<button class="btn btn-primary" onclick="reconnectConn()">Reconectar</button>'}
+      </div>
+    </div>`).join('');
+
+  /* Reglas */
+  const rules = e.config.rules_client;
+  document.getElementById('sec-reglas').innerHTML = `
+    <div style="margin-bottom:14px;font-size:13.5px;color:var(--charcoal);">
+      Reglas que el contador autoriza para este cliente. Se ejecutan en cada cierre.
+      <strong>${rules.filter(r=>r.enabled).length} activas</strong> de ${rules.length}.
+    </div>
+    ${rules.map(r => `
+      <div class="rule-card">
+        <div class="rule-toggle ${r.enabled?'on':''}" onclick="this.classList.toggle('on')"></div>
+        <div>
+          <div class="rule-when">${r.when}</div>
+          <div class="rule-action">${r.action}</div>
+          <div class="rule-meta">${r.hits_30d} hit${r.hits_30d===1?'':'s'} en 30d · autor: ${r.author}</div>
+        </div>
+        <span class="rule-tag">${r.type}</span>
+      </div>`).join('')}
+    <div style="margin-top:14px;">
+      <button class="btn btn-secondary" onclick="alert('Editor de reglas (próximamente).')">+ Nueva regla</button>
+    </div>
+    <div style="margin-top:24px;padding:14px 18px;background:var(--cream);border-radius:8px;font-size:13px;color:var(--warm-gray);">
+      <strong style="color:var(--midnight);">Reglas del sistema</strong> (ley tributaria, USALI, conectores) — read-only, no editables. Transparencia, no opinión.
+    </div>`;
+
+  /* OTAs */
+  document.getElementById('sec-otas').innerHTML = `
+    <div class="panel" style="padding:0;">
+      <table class="data-table">
+        <thead><tr><th>Canal</th><th>Modelo</th><th class="text-right">Reservas mes</th><th class="text-right">Comisión mes</th></tr></thead>
+        <tbody>
+          ${e.ota_breakdown.map(o => `
+            <tr>
+              <td>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <span class="badge-square ${o.cls}" style="width:24px;height:24px;border-radius:5px;display:flex;align-items:center;justify-content:center;color:var(--cream);font-weight:700;font-size:11px;font-family:var(--font-mono);">${o.code}</span>
+                  <strong style="color:var(--midnight);">${o.name}</strong>
+                </div>
+              </td>
+              <td>${o.model}</td>
+              <td class="text-right mono">${o.reservas}</td>
+              <td class="text-right mono">${o.commission === 0 ? '—' : o.commission.toLocaleString('es-CO')}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+
+  /* Equipo */
+  document.getElementById('sec-equipo').innerHTML = `
+    <div class="panel">
+      ${e.config.team.map(u => `
+        <div class="team-row">
+          <div class="av">${u.name.split(' ').map(p=>p[0]).slice(0,2).join('')}</div>
+          <div>
+            <div class="name">${u.name}</div>
+            <div class="email">${u.email}</div>
+          </div>
+          <span class="role">${u.role}</span>
+          <span class="login">Último acceso: ${u.last_login}</span>
+        </div>`).join('')}
+    </div>
+    <div style="margin-top:14px;">
+      <button class="btn btn-secondary" onclick="alert('Invitar nuevo miembro (mockup).')">+ Invitar miembro</button>
+    </div>`;
+
+  /* Notificaciones */
+  document.getElementById('sec-notif').innerHTML = `
+    <div class="panel" style="padding:0;">
+      <table class="notif-table">
+        <thead><tr><th>Evento</th><th style="text-align:center;">Email</th><th style="text-align:center;">WhatsApp</th><th>Destinatarios</th></tr></thead>
+        <tbody>
+          ${e.config.notifications.map(n => `
+            <tr>
+              <td>${n.event}</td>
+              <td style="text-align:center;"><span class="check ${n.email?'yes':'no'}">${n.email?'✓':'—'}</span></td>
+              <td style="text-align:center;"><span class="check ${n.whatsapp?'yes':'no'}">${n.whatsapp?'✓':'—'}</span></td>
+              <td>${n.recipients}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+
+  /* Tab switching */
+  document.querySelectorAll('.conf-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.conf-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.conf-section').forEach(s => s.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('sec-' + tab.dataset.tab).classList.add('active');
+    });
+  });
+});
+
+function field(label, value, mono) {
+  return `
+    <div class="field-row">
+      <div class="label">${label}</div>
+      <div class="value ${mono?'mono':''}">${value}</div>
+    </div>`;
+}
+
+function syncConn()      { alert('Sincronización forzada (mockup).'); }
+function reconnectConn() { alert('Reautenticación abierta (mockup).'); }
+</script>
 </body>
 </html>

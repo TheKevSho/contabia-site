@@ -334,6 +334,113 @@ const DATA = {
         note: 'Detección inicial de documento soporte faltante en compras al exterior.',
         path: '../../contabia public site/free-scan/escaneo_vamos_navegando_sas_20260404.pdf' },
     ],
+
+    /* ---- NÓMINA ---- */
+    nomina: {
+      payroll_summary: {
+        period: '2da quincena marzo 2026',
+        total_nomina:    4218500,
+        parafiscales:     169000,
+        prestaciones:     782300,
+        total_provision: 5169800,
+        employee_count: 11,
+        due_date: '30 mar',
+        status: 'pending_approval',
+      },
+      employees: [
+        { id:'e-1',  name:'Yaritza González', position:'Gerente',         salary_base:1800000, days:30, ot_h:0, recargo_h:0, total:1800000 },
+        { id:'e-2',  name:'Carlos Pérez',     position:'Recepcionista',   salary_base:1200000, days:30, ot_h:6, recargo_h:8, total:1320500 },
+        { id:'e-3',  name:'María López',      position:'Recepcionista',   salary_base:1200000, days:30, ot_h:0, recargo_h:0, total:1200000 },
+        { id:'e-4',  name:'Diana Ramírez',    position:'Housekeeping',    salary_base:1170000, days:30, ot_h:2, recargo_h:0, total:1188400 },
+        { id:'e-5',  name:'Sandra Velasco',   position:'Housekeeping',    salary_base:1170000, days:30, ot_h:0, recargo_h:0, total:1170000 },
+        { id:'e-6',  name:'Laura Mejía',      position:'Housekeeping',    salary_base:1170000, days:28, ot_h:0, recargo_h:0, total:1092000 },
+        { id:'e-7',  name:'Pedro Suárez',     position:'Mantenimiento',   salary_base:1300000, days:30, ot_h:4, recargo_h:0, total:1336500 },
+        { id:'e-8',  name:'José Castro',      position:'Mantenimiento',   salary_base:1300000, days:30, ot_h:0, recargo_h:0, total:1300000 },
+        { id:'e-9',  name:'Ana Torres',       position:'Cocina',          salary_base:1200000, days:30, ot_h:3, recargo_h:6, total:1295500 },
+        { id:'e-10', name:'Camilo Vargas',    position:'Bartender',       salary_base:1200000, days:30, ot_h:5, recargo_h:10,total:1373800 },
+        { id:'e-11', name:'Luisa Mendoza',    position:'Recepcionista',   salary_base:1200000, days:30, ot_h:2, recargo_h:0, total:1218300 },
+      ],
+      ot_pending: [
+        { id:'ot-1', employee:'Carlos Pérez',   date:'2026-03-22', hours:3, recargo:'Nocturno', reason:'Cobertura noche sábado',          status:'pending' },
+        { id:'ot-2', employee:'Camilo Vargas',  date:'2026-03-23', hours:2, recargo:'Dominical', reason:'Brunch domingo grupo grande',     status:'pending' },
+        { id:'ot-3', employee:'Ana Torres',     date:'2026-03-29', hours:4, recargo:'Festivo',   reason:'Servicio especial Semana Santa', status:'pending' },
+      ],
+      ops_kpis: {
+        ocupacion_avg:    71,
+        productividad:    82,
+        rotacion_30d:      0,
+        horas_marcadas: 1680,
+        horas_extras:     32,
+      },
+      recent_marcaciones: [
+        { employee:'Yaritza González', date:'2026-03-30', in:'07:50', out:'17:05', hours:9.25 },
+        { employee:'Carlos Pérez',     date:'2026-03-30', in:'14:00', out:'23:10', hours:9.17 },
+        { employee:'Diana Ramírez',    date:'2026-03-30', in:'06:55', out:'15:00', hours:8.08 },
+        { employee:'Camilo Vargas',    date:'2026-03-30', in:'17:00', out:'02:15', hours:9.25, dispute:'Marcación de salida revisada por Yari' },
+        { employee:'Ana Torres',       date:'2026-03-30', in:'11:00', out:'21:00', hours:10.00 },
+      ],
+    },
+
+    /* ---- TRIBUTARIO ---- */
+    tributario: {
+      filings: [
+        { id:'f300-mar', form:'F300', name:'IVA bimestral', period:'Mar–Abr 2026', due:'15 may',
+          status:'draft', total: 412300,
+          lines: [
+            { row:'IVA generado por ventas',     amount: 1254600 },
+            { row:'IVA descontable (compras)',   amount: -842300 },
+            { row:'Saldo a pagar',               amount:  412300, total:true },
+          ] },
+        { id:'f350-mar', form:'F350', name:'Retefuente', period:'Marzo 2026', due:'11 abr',
+          status:'ready', total: 284500,
+          lines: [
+            { row:'Honorarios (10%)',  amount: 184500 },
+            { row:'Servicios (4%)',    amount:  64000 },
+            { row:'Compras (2.5%)',    amount:  36000 },
+            { row:'Total a pagar',     amount: 284500, total:true },
+          ] },
+        { id:'ica-mar', form:'ICA',  name:'Industria y Comercio · Santa Marta', period:'Marzo 2026', due:'15 abr',
+          status:'draft', total: 412500,
+          lines: [
+            { row:'Base gravable (ingresos brutos)', amount: 75000000 },
+            { row:'Tarifa 5,5 × 1.000',              amount:   412500, total:true },
+          ] },
+      ],
+    },
+
+    /* ---- AUDIT LOG ---- */
+    audit_log: [
+      { ts:'2026-04-04 06:12', source:'Bancolombia', type:'bank_pull',  desc:'147 transacciones de marzo extraídas', hash:'a3f7c92d', user:'agent' },
+      { ts:'2026-04-04 06:10', source:'Alegra',      type:'fe_check',   desc:'87 facturas verificadas vs DIAN',      hash:'b1e2f08a', user:'agent' },
+      { ts:'2026-04-04 06:08', source:'LobbyPMS',    type:'pms_pull',   desc:'89 reservas marzo · 5 canales OTA',    hash:'c9d4a17b', user:'agent' },
+      { ts:'2026-04-04 06:05', source:'motor',       type:'rule_apply', desc:'OTA accrual rule R3 · 12 transacciones', hash:'d2e83ba1', user:'system' },
+      { ts:'2026-04-04 06:00', source:'motor',       type:'reconcile',  desc:'3-way conciliación ejecutada',         hash:'f1a72c50', user:'system' },
+      { ts:'2026-04-03 22:50', source:'WhatsApp',    type:'receipt',    desc:'Recibo Ferretería El Tornillo · OCR 88%', hash:'e7f12219', user:'manager' },
+      { ts:'2026-04-03 18:20', source:'RADIAN',      type:'fe_inbound', desc:'12 facturas de proveedores recibidas', hash:'a8b32d11', user:'agent' },
+      { ts:'2026-04-02 15:00', source:'motor',       type:'rule_change',desc:'Regla "TRANSPORTES SP → 5215" creada por Edwin', hash:'c3d9e4f2', user:'edwin' },
+    ],
+
+    /* ---- CONFIG ---- */
+    config: {
+      rules_client: [
+        { id:'r-1', type:'category',  when:'Vendor = "TRANSPORTES SP"',           action:'Postear a 5215 (Transportes) + retención 4%', enabled:true,  hits_30d:4, author:'Edwin' },
+        { id:'r-2', type:'category',  when:'Memo contiene "AWS" o "CLOUD"',       action:'Postear a 5135 (Servicios cloud) + DS automático', enabled:true,  hits_30d:6, author:'Edwin' },
+        { id:'r-3', type:'treatment', when:'Booking.com factura mensual recibida', action:'Acreditar accrual 2805 · cargar gasto comisión', enabled:true,  hits_30d:1, author:'sistema' },
+        { id:'r-4', type:'threshold', when:'JE > COP 3.000.000',                  action:'Requiere doble aprobación (Dueño + Contador)', enabled:false, hits_30d:0, author:'Edwin (borrador)' },
+      ],
+      team: [
+        { id:'u-1', name:'Kevin Carey',      role:'Dueño',    email:'kevin@cantamar.co',   last_login:'hace 2h' },
+        { id:'u-2', name:'Edwin Restrepo',   role:'Contador', email:'edwin@balinessa.co',  last_login:'ayer 18:00' },
+        { id:'u-3', name:'Yaritza González', role:'Gerente',  email:'yaritza@cantamar.co', last_login:'hace 30 min' },
+      ],
+      notifications: [
+        { event:'Excepción crítica creada',         email:true,  whatsapp:true,  recipients:'Dueño + Contador' },
+        { event:'Cierre listo para revisión',       email:true,  whatsapp:true,  recipients:'Contador' },
+        { event:'Pago de nómina por aprobar',       email:true,  whatsapp:true,  recipients:'Dueño' },
+        { event:'Drift detectado en provisiones',   email:false, whatsapp:true,  recipients:'Contador' },
+        { event:'Documento soporte generado',       email:false, whatsapp:false, recipients:'(silencioso)' },
+      ],
+    },
   },
 
   /* ============================================================
@@ -594,6 +701,104 @@ const DATA = {
         note: 'Detección inicial de documento soporte faltante en compras al exterior.',
         path: '../../contabia public site/free-scan/escaneo_sonata_mas_sas_20260404.pdf' },
     ],
+
+    /* ---- NÓMINA ---- */
+    nomina: {
+      payroll_summary: {
+        period: '2da quincena marzo 2026',
+        total_nomina:    3620400,
+        parafiscales:     145000,
+        prestaciones:     668700,
+        total_provision: 4434100,
+        employee_count: 4,
+        due_date: '30 mar',
+        status: 'pending_approval',
+      },
+      employees: [
+        { id:'e-1', name:'Nicolás Giraldo', position:'Operador / Capitán Sonata', salary_base:2200000, days:30, ot_h:0, recargo_h:0, total:2200000 },
+        { id:'e-2', name:'Juan Camilo R.',  position:'Capitán Anna Lezah',        salary_base:1800000, days:30, ot_h:6, recargo_h:4, total:1898400 },
+        { id:'e-3', name:'Andrés Mora',     position:'Marinero',                  salary_base:1170000, days:30, ot_h:8, recargo_h:0, total:1248000 },
+        { id:'e-4', name:'Esteban Pinto',   position:'Marinero',                  salary_base:1170000, days:28, ot_h:4, recargo_h:0, total:1112000 },
+      ],
+      ot_pending: [
+        { id:'ot-1', employee:'Juan Camilo R.', date:'2026-03-23', hours:4, recargo:'Dominical', reason:'Charter privado domingo', status:'pending' },
+        { id:'ot-2', employee:'Andrés Mora',    date:'2026-03-29', hours:6, recargo:'Festivo',   reason:'Charter Semana Santa',   status:'pending' },
+      ],
+      ops_kpis: {
+        utilizacion_flota:  64,
+        productividad:      78,
+        rotacion_30d:        0,
+        horas_marcadas:    640,
+        horas_extras:       28,
+      },
+      recent_marcaciones: [
+        { employee:'Nicolás Giraldo', date:'2026-03-30', in:'06:30', out:'18:45', hours:12.25 },
+        { employee:'Juan Camilo R.',  date:'2026-03-30', in:'06:45', out:'17:30', hours:10.75 },
+        { employee:'Andrés Mora',     date:'2026-03-30', in:'06:45', out:'19:00', hours:12.25, dispute:'Marcación de salida después de retorno tardío' },
+        { employee:'Esteban Pinto',   date:'2026-03-29', in:'07:00', out:'17:00', hours:10.00 },
+      ],
+    },
+
+    /* ---- TRIBUTARIO ---- */
+    tributario: {
+      filings: [
+        { id:'f300-mar', form:'F300', name:'IVA bimestral', period:'Mar–Abr 2026', due:'15 may',
+          status:'draft', total: 198400,
+          lines: [
+            { row:'IVA generado por ventas',     amount:  810800 },
+            { row:'IVA descontable (compras)',   amount: -612400 },
+            { row:'Saldo a pagar',               amount:  198400, total:true },
+          ] },
+        { id:'f350-mar', form:'F350', name:'Retefuente', period:'Marzo 2026', due:'11 abr',
+          status:'ready', total: 218400,
+          lines: [
+            { row:'Honorarios (10%)',  amount: 142000 },
+            { row:'Servicios (4%)',    amount:  48400 },
+            { row:'Compras (2.5%)',    amount:  28000 },
+            { row:'Total a pagar',     amount: 218400, total:true },
+          ] },
+        { id:'ica-mar', form:'ICA',  name:'Industria y Comercio · Santa Marta', period:'Marzo 2026', due:'15 abr',
+          status:'draft', total: 298300,
+          lines: [
+            { row:'Base gravable (ingresos brutos)', amount: 54200000 },
+            { row:'Tarifa 5,5 × 1.000',              amount:   298300, total:true },
+          ] },
+      ],
+    },
+
+    /* ---- AUDIT LOG ---- */
+    audit_log: [
+      { ts:'2026-04-04 05:55', source:'BBVA',        type:'bank_pull',  desc:'94 transacciones de marzo extraídas', hash:'b8c4f217', user:'agent' },
+      { ts:'2026-04-04 05:50', source:'Alegra',      type:'fe_check',   desc:'49 facturas verificadas vs DIAN',     hash:'a2d8e305', user:'agent' },
+      { ts:'2026-04-04 05:42', source:'LobbyPMS',    type:'pms_pull',   desc:'51 charters marzo · 4 canales OTA',   hash:'c4f1b203', user:'agent' },
+      { ts:'2026-04-04 05:30', source:'motor',       type:'depreciation', desc:'Depreciación 3 embarcaciones calculada (Sonata, Anna Lezah, Dragon Lady)', hash:'e9b2a17c', user:'system' },
+      { ts:'2026-04-04 05:20', source:'motor',       type:'reconcile',  desc:'3-way conciliación ejecutada',        hash:'f3a91d5e', user:'system' },
+      { ts:'2026-04-04 05:05', source:'GetYourGuide', type:'connector_fail', desc:'Portal GYG bloqueado por 2FA — comisión accrual estimada', hash:'d7b18e22', user:'agent' },
+      { ts:'2026-04-03 21:10', source:'WhatsApp',    type:'receipt',    desc:'Recibo Combustibles Marina · OCR 92%', hash:'e0c4f917', user:'manager' },
+      { ts:'2026-04-02 14:30', source:'motor',       type:'rule_change',desc:'Regla "ASTILLEROS DEL CARIBE → 5160 + retención 4%" creada por Edwin', hash:'a5d2e801', user:'edwin' },
+    ],
+
+    /* ---- CONFIG ---- */
+    config: {
+      rules_client: [
+        { id:'r-1', type:'category',  when:'Vendor = "ASTILLEROS DEL CARIBE"',     action:'Postear a 5160 (Mantenimiento embarcaciones) + retención 4%', enabled:true,  hits_30d:2, author:'Edwin' },
+        { id:'r-2', type:'category',  when:'Memo contiene "COMBUSTIBLE" o "MARINA"', action:'Postear a 5165 (Combustibles flota)', enabled:true,  hits_30d:5, author:'Edwin' },
+        { id:'r-3', type:'treatment', when:'Charter cobrado vía Stonex',           action:'Reclasificar fee como gasto OTA + DS', enabled:true,  hits_30d:9, author:'sistema' },
+        { id:'r-4', type:'threshold', when:'JE > COP 5.000.000',                   action:'Requiere doble aprobación (Dueño + Contador)', enabled:false, hits_30d:0, author:'Edwin (borrador)' },
+      ],
+      team: [
+        { id:'u-1', name:'Kevin Carey',     role:'Dueño',    email:'kevin@cantamar.co',         last_login:'hace 3h' },
+        { id:'u-2', name:'Edwin Restrepo',  role:'Contador', email:'edwin@balinessa.co',        last_login:'ayer 17:00' },
+        { id:'u-3', name:'Nicolás Giraldo', role:'Gerente',  email:'nick@tayronasailing.co',    last_login:'hace 12 min' },
+      ],
+      notifications: [
+        { event:'Excepción crítica creada',         email:true,  whatsapp:true,  recipients:'Dueño + Contador' },
+        { event:'Cierre listo para revisión',       email:true,  whatsapp:true,  recipients:'Contador' },
+        { event:'Pago de nómina por aprobar',       email:true,  whatsapp:true,  recipients:'Dueño' },
+        { event:'Portal OTA inaccesible (2FA)',     email:true,  whatsapp:true,  recipients:'Dueño + Gerente' },
+        { event:'Documento soporte generado',       email:false, whatsapp:false, recipients:'(silencioso)' },
+      ],
+    },
   },
 
   }, /* end entities */

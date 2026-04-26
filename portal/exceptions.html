@@ -6,113 +6,126 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%231B2A4A%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27Georgia%27 font-size=%2718%27 fill=%27%23D4704A%27 text-anchor=%27middle%27 font-weight=%27bold%27%3EC%3C/text%3E%3C/svg%3E">
   <title>ContabIA — Excepciones</title>
   <link rel="stylesheet" href="css/portal.css">
+  <style>
+    .exc-table th, .exc-table td { padding: 12px 14px; font-size: 13.5px; }
+    .exc-table tr { cursor: pointer; }
+    .exc-table .title-cell .t {
+      font-weight: 600; color: var(--midnight); font-size: 13.5px;
+    }
+    .exc-table .title-cell .sub {
+      font-family: var(--font-mono); font-size: 11.5px; color: var(--warm-gray); margin-top: 2px;
+    }
+    .priority-dot {
+      display: inline-block;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      vertical-align: middle;
+    }
+    .priority-dot.critical { background: var(--critical); }
+    .priority-dot.high     { background: var(--warning); }
+    .priority-dot.medium   { background: var(--ocean); }
+    .priority-dot.low      { background: var(--warm-gray); }
+
+    .panel-section { margin-bottom: 20px; }
+    .panel-section .lbl {
+      font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px;
+      font-weight: 700; color: var(--warm-gray); margin-bottom: 6px;
+    }
+    .rec-box {
+      background: var(--sand);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 16px;
+    }
+    .rec-box .head {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;
+    }
+    .panel-actions {
+      display: flex; gap: 8px; margin-top: 24px; padding-top: 18px;
+      border-top: 1px solid var(--light-gray);
+    }
+    .btn-approve {
+      background: var(--success); color: var(--cream);
+      border: none; padding: 10px 16px; border-radius: var(--radius);
+      font-weight: 600; cursor: pointer; font-size: 13.5px;
+    }
+    .btn-reject {
+      background: var(--white); color: var(--critical); border: 1px solid var(--critical);
+      padding: 10px 16px; border-radius: var(--radius); font-weight: 600; cursor: pointer; font-size: 13.5px;
+    }
+  </style>
 </head>
 <body>
-<div class="portal-shell">
+<div class="shell">
   <div id="sidebar-mount"></div>
 
-  <div class="main-content">
-    <div class="top-bar">
-      <div class="top-bar-title">Excepciones — Marzo 2026</div>
-      <div class="top-bar-actions">
-        <span class="text-sm text-muted">14 total · 2 críticas</span>
-        <button class="btn btn-ghost btn-sm">Exportar</button>
-      </div>
-    </div>
+  <main class="main">
+    <div id="topbar-mount"></div>
 
-    <div class="page-content">
+    <div class="content">
 
-      <div class="alert alert-critical">
-        <span>🔴</span>
-        <div><strong>2 excepciones críticas</strong> bloquean el cierre del mes. Deben resolverse antes de generar los informes.</div>
-      </div>
-
-      <!-- Filter row -->
-      <div class="filter-row" id="exc-filters">
-        <button class="filter-chip active" data-filter="all">Todas (14)</button>
-        <button class="filter-chip critical" data-filter="critical">Críticas (2)</button>
-        <button class="filter-chip" data-filter="high">Altas (5)</button>
-        <button class="filter-chip" data-filter="medium">Medias (4)</button>
-        <button class="filter-chip" data-filter="low">Bajas (3)</button>
-        <button class="filter-chip" data-filter="pending">Pendientes</button>
-        <button class="filter-chip" data-filter="needs_info">Necesita info</button>
-      </div>
-
-      <!-- Exceptions table -->
-      <div class="card">
-        <div style="overflow-x:auto;">
-          <table class="data-table" id="exc-table">
-            <thead>
-              <tr>
-                <th style="width:8px;"></th>
-                <th>Excepción</th>
-                <th>Prioridad</th>
-                <th>Estado</th>
-                <th>Confianza IA</th>
-                <th>Monto</th>
-                <th>Fecha</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody id="exc-tbody">
-              <!-- Rows injected by JS -->
-            </tbody>
-          </table>
+      <div class="page-head">
+        <div class="title-block">
+          <h1>Excepciones</h1>
+          <div class="meta" id="page-meta">…</div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-secondary" onclick="location.reload()">↻ Actualizar</button>
         </div>
       </div>
 
+      <div id="alert-slot"></div>
+
+      <div class="filter-chips" id="exc-filters"></div>
+
+      <div class="panel" style="padding:0;overflow-x:auto;">
+        <table class="data-table exc-table">
+          <thead>
+            <tr>
+              <th style="width:8px;"></th>
+              <th>Excepción</th>
+              <th>Prioridad</th>
+              <th>Estado</th>
+              <th>Confianza IA</th>
+              <th class="text-right">Creada</th>
+            </tr>
+          </thead>
+          <tbody id="exc-tbody"></tbody>
+        </table>
+      </div>
+
     </div>
-  </div>
+  </main>
 </div>
 
-<!-- Exception Detail Panel -->
+<!-- detail overlay -->
 <div class="detail-overlay" id="exc-panel">
   <div class="detail-panel">
-    <div class="detail-panel-header">
-      <div>
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-          <span id="panel-priority-badge"></span>
-          <span id="panel-status-badge"></span>
-        </div>
-        <div id="panel-title" style="font-family:var(--font-display);font-size:18px;color:var(--midnight);"></div>
-        <div id="panel-subtype" style="font-size:12px;color:var(--warm-gray);margin-top:3px;font-family:var(--font-mono);"></div>
-      </div>
-      <button class="close-panel" onclick="closePanel('exc-panel')">✕</button>
+    <button class="close" onclick="closeExcPanel()">✕</button>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+      <span id="p-priority"></span>
+      <span id="p-status"></span>
     </div>
-    <div class="detail-panel-body">
-      <div style="margin-bottom:20px;">
-        <div class="text-xs text-muted" style="text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px;">Descripción</div>
-        <div id="panel-description" style="font-size:14px;line-height:1.7;color:var(--charcoal);"></div>
-      </div>
+    <h2 id="p-title"></h2>
+    <div style="font-family:var(--font-mono);font-size:12px;color:var(--warm-gray);margin-bottom:18px;" id="p-subtype"></div>
 
-      <div style="background:var(--sand);border-radius:8px;padding:14px 16px;margin-bottom:20px;">
-        <div class="flex-between" style="margin-bottom:8px;">
-          <div class="text-xs text-muted" style="text-transform:uppercase;letter-spacing:1px;font-weight:700;">Recomendación del agente</div>
-          <span id="panel-confidence-bar"></span>
-        </div>
-        <div id="panel-recommendation" style="font-size:13.5px;line-height:1.7;color:var(--charcoal);"></div>
-      </div>
-
-      <div id="panel-payload" style="margin-bottom:20px;"></div>
-
-      <div>
-        <div class="text-xs text-muted" style="text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:10px;">Comentarios</div>
-        <div style="display:flex;flex-direction:column;gap:10px;" id="panel-comments">
-          <div style="background:var(--midnight);color:var(--cream);padding:10px 14px;border-radius:8px;border-bottom-left-radius:2px;font-size:13.5px;max-width:85%;">
-            <div style="font-size:10px;opacity:.5;margin-bottom:4px;">Agente ContabIA · 01/04/2026</div>
-            Item creado automáticamente durante procesamiento del cierre de marzo.
-          </div>
-        </div>
-        <div style="display:flex;gap:8px;margin-top:12px;">
-          <input type="text" class="form-input" placeholder="Agregar comentario..." style="flex:1;padding:8px 12px;">
-          <button class="btn btn-secondary btn-sm">Enviar</button>
-        </div>
-      </div>
+    <div class="panel-section">
+      <div class="lbl">Descripción</div>
+      <div id="p-desc" style="font-size:14px;line-height:1.7;color:var(--charcoal);"></div>
     </div>
-    <div class="detail-panel-footer">
-      <button class="btn btn-ghost btn-sm" onclick="closePanel('exc-panel')">Cerrar</button>
-      <button class="btn btn-reject btn-sm">Rechazar</button>
-      <button class="btn btn-approve btn-sm">Aprobar resolución</button>
+
+    <div class="rec-box">
+      <div class="head">
+        <div class="lbl" style="margin:0;">Recomendación del agente</div>
+        <span id="p-conf"></span>
+      </div>
+      <div id="p-rec" style="font-size:13.5px;line-height:1.7;color:var(--charcoal);"></div>
+    </div>
+
+    <div class="panel-actions">
+      <button class="btn btn-secondary btn-sm" onclick="closeExcPanel()">Cerrar</button>
+      <button class="btn-reject" onclick="alert('Rechazo simulado — flujo de Angel pendiente.')">Rechazar</button>
+      <button class="btn-approve" onclick="alert('Aprobación simulada — motor procesa la corrección.')">Aprobar resolución</button>
     </div>
   </div>
 </div>
@@ -120,84 +133,116 @@
 <script src="js/portal.js"></script>
 <script src="js/data.js"></script>
 <script src="js/nav.js"></script>
+<script src="js/auth.js"></script>
 <script>
-const AMOUNTS = {
-  'exc-001': 32000,
-  'exc-002': 620000,
-  'exc-003': 215000,
-  'exc-004': 1450000,
-  'exc-005': 1500000,
-  'exc-006': 87500,
-  'exc-007': 280000,
-  'exc-008': 340000,
-};
+let currentExcFilter = 'all';
 
-function renderExcTable(filter) {
-  const tbody = document.getElementById('exc-tbody');
-  let rows = MOCK.exceptions;
-  if (filter && filter !== 'all') {
-    if (['critical','high','medium','low'].includes(filter)) {
-      rows = rows.filter(r => r.priority === filter);
-    } else {
-      rows = rows.filter(r => r.status === filter);
-    }
+document.addEventListener('DOMContentLoaded', () => {
+  const e = currentEntityData();
+  const meta = e.meta;
+  const cs = e.closeSummary;
+
+  document.getElementById('page-meta').innerHTML =
+    `${meta.name} · ${meta.period.toLowerCase()} · ${cs.total_exceptions} excepción${cs.total_exceptions===1?'':'es'} en cola`;
+
+  /* alert if any criticals */
+  if (cs.open_critical > 0) {
+    document.getElementById('alert-slot').innerHTML = `
+      <div class="alert-banner crit">
+        <div class="alert-text">
+          <div class="icon">!</div>
+          <div class="copy"><strong>${cs.open_critical} excepción${cs.open_critical===1?'':'es'} crítica${cs.open_critical===1?'':'s'}</strong> bloquean el cierre. Resolver antes de generar informes.</div>
+        </div>
+      </div>`;
   }
 
-  tbody.innerHTML = rows.map(exc => {
-    const amt = AMOUNTS[exc.id];
-    const isBlocked = false;
-    return `
-      <tr class="${isBlocked?'row-blocked':''}" style="cursor:pointer;" onclick="openExcDetail('${exc.id}')">
-        <td><span class="priority-dot ${exc.priority}"></span></td>
-        <td>
-          <div style="font-weight:600;font-size:13.5px;color:var(--midnight);">${exc.title}</div>
-          <div class="text-xs text-muted" style="font-family:var(--font-mono);margin-top:2px;">${exc.subtype}</div>
+  renderFilters(e);
+  renderTable(e);
+});
+
+function renderFilters(e) {
+  const items = e.exceptions;
+  const counts = {
+    all:      items.length,
+    critical: items.filter(x => x.priority === 'critical').length,
+    high:     items.filter(x => x.priority === 'high').length,
+    medium:   items.filter(x => x.priority === 'medium').length,
+    pending:  items.filter(x => x.status === 'pending').length,
+    in_review:items.filter(x => x.status === 'in_review').length,
+  };
+  const chips = [
+    { key: 'all',       label: 'Todas' },
+    { key: 'critical',  label: 'Críticas' },
+    { key: 'high',      label: 'Altas' },
+    { key: 'medium',    label: 'Medias' },
+    { key: 'pending',   label: 'Pendientes' },
+    { key: 'in_review', label: 'En revisión' },
+  ];
+  document.getElementById('exc-filters').innerHTML = chips.map(c => `
+    <div class="filter-chip ${c.key===currentExcFilter?'active':''}"
+         onclick="setExcFilter('${c.key}')">${c.label} (${counts[c.key]||0})</div>
+  `).join('');
+}
+
+function setExcFilter(key) {
+  currentExcFilter = key;
+  const e = currentEntityData();
+  renderFilters(e);
+  renderTable(e);
+}
+
+function renderTable(e) {
+  const all = e.exceptions;
+  const filtered = currentExcFilter === 'all'
+    ? all
+    : ['critical','high','medium','low'].includes(currentExcFilter)
+      ? all.filter(x => x.priority === currentExcFilter)
+      : all.filter(x => x.status === currentExcFilter);
+
+  const tbody = document.getElementById('exc-tbody');
+  tbody.innerHTML = filtered.length === 0
+    ? `<tr><td colspan="6" style="text-align:center;color:var(--warm-gray);padding:24px;">Sin items en este filtro.</td></tr>`
+    : filtered.map(x => `
+      <tr onclick="openExcDetail('${x.id}')">
+        <td><span class="priority-dot ${x.priority}"></span></td>
+        <td class="title-cell">
+          <div class="t">${x.title}</div>
+          <div class="sub">${x.subtype}</div>
         </td>
-        <td>${priorityBadge(exc.priority)}</td>
-        <td>${statusBadge(exc.status)}</td>
-        <td>${confidenceBar(exc.ai_confidence)}</td>
-        <td class="mono">${fmtCOP(amt)}</td>
-        <td class="text-xs text-muted">${fmtDate(exc.created_at)}</td>
-        <td>
-          <div style="display:flex;gap:6px;">
-            <button class="btn btn-approve btn-xs" onclick="event.stopPropagation();">✓ Aprobar</button>
-            <button class="btn btn-reject btn-xs" onclick="event.stopPropagation();">✕</button>
-          </div>
-        </td>
-      </tr>`;
-  }).join('');
+        <td><span class="priority-badge badge-${x.priority}">${x.priority.toUpperCase()}</span></td>
+        <td><span class="badge badge-${x.status}">${statusLabel(x.status)}</span></td>
+        <td>${confidenceBar(x.ai_confidence)}</td>
+        <td class="text-right" style="color:var(--warm-gray);font-size:12.5px;">${fmtDate(x.created_at)}</td>
+      </tr>`).join('');
+}
+
+function statusLabel(s) {
+  return ({pending:'Pendiente',in_review:'En revisión',approved:'Aprobado',rejected:'Rechazado',
+           posted:'Registrado',blocked:'Bloqueado',needs_info:'Necesita info',overridden:'Modificado'})[s] || s;
 }
 
 function openExcDetail(id) {
-  const exc = MOCK.exceptions.find(e => e.id === id);
-  if (!exc) return;
-  document.getElementById('panel-title').textContent = exc.title;
-  document.getElementById('panel-subtype').textContent = exc.subtype;
-  document.getElementById('panel-priority-badge').innerHTML = priorityBadge(exc.priority);
-  document.getElementById('panel-status-badge').innerHTML = statusBadge(exc.status);
-  document.getElementById('panel-description').textContent = exc.description;
-  document.getElementById('panel-recommendation').textContent = exc.ai_recommendation;
-  document.getElementById('panel-confidence-bar').innerHTML = confidenceBar(exc.ai_confidence);
-
-  // Render payload as key-value
-  const p = exc.payload;
-  const rows = Object.entries(p).map(([k,v]) => `
-    <div class="flex-between" style="padding:6px 0;border-bottom:1px solid var(--light-gray);">
-      <span class="text-xs text-muted" style="text-transform:uppercase;letter-spacing:.8px;font-weight:700;">${k}</span>
-      <span class="text-mono text-sm">${typeof v === 'number' ? fmtCOP(v) : v}</span>
-    </div>`).join('');
-  document.getElementById('panel-payload').innerHTML = `
-    <div class="text-xs text-muted" style="text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:8px;">Datos</div>
-    <div style="background:var(--white);border:1px solid var(--light-gray);border-radius:8px;padding:4px 14px;">${rows}</div>`;
-
-  openPanel('exc-panel');
+  const e = currentEntityData();
+  const x = e.exceptions.find(i => i.id === id);
+  if (!x) return;
+  document.getElementById('p-title').textContent       = x.title;
+  document.getElementById('p-subtype').textContent     = x.subtype;
+  document.getElementById('p-priority').innerHTML      = `<span class="priority-badge badge-${x.priority}">${x.priority.toUpperCase()}</span>`;
+  document.getElementById('p-status').innerHTML        = `<span class="badge badge-${x.status}">${statusLabel(x.status)}</span>`;
+  document.getElementById('p-desc').textContent        = x.description;
+  document.getElementById('p-rec').textContent         = x.ai_recommendation;
+  document.getElementById('p-conf').innerHTML          = confidenceBar(x.ai_confidence);
+  document.getElementById('exc-panel').classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-  renderExcTable('all');
-  initFilterChips('#exc-filters', renderExcTable);
+function closeExcPanel() {
+  document.getElementById('exc-panel').classList.remove('open');
+  document.body.style.overflow = '';
+}
+/* close on backdrop click */
+document.addEventListener('click', e => {
+  if (e.target.id === 'exc-panel') closeExcPanel();
 });
 </script>
-<script src="js/auth.js"></script>
 </body>
 </html>

@@ -6,145 +6,226 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%231B2A4A%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27Georgia%27 font-size=%2718%27 fill=%27%23D4704A%27 text-anchor=%27middle%27 font-weight=%27bold%27%3EC%3C/text%3E%3C/svg%3E">
   <title>ContabIA — Chat con el Agente</title>
   <link rel="stylesheet" href="css/portal.css">
+  <style>
+    .chat-wrap {
+      max-width: 820px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .chat-thread {
+      background: var(--white);
+      border: 1px solid var(--light-gray);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      margin-bottom: 14px;
+      max-height: 60vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .msg {
+      max-width: 78%;
+      padding: 12px 16px;
+      border-radius: 14px;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+    .msg .who {
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      opacity: .55;
+      font-family: var(--font-mono);
+    }
+    .msg.agent {
+      background: var(--midnight);
+      color: var(--cream);
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+    }
+    .msg.user {
+      background: var(--sand);
+      color: var(--midnight);
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+    }
+    .msg.agent .who { color: rgba(255,248,240,.7); }
+    .msg strong { font-weight: 700; }
+    .chat-suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .suggestion {
+      background: var(--white);
+      border: 1px solid var(--light-gray);
+      border-radius: 18px;
+      padding: 8px 14px;
+      font-size: 13px;
+      color: var(--midnight);
+      cursor: pointer;
+      transition: all .15s ease;
+    }
+    .suggestion:hover { border-color: var(--terracotta); color: var(--terracotta); }
+    .chat-input {
+      display: flex;
+      gap: 8px;
+      background: var(--white);
+      border: 1px solid var(--light-gray);
+      border-radius: var(--radius-lg);
+      padding: 10px;
+    }
+    .chat-input input {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-size: 15px;
+      padding: 8px 10px;
+      background: transparent;
+      color: var(--midnight);
+      font-family: var(--font-body);
+    }
+    .chat-meta {
+      font-size: 12px;
+      color: var(--warm-gray);
+      margin-top: 8px;
+      text-align: center;
+    }
+    .chat-meta strong { color: var(--ocean); }
+  </style>
 </head>
 <body>
-<div class="portal-shell">
+<div class="shell">
   <div id="sidebar-mount"></div>
 
-  <div class="main-content">
-    <div class="top-bar">
-      <div class="top-bar-title">Chat con el Agente ContabIA</div>
-      <div class="top-bar-actions">
-        <span style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--warm-gray);">
-          <span style="width:8px;height:8px;border-radius:50%;background:#1E7E34;display:inline-block;"></span>
-          Agente activo · Marzo 2026
-        </span>
+  <main class="main">
+    <div id="topbar-mount"></div>
+
+    <div class="content">
+
+      <div class="page-head">
+        <div class="title-block">
+          <h1>Chat con el Agente</h1>
+          <div class="meta" id="page-meta">…</div>
+        </div>
       </div>
-    </div>
 
-    <div class="page-content" style="display:flex;flex-direction:column;height:calc(100vh - 60px);padding-bottom:0;">
+      <div class="chat-wrap">
+        <div class="chat-thread" id="thread"></div>
 
-      <div class="chat-container">
-        <div class="chat-messages" id="chat-messages">
+        <div class="chat-suggestions" id="suggestions"></div>
 
-          <!-- Agent greeting -->
-          <div>
-            <div class="chat-bubble agent">
-              <div class="bubble-meta">Agente ContabIA · hoy</div>
-              Buen día, Kevin. Acabo de terminar el procesamiento de marzo. Aquí el resumen:<br><br>
-              ✅ 147 transacciones bancarias procesadas<br>
-              ✅ 89 reservas LobbyPMS cruzadas con Alegra<br>
-              ⚠️ <strong>14 excepciones</strong> requieren su revisión — 2 críticas<br>
-              ⏳ <strong>7 comprobantes</strong> pendientes de aprobación<br><br>
-              Recuperación tributaria estimada del mes: <strong>COP 1.248.500</strong>. ¿Por dónde empezamos?
-            </div>
-          </div>
-
-          <!-- User message -->
-          <div style="align-self:flex-end;max-width:70%;">
-            <div class="chat-bubble user">
-              ¿Cuál es el estado de la comisión de Booking del mes?
-            </div>
-          </div>
-
-          <!-- Agent response -->
-          <div>
-            <div class="chat-bubble agent">
-              <div class="bubble-meta">Agente ContabIA</div>
-              Booking.com marzo 2026 (Modelo Factura Mensual):<br><br>
-              • <strong>Noches vendidas por Booking:</strong> 47<br>
-              • <strong>Ingreso bruto Booking:</strong> COP 8.920.000<br>
-              • <strong>Comisión accrual (10%):</strong> COP 892.000<br>
-              • <strong>Estado:</strong> Accrual generado (JE-002) — <em>pendiente de aprobación</em><br><br>
-              La factura de Booking llegará en abril. Cuando llegue, reclasificamos el accrual a cuentas por pagar. ¿Apruebo el JE ahora?
-            </div>
-          </div>
-
-          <!-- User message -->
-          <div style="align-self:flex-end;max-width:70%;">
-            <div class="chat-bubble user">
-              Sí, apruébalo. Y dime qué pasó con el crédito de COP 1.450.000 que no reconociste.
-            </div>
-          </div>
-
-          <!-- Agent response -->
-          <div>
-            <div class="chat-bubble agent">
-              <div class="bubble-meta">Agente ContabIA</div>
-              ✅ <strong>JE-002 aprobado.</strong> El asiento queda en cola para registrarse en Alegra.<br><br>
-              Sobre el crédito de <strong>COP 1.450.000</strong> (15/03/2026, "TRANSF MÓVIL"):<br><br>
-              Mi confianza es baja (38%) — la descripción "TRANSF MÓVIL" es demasiado genérica. Tres posibilidades que no pude descartar automáticamente:<br><br>
-              1. Anticipo de reserva grupal no registrado en LobbyPMS<br>
-              2. Pago Airbnb fuera de ciclo habitual<br>
-              3. Transferencia personal del propietario (si es así, va a aportes de capital o préstamo)<br><br>
-              ¿Sabe usted de qué se trata? Con esa info registro el asiento correcto.
-            </div>
-          </div>
-
+        <div class="chat-input">
+          <input type="text" id="chat-input" placeholder="Pregúntele a su agente…" autocomplete="off">
+          <button class="btn btn-primary" onclick="sendMsg()">Enviar</button>
         </div>
-
-        <!-- Suggested prompts -->
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
-          <button class="filter-chip" onclick="sendPrompt(this)">¿Cuánto debo de IVA este mes?</button>
-          <button class="filter-chip" onclick="sendPrompt(this)">Muéstrame el flujo de caja proyectado</button>
-          <button class="filter-chip" onclick="sendPrompt(this)">¿Cuáles son las excepciones críticas?</button>
-          <button class="filter-chip" onclick="sendPrompt(this)">¿Qué pasa con la nómina de marzo?</button>
-        </div>
-
-        <div class="chat-input-row">
-          <input type="text" class="chat-input" id="chat-input"
-            placeholder="Pregúntele al agente sobre sus libros..." 
-            onkeypress="if(event.key==='Enter') sendMessage()">
-          <button class="chat-send" onclick="sendMessage()">
-            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
-            </svg>
-          </button>
+        <div class="chat-meta">
+          También puede escribir al agente por <strong>WhatsApp Business</strong> al número de su entidad.
         </div>
       </div>
 
     </div>
-  </div>
+  </main>
 </div>
 
-<script src="js/portal.js"></script>
 <script src="js/data.js"></script>
 <script src="js/nav.js"></script>
+<script src="js/auth.js"></script>
 <script>
-function sendMessage() {
+const SUGGESTIONS = [
+  '¿Cuál es mi plata en riesgo este mes?',
+  '¿Qué excepciones críticas tengo?',
+  '¿Cómo va el cierre de marzo?',
+  '¿Cuánto IVA voy a recuperar?',
+  '¿Hay reservas sin facturar?',
+];
+
+let messages = [];
+
+document.addEventListener('DOMContentLoaded', () => {
+  const e = currentEntityData();
+  const meta = e.meta;
+  const user = currentUser();
+
+  document.getElementById('page-meta').innerHTML =
+    `${meta.name} · agente respondiendo en español · contexto: ${meta.period.toLowerCase()}`;
+
+  /* seed conversation with role-aware welcome */
+  const greeting = `Hola, ${user.name.split(' ')[0]}. Soy su agente ContabIA. Aquí estoy para responder lo que necesite sobre el cierre de <strong>${meta.period.toLowerCase()}</strong> en <strong>${meta.name}</strong>.`;
+  messages = [
+    { who: 'agent', text: greeting },
+  ];
+  renderThread();
+  renderSuggestions();
+
+  document.getElementById('chat-input').addEventListener('keypress', ev => {
+    if (ev.key === 'Enter') sendMsg();
+  });
+});
+
+function renderThread() {
+  document.getElementById('thread').innerHTML = messages.map(m => `
+    <div class="msg ${m.who}">
+      <div class="who">${m.who === 'agent' ? 'ContabIA' : 'Usted'}</div>
+      <div>${m.text}</div>
+    </div>`).join('');
+  const t = document.getElementById('thread');
+  t.scrollTop = t.scrollHeight;
+}
+
+function renderSuggestions() {
+  document.getElementById('suggestions').innerHTML = SUGGESTIONS.map(s => `
+    <div class="suggestion" onclick="askQuick('${s.replace(/'/g, "\\'")}')">${s}</div>
+  `).join('');
+}
+
+function askQuick(text) {
+  document.getElementById('chat-input').value = text;
+  sendMsg();
+}
+
+function sendMsg() {
   const input = document.getElementById('chat-input');
   const text = input.value.trim();
   if (!text) return;
-  appendMessage(text, 'user');
+  messages.push({ who: 'user', text });
   input.value = '';
+  renderThread();
+  /* simulated agent response */
   setTimeout(() => {
-    appendMessage('Estoy procesando su consulta sobre los libros de Cantamar Beach Hostel. En un sistema en vivo, el agente respondería aquí con datos reales de Alegra y LobbyPMS. (Demo)', 'agent');
-  }, 800);
+    messages.push({ who: 'agent', text: agentReply(text) });
+    renderThread();
+  }, 600);
 }
 
-function sendPrompt(btn) {
-  document.getElementById('chat-input').value = btn.textContent;
-  document.getElementById('chat-input').focus();
-}
-
-function appendMessage(text, role) {
-  const container = document.getElementById('chat-messages');
-  const wrapper = document.createElement('div');
-  if (role === 'user') wrapper.style.alignSelf = 'flex-end';
-  const bubble = document.createElement('div');
-  bubble.className = `chat-bubble ${role}`;
-  if (role === 'agent') {
-    const meta = document.createElement('div');
-    meta.className = 'bubble-meta';
-    meta.textContent = 'Agente ContabIA';
-    bubble.appendChild(meta);
+function agentReply(q) {
+  const e = currentEntityData();
+  const lc = q.toLowerCase();
+  if (lc.includes('plata') || lc.includes('riesgo')) {
+    const p = e.cifras.plata_en_riesgo;
+    return `Su plata en riesgo este mes es <strong>COP ${p.total.toLocaleString('es-CO')}</strong>. Se desglosa en: ${p.breakdown.map(b => `${b.label} (COP ${b.value.toLocaleString('es-CO')})`).join('; ')}. ¿Quiere que abra la lista de items para resolverlos?`;
   }
-  bubble.appendChild(document.createTextNode(text));
-  wrapper.appendChild(bubble);
-  container.appendChild(wrapper);
-  container.scrollTop = container.scrollHeight;
+  if (lc.includes('crítica') || lc.includes('excepc')) {
+    const cs = e.closeSummary;
+    return `Hay <strong>${cs.open_critical} excepción${cs.open_critical===1?'':'es'} crítica${cs.open_critical===1?'':'s'}</strong> y ${cs.open_high} altas en cola. ¿Quiere que se las muestre?`;
+  }
+  if (lc.includes('cierre') || lc.includes('marzo')) {
+    const cs = e.closeSummary;
+    return `El cierre de ${e.meta.period.toLowerCase()} va al <strong>${cs.pct}%</strong>. Listo para entregar el ${cs.eta}. Bloqueado por: ${cs.blocking_items.join(', ')}.`;
+  }
+  if (lc.includes('iva')) {
+    const t = e.tax_summary.find(x => x.name.includes('IVA'));
+    return t ? `${t.name}: <strong>${t.amount}</strong> (${t.status_label}). ${t.desc}.` : 'Estoy revisando el cálculo de IVA, le respondo enseguida.';
+  }
+  if (lc.includes('reserva') || lc.includes('factur')) {
+    return `Detecté reservas sin factura en LobbyPMS × ${e.meta.accounting_system}. Revíselas en la página de Excepciones.`;
+  }
+  return `Esa pregunta queda en cola para Angel del equipo ContabIA. Mientras tanto, puedo ayudarle con el cierre, el resumen tributario, o las excepciones del mes.`;
 }
 </script>
-<script src="js/auth.js"></script>
 </body>
 </html>

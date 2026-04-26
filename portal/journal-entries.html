@@ -6,219 +6,225 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%231B2A4A%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27Georgia%27 font-size=%2718%27 fill=%27%23D4704A%27 text-anchor=%27middle%27 font-weight=%27bold%27%3EC%3C/text%3E%3C/svg%3E">
   <title>ContabIA — Comprobantes</title>
   <link rel="stylesheet" href="css/portal.css">
+  <style>
+    .je-card {
+      background: var(--white);
+      border: 1px solid var(--light-gray);
+      border-radius: var(--radius-lg);
+      padding: 22px 24px;
+      margin-bottom: 12px;
+    }
+    .je-card .head {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      gap: 12px; margin-bottom: 14px; flex-wrap: wrap;
+    }
+    .je-card .je-id {
+      font-family: var(--font-mono); font-size: 11.5px;
+      color: var(--terracotta); font-weight: 700;
+      letter-spacing: 1px; text-transform: uppercase;
+    }
+    .je-card .je-title {
+      font-family: var(--font-display); font-size: 19px;
+      color: var(--midnight); margin-top: 2px;
+    }
+    .je-card .je-desc { font-size: 13px; color: var(--warm-gray); margin-top: 4px; }
+    .je-card .head-right {
+      display: flex; flex-direction: column; gap: 6px; align-items: flex-end;
+    }
+    .je-lines { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+    .je-lines th, .je-lines td {
+      padding: 9px 10px; font-size: 13px; text-align: left;
+      border-bottom: 1px solid var(--light-gray);
+    }
+    .je-lines th {
+      font-size: 10.5px; text-transform: uppercase; letter-spacing: 1.2px;
+      color: var(--warm-gray); font-weight: 700;
+    }
+    .je-lines .acc { font-family: var(--font-mono); color: var(--ocean); font-weight: 600; }
+    .je-lines .amt { font-family: var(--font-mono); text-align: right; font-weight: 600; }
+    .je-lines .amt.dr { color: var(--midnight); }
+    .je-lines .amt.cr { color: var(--ocean); }
+    .je-lines tfoot td {
+      border-top: 2px solid var(--midnight); border-bottom: none;
+      font-weight: 700; font-size: 13.5px;
+    }
+    .je-actions {
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 8px; padding-top: 12px; border-top: 1px solid var(--light-gray);
+      flex-wrap: wrap;
+    }
+    .je-actions .meta {
+      font-size: 12px; color: var(--warm-gray);
+      display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    }
+    .je-actions .buttons { display: flex; gap: 8px; }
+    .btn-approve {
+      background: var(--success); color: var(--cream); border: none;
+      padding: 8px 14px; border-radius: var(--radius);
+      font-weight: 600; cursor: pointer; font-size: 13px;
+    }
+    .btn-reject {
+      background: var(--white); color: var(--critical); border: 1px solid var(--critical);
+      padding: 8px 14px; border-radius: var(--radius);
+      font-weight: 600; cursor: pointer; font-size: 13px;
+    }
+    .je-blocked-note {
+      background: rgba(212,160,74,.10); border: 1px solid #E8C896; color: #876022;
+      padding: 10px 14px; border-radius: var(--radius);
+      font-size: 13px; margin-bottom: 12px;
+    }
+    .je-blocked-note strong { color: var(--midnight); }
+  </style>
 </head>
 <body>
-<div class="portal-shell">
+<div class="shell">
   <div id="sidebar-mount"></div>
 
-  <div class="main-content">
-    <div class="top-bar">
-      <div class="top-bar-title">Comprobantes Contables — Marzo 2026</div>
-      <div class="top-bar-actions">
-        <span class="text-sm text-muted">18 total · 7 pendientes</span>
-        <button class="btn btn-primary btn-sm">Aprobar todos pendientes</button>
-      </div>
-    </div>
+  <main class="main">
+    <div id="topbar-mount"></div>
 
-    <div class="page-content">
+    <div class="content">
 
-      <div class="alert alert-info">
-        <span>ℹ️</span>
-        <div>Ningún comprobante se registra en Alegra sin su aprobación. El agente propone — usted o <strong>Angel Morales</strong> aprueba.</div>
-      </div>
-
-      <!-- Tabs -->
-      <div class="tabs" id="je-tabs">
-        <div class="tab active" data-filter="all">Todos (18)</div>
-        <div class="tab" data-filter="pending">Pendientes (7)</div>
-        <div class="tab" data-filter="approved">Aprobados (8)</div>
-        <div class="tab" data-filter="posted">Registrados (3)</div>
-        <div class="tab" data-filter="blocked">Bloqueados (1)</div>
-      </div>
-
-      <!-- JE list -->
-      <div id="je-list" style="display:flex;flex-direction:column;gap:12px;"></div>
-
-    </div>
-  </div>
-</div>
-
-<!-- JE Detail Panel -->
-<div class="detail-overlay" id="je-panel">
-  <div class="detail-panel">
-    <div class="detail-panel-header">
-      <div>
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-          <span id="je-panel-priority"></span>
-          <span id="je-panel-status"></span>
+      <div class="page-head">
+        <div class="title-block">
+          <h1>Comprobantes (JEs)</h1>
+          <div class="meta" id="page-meta">…</div>
         </div>
-        <div id="je-panel-title" style="font-family:var(--font-display);font-size:18px;color:var(--midnight);"></div>
-        <div id="je-panel-subtype" style="font-size:12px;color:var(--warm-gray);margin-top:3px;font-family:var(--font-mono);"></div>
-      </div>
-      <button class="close-panel" onclick="closePanel('je-panel')">✕</button>
-    </div>
-    <div class="detail-panel-body">
-
-      <div style="margin-bottom:18px;">
-        <div class="text-xs text-muted" style="text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px;">Descripción</div>
-        <div id="je-panel-desc" style="font-size:14px;line-height:1.7;"></div>
-      </div>
-
-      <div style="margin-bottom:18px;">
-        <div class="flex-between" style="margin-bottom:8px;">
-          <div class="text-xs text-muted" style="text-transform:uppercase;letter-spacing:1px;font-weight:700;">Asiento contable</div>
-          <span id="je-panel-conf"></span>
+        <div class="actions">
+          <button class="btn btn-secondary" onclick="location.reload()">↻ Actualizar</button>
         </div>
-        <div id="je-panel-lines"></div>
       </div>
 
-      <div id="je-panel-block-alert" style="display:none;"></div>
+      <div id="alert-slot"></div>
 
-      <div>
-        <div class="text-xs text-muted" style="text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px;">Notas del revisor</div>
-        <textarea class="form-input" rows="3" placeholder="Opcional — anote cualquier observación..."></textarea>
-      </div>
+      <div class="filter-chips" id="je-filters"></div>
+
+      <div id="je-list"></div>
+
     </div>
-    <div class="detail-panel-footer" id="je-panel-footer">
-      <button class="btn btn-ghost btn-sm" onclick="closePanel('je-panel')">Cerrar</button>
-      <button class="btn btn-secondary btn-sm">Modificar y aprobar</button>
-      <button class="btn btn-approve btn-sm">✓ Aprobar comprobante</button>
-    </div>
-  </div>
+  </main>
 </div>
 
 <script src="js/portal.js"></script>
 <script src="js/data.js"></script>
 <script src="js/nav.js"></script>
+<script src="js/auth.js"></script>
 <script>
-function renderJELines(lines) {
-  let debits = 0, credits = 0;
-  const rows = lines.map(l => {
-    if (l.debit) debits += l.debit;
-    if (l.credit) credits += l.credit;
-    return `
-      <tr>
-        <td style="font-family:var(--font-mono);font-size:12px;">${l.account}</td>
-        <td>${l.name}</td>
-        <td>${l.desc}</td>
-        <td class="right">${l.debit ? fmtCOP(l.debit) : '—'}</td>
-        <td class="right">${l.credit ? fmtCOP(l.credit) : '—'}</td>
-      </tr>`;
-  }).join('');
+let currentJEFilter = 'all';
 
-  const balanced = debits === credits;
-  return `
-    <table class="je-table">
-      <thead>
-        <tr>
-          <th>Cuenta</th>
-          <th>Nombre</th>
-          <th>Descripción</th>
-          <th class="right">Débito</th>
-          <th class="right">Crédito</th>
-        </tr>
-      </thead>
-      <tbody>${rows}</tbody>
-      <tfoot>
-        <tr>
-          <td colspan="3">
-            ${balanced
-              ? '<span class="je-balanced">✓ Comprobante balanceado</span>'
-              : '<span class="je-unbalanced">⚠ No balanceado</span>'}
-          </td>
-          <td class="right">${fmtCOP(debits)}</td>
-          <td class="right">${fmtCOP(credits)}</td>
-        </tr>
-      </tfoot>
-    </table>`;
+document.addEventListener('DOMContentLoaded', () => {
+  const e = currentEntityData();
+  const meta = e.meta;
+  const cs = e.closeSummary;
+
+  document.getElementById('page-meta').innerHTML =
+    `${meta.name} · ${meta.period.toLowerCase()} · ${cs.total_jes} comprobantes (${cs.jes_pending} esperan aprobación)`;
+
+  if (cs.jes_pending > 0) {
+    document.getElementById('alert-slot').innerHTML = `
+      <div class="alert-banner">
+        <div class="alert-text">
+          <div class="icon">!</div>
+          <div class="copy"><strong>${cs.jes_pending} comprobante${cs.jes_pending===1?'':'s'} esperan aprobación.</strong> Cada uno se postea a ${meta.accounting_system} sólo después de su aprobación.</div>
+        </div>
+      </div>`;
+  }
+
+  renderFilters(e);
+  renderList(e);
+});
+
+function renderFilters(e) {
+  const items = e.journalEntries;
+  const counts = {
+    all:      items.length,
+    pending:  items.filter(x => x.status === 'pending').length,
+    approved: items.filter(x => x.status === 'approved').length,
+    blocked:  items.filter(x => x.status === 'blocked').length,
+  };
+  const chips = [
+    { key: 'all',      label: 'Todos' },
+    { key: 'pending',  label: 'Pendientes' },
+    { key: 'approved', label: 'Aprobados' },
+    { key: 'blocked',  label: 'Bloqueados' },
+  ];
+  document.getElementById('je-filters').innerHTML = chips.map(c => `
+    <div class="filter-chip ${c.key===currentJEFilter?'active':''}"
+         onclick="setJEFilter('${c.key}')">${c.label} (${counts[c.key]||0})</div>
+  `).join('');
 }
 
-function renderJECard(je) {
-  const totalDebit = (je.lines || []).reduce((s,l) => s + (l.debit||0), 0);
-  const isBlocked = je.status === 'blocked';
+function setJEFilter(key) {
+  currentJEFilter = key;
+  const e = currentEntityData();
+  renderFilters(e);
+  renderList(e);
+}
+
+function renderList(e) {
+  const items = currentJEFilter === 'all'
+    ? e.journalEntries
+    : e.journalEntries.filter(x => x.status === currentJEFilter);
+
+  document.getElementById('je-list').innerHTML = items.length === 0
+    ? `<div class="panel" style="text-align:center;color:var(--warm-gray);">Sin comprobantes en este filtro.</div>`
+    : items.map(je => renderJE(je)).join('');
+}
+
+function renderJE(je) {
+  const totalDr = je.lines.reduce((s,l) => s + (l.debit  || 0), 0);
+  const totalCr = je.lines.reduce((s,l) => s + (l.credit || 0), 0);
+  const lines = je.lines.length === 0
+    ? `<tr><td colspan="3" style="text-align:center;color:var(--warm-gray);padding:18px;">Sin líneas (bloqueado)</td></tr>`
+    : je.lines.map(l => `
+      <tr>
+        <td><span class="acc">${l.account}</span> <span style="color:var(--charcoal);">${l.name}</span></td>
+        <td class="amt dr">${l.debit  ? l.debit.toLocaleString('es-CO')  : ''}</td>
+        <td class="amt cr">${l.credit ? l.credit.toLocaleString('es-CO') : ''}</td>
+      </tr>`).join('');
+  const blockedNote = je.blocked_by
+    ? `<div class="je-blocked-note"><strong>Bloqueado por ${je.blocked_by.toUpperCase()}.</strong> Resolver la excepción primero.</div>`
+    : '';
+  const actions = je.status === 'approved'
+    ? `<span style="color:var(--success);font-weight:700;">✓ Aprobado · listo para postear</span>`
+    : je.status === 'blocked'
+      ? `<span style="color:var(--warning);font-weight:700;">⚠ Bloqueado</span>`
+      : `<button class="btn-reject" onclick="alert('Rechazo simulado — la excepción se devuelve a Angel.')">Rechazar</button>
+         <button class="btn-approve" onclick="alert('Aprobación simulada — el motor postea a ${e_meta('accounting_system')}.')">Aprobar</button>`;
   return `
-    <div class="card" style="${isBlocked?'opacity:.6;':''}" >
-      <div style="padding:16px 20px;">
-        <div class="flex-between">
-          <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;">
-            <span class="priority-dot ${je.priority}"></span>
-            <div style="min-width:0;">
-              <div style="font-weight:600;font-size:14px;color:var(--midnight);">${je.title}</div>
-              <div class="text-xs text-muted" style="font-family:var(--font-mono);margin-top:2px;">${je.subtype}</div>
-            </div>
-          </div>
-          <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
-            ${confidenceBar(je.ai_confidence)}
-            ${statusBadge(je.status)}
-            <span class="mono text-sm" style="color:var(--midnight);min-width:100px;text-align:right;">${fmtCOP(totalDebit)}</span>
-            ${isBlocked
-              ? '<span class="badge badge-blocked">Bloqueado</span>'
-              : je.status === 'pending'
-                ? `<button class="btn btn-approve btn-xs" onclick="approveJE('${je.id}')">✓ Aprobar</button>
-                   <button class="btn btn-ghost btn-xs" onclick="openJEDetail('${je.id}')">Ver</button>`
-                : `<button class="btn btn-ghost btn-xs" onclick="openJEDetail('${je.id}')">Ver</button>`
-            }
-          </div>
+    <div class="je-card">
+      <div class="head">
+        <div>
+          <div class="je-id">${je.id} · ${je.subtype}</div>
+          <div class="je-title">${je.title}</div>
+          <div class="je-desc">${je.description}</div>
         </div>
-        ${isBlocked && je.blocked_by ? `
-          <div class="alert alert-warning" style="margin-top:10px;margin-bottom:0;padding:8px 12px;">
-            ⛔ Bloqueado hasta resolver excepción: <a href="exceptions.html">${je.blocked_by}</a>
-          </div>` : ''}
+        <div class="head-right">
+          <span class="badge badge-${je.status}">${statusLabel(je.status)}</span>
+          <span class="priority-badge badge-${je.priority}">${je.priority.toUpperCase()}</span>
+        </div>
+      </div>
+      ${blockedNote}
+      <table class="je-lines">
+        <thead><tr><th>Cuenta</th><th style="text-align:right;">Débito</th><th style="text-align:right;">Crédito</th></tr></thead>
+        <tbody>${lines}</tbody>
+        ${je.lines.length > 0 ? `<tfoot><tr><td>Total</td><td class="amt dr">${totalDr.toLocaleString('es-CO')}</td><td class="amt cr">${totalCr.toLocaleString('es-CO')}</td></tr></tfoot>` : ''}
+      </table>
+      <div class="je-actions">
+        <div class="meta">
+          <span>Confianza ${Math.round(je.ai_confidence*100)}%</span>
+          <span>Creado ${fmtDate(je.created_at)}</span>
+        </div>
+        <div class="buttons">${actions}</div>
       </div>
     </div>`;
 }
 
-function approveJE(id) {
-  alert('✓ Comprobante aprobado. El agente registrará el asiento en Alegra. (Demo)');
+function statusLabel(s) {
+  return ({pending:'Pendiente',approved:'Aprobado',rejected:'Rechazado',
+           posted:'Registrado',blocked:'Bloqueado'})[s] || s;
 }
-
-function openJEDetail(id) {
-  const je = MOCK.journalEntries.find(j => j.id === id);
-  if (!je) return;
-  document.getElementById('je-panel-title').textContent = je.title;
-  document.getElementById('je-panel-subtype').textContent = je.subtype;
-  document.getElementById('je-panel-priority').innerHTML = priorityBadge(je.priority);
-  document.getElementById('je-panel-status').innerHTML = statusBadge(je.status);
-  document.getElementById('je-panel-desc').textContent = je.description;
-  document.getElementById('je-panel-conf').innerHTML = confidenceBar(je.ai_confidence);
-  document.getElementById('je-panel-lines').innerHTML = renderJELines(je.lines || []);
-
-  const blockAlert = document.getElementById('je-panel-block-alert');
-  if (je.blocked_by) {
-    blockAlert.style.display = 'block';
-    blockAlert.innerHTML = `<div class="alert alert-warning">⛔ Bloqueado hasta resolver: <a href="exceptions.html">${je.blocked_by}</a></div>`;
-    document.getElementById('je-panel-footer').style.display = 'none';
-  } else {
-    blockAlert.style.display = 'none';
-    document.getElementById('je-panel-footer').style.display = 'flex';
-  }
-  openPanel('je-panel');
-}
-
-function renderJEList(filter) {
-  const list = document.getElementById('je-list');
-  let entries = MOCK.journalEntries;
-  if (filter && filter !== 'all') {
-    entries = entries.filter(j => j.status === filter);
-  }
-  list.innerHTML = entries.length
-    ? entries.map(renderJECard).join('')
-    : '<div class="empty-state"><div class="empty-icon">📋</div><h3>Sin comprobantes</h3><p>No hay comprobantes en este estado.</p></div>';
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  renderJEList('all');
-  // Tab switching
-  const tabs = document.querySelectorAll('#je-tabs .tab');
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      tabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      renderJEList(tab.dataset.filter || 'all');
-    });
-  });
-});
+function e_meta(k) { return currentEntityData().meta[k]; }
 </script>
-<script src="js/auth.js"></script>
 </body>
 </html>

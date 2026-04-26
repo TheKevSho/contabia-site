@@ -6,6 +6,74 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%231B2A4A%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27Georgia%27 font-size=%2718%27 fill=%27%23D4704A%27 text-anchor=%27middle%27 font-weight=%27bold%27%3EC%3C/text%3E%3C/svg%3E">
   <title>ContabIA — Nómina</title>
   <link rel="stylesheet" href="css/portal.css">
+  <style>
+    .ot-card {
+      background: var(--white);
+      border: 1px solid var(--light-gray);
+      border-radius: var(--radius-lg);
+      padding: 16px 20px;
+      margin-bottom: 10px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+    }
+    .ot-card .meta-row {
+      font-size: 12.5px; color: var(--warm-gray); margin-top: 4px;
+    }
+    .ot-card .meta-row strong { color: var(--midnight); font-weight: 600; }
+    .ot-card .recargo {
+      display: inline-block; font-size: 10.5px; padding: 3px 8px;
+      border-radius: 10px; background: var(--sand); color: var(--midnight);
+      font-weight: 700; letter-spacing: .8px; margin-right: 6px;
+    }
+    .ot-actions { display: flex; gap: 8px; }
+    .btn-yes { background: var(--success); color: var(--cream); border: none; padding: 8px 14px; border-radius: var(--radius); font-weight: 600; cursor: pointer; }
+    .btn-no  { background: var(--white); color: var(--critical); border: 1px solid var(--critical); padding: 8px 14px; border-radius: var(--radius); font-weight: 600; cursor: pointer; }
+
+    .marc-table { width: 100%; border-collapse: collapse; }
+    .marc-table th, .marc-table td { padding: 10px 12px; font-size: 13.5px; border-bottom: 1px solid var(--light-gray); text-align: left; }
+    .marc-table th { font-size: 10.5px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--warm-gray); font-weight: 700; }
+    .marc-table .mono { font-family: var(--font-mono); }
+    .marc-table .dispute { color: var(--warning); font-size: 11.5px; margin-top: 2px; }
+
+    .emp-table { width: 100%; border-collapse: collapse; }
+    .emp-table th, .emp-table td { padding: 10px 12px; font-size: 13px; border-bottom: 1px solid var(--light-gray); }
+    .emp-table th { font-size: 10.5px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--warm-gray); font-weight: 700; text-align: left; }
+    .emp-table .name { font-weight: 600; color: var(--midnight); }
+    .emp-table .pos  { font-size: 12px; color: var(--warm-gray); margin-top: 2px; }
+    .emp-table .mono { font-family: var(--font-mono); text-align: right; }
+
+    .summary-card {
+      background: linear-gradient(155deg, var(--midnight) 0%, var(--midnight-2) 100%);
+      color: var(--cream);
+      border-radius: var(--radius-xl);
+      padding: 28px 30px;
+      margin-bottom: 14px;
+    }
+    .summary-card .head {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 18px; gap: 12px; flex-wrap: wrap;
+    }
+    .summary-card h2 { font-family: var(--font-display); font-size: 24px; }
+    .summary-card .sub { font-size: 13px; opacity: .7; margin-top: 2px; }
+    .summary-card .total {
+      font-family: var(--font-mono); font-weight: 700;
+      font-size: 38px; letter-spacing: -.5px;
+    }
+    .summary-card .total .currency { font-size: 16px; opacity: .55; margin-right: 6px; font-weight: 500; }
+    .summary-card .breakdown {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+      padding-top: 18px; border-top: 1px solid rgba(255,248,240,.12);
+    }
+    .summary-card .b { font-size: 12px; opacity: .75; }
+    .summary-card .v { font-family: var(--font-mono); font-weight: 700; font-size: 18px; margin-top: 4px; }
+
+    @media (max-width: 768px) {
+      .summary-card .breakdown { grid-template-columns: repeat(2, 1fr); }
+      .ot-card { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
 <div class="shell">
@@ -15,33 +83,20 @@
     <div id="topbar-mount"></div>
 
     <div class="content">
+
       <div class="page-head">
         <div class="title-block">
           <h1>Nómina</h1>
-          <div class="meta">Vista del gerente · página en construcción</div>
+          <div class="meta" id="page-meta">…</div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-secondary" onclick="location.reload()">↻ Actualizar</button>
         </div>
       </div>
 
-      <div class="alert-banner">
-        <div class="alert-text">
-          <div class="icon">i</div>
-          <div class="copy">
-            <strong>Página en construcción.</strong> Esta vista será el dashboard del gerente — disputas de marcaciones, aprobación de horas extras y KPIs operativos. Llega en la próxima fase de desarrollo.
-          </div>
-        </div>
-      </div>
+      <div id="alert-slot"></div>
+      <div id="content-slot"></div>
 
-      <div class="panel">
-        <div class="panel-header"><h3>Vista previa — qué vivirá aquí</h3></div>
-        <ul style="list-style:disc;padding-left:22px;color:var(--charcoal);font-size:14px;line-height:1.8;">
-          <li>Marcaciones del periodo (entrada/salida por empleado y día)</li>
-          <li>Disputas pendientes de revisión del gerente</li>
-          <li>Horas extras y recargos por aprobar (nocturno, dominical, festivo)</li>
-          <li>Resumen de la quincena: total nómina + parafiscales + prestaciones</li>
-          <li>KPIs operativos del equipo: ocupación, productividad, rotación</li>
-          <li>Botón de aprobar quincena → dispara cálculo + provisiones</li>
-        </ul>
-      </div>
     </div>
   </main>
 </div>
@@ -49,5 +104,182 @@
 <script src="js/data.js"></script>
 <script src="js/nav.js"></script>
 <script src="js/auth.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const e = currentEntityData();
+  const role = currentRole();
+  const meta = e.meta;
+  const n = e.nomina;
+
+  document.getElementById('page-meta').innerHTML =
+    `${meta.name} · ${n.payroll_summary.period} · ${n.payroll_summary.employee_count} empleados`;
+
+  /* role-aware view */
+  if (role === 'manager') {
+    document.getElementById('content-slot').innerHTML = managerView(e);
+  } else {
+    document.getElementById('content-slot').innerHTML = financialView(e);
+  }
+});
+
+/* ============================================================
+   MANAGER VIEW — operational, no financial tiles
+   ============================================================ */
+function managerView(e) {
+  const n = e.nomina;
+  const k = n.ops_kpis;
+  const otHtml = n.ot_pending.length === 0
+    ? '<div class="panel" style="text-align:center;color:var(--warm-gray);">No hay horas extras pendientes de aprobación.</div>'
+    : n.ot_pending.map(ot => `
+      <div class="ot-card">
+        <div>
+          <div style="font-weight:600;color:var(--midnight);font-size:14.5px;">${ot.employee}</div>
+          <div class="meta-row">
+            <span class="recargo">${ot.recargo}</span>
+            <strong>${ot.hours}h</strong> el ${formatShortDate(ot.date)} · ${ot.reason}
+          </div>
+        </div>
+        <div class="ot-actions">
+          <button class="btn-no"  onclick="alert('Rechazado (simulado)')">Rechazar</button>
+          <button class="btn-yes" onclick="alert('Aprobado (simulado) — se suma al cálculo de la quincena')">Aprobar</button>
+        </div>
+      </div>`).join('');
+
+  const marcHtml = n.recent_marcaciones.map(m => `
+    <tr>
+      <td>${m.employee}${m.dispute ? `<div class="dispute">⚠ ${m.dispute}</div>` : ''}</td>
+      <td class="mono">${formatShortDate(m.date)}</td>
+      <td class="mono">${m.in}</td>
+      <td class="mono">${m.out}</td>
+      <td class="mono" style="text-align:right;font-weight:600;">${m.hours.toFixed(2)} h</td>
+    </tr>`).join('');
+
+  /* KPI labels — use vessel KPI for Tayrona, ocupación for Cantamar */
+  const kpiCards = [];
+  if ('ocupacion_avg' in k) {
+    kpiCards.push(kpiCard('Ocupación promedio', k.ocupacion_avg + '%'));
+  }
+  if ('utilizacion_flota' in k) {
+    kpiCards.push(kpiCard('Utilización flota', k.utilizacion_flota + '%'));
+  }
+  kpiCards.push(kpiCard('Productividad', k.productividad + '%'));
+  kpiCards.push(kpiCard('Rotación 30d', k.rotacion_30d));
+  kpiCards.push(kpiCard('Horas marcadas', k.horas_marcadas.toLocaleString('es-CO')));
+  kpiCards.push(kpiCard('Horas extras', k.horas_extras + ' h'));
+
+  return `
+    <div class="section-label">KPIs operativos</div>
+    <div class="numbers-grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));">${kpiCards.join('')}</div>
+
+    <div class="section-label">Horas extras por aprobar (${n.ot_pending.length})</div>
+    ${otHtml}
+
+    <div class="section-label">Marcaciones recientes</div>
+    <div class="panel" style="padding:0;">
+      <table class="marc-table">
+        <thead><tr><th>Empleado</th><th>Fecha</th><th>Entrada</th><th>Salida</th><th style="text-align:right;">Horas</th></tr></thead>
+        <tbody>${marcHtml}</tbody>
+      </table>
+    </div>`;
+}
+
+function kpiCard(label, value) {
+  return `
+    <div class="number-tile">
+      <div>
+        <div class="tile-label">${label}</div>
+        <div class="tile-value" style="font-size:30px;">${value}</div>
+      </div>
+    </div>`;
+}
+
+/* ============================================================
+   FINANCIAL VIEW — owner / accountant
+   ============================================================ */
+function financialView(e) {
+  const n = e.nomina;
+  const ps = n.payroll_summary;
+  const meta = e.meta;
+
+  const summaryHtml = `
+    <div class="summary-card">
+      <div class="head">
+        <div>
+          <h2>${ps.period}</h2>
+          <div class="sub">${ps.employee_count} empleados · vence ${ps.due_date}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;opacity:.7;font-weight:700;">Total provisión quincena</div>
+          <div class="total"><span class="currency">COP</span>${ps.total_provision.toLocaleString('es-CO')}</div>
+        </div>
+      </div>
+      <div class="breakdown">
+        <div><div class="b">Salarios + horas extras</div><div class="v">${ps.total_nomina.toLocaleString('es-CO')}</div></div>
+        <div><div class="b">Parafiscales (4% Caja)</div><div class="v">${ps.parafiscales.toLocaleString('es-CO')}</div></div>
+        <div><div class="b">Prestaciones (provisión)</div><div class="v">${ps.prestaciones.toLocaleString('es-CO')}</div></div>
+        <div><div class="b">Cuenta a debitar</div><div class="v">BBVA · ${meta.bank_primary}</div></div>
+      </div>
+    </div>`;
+
+  const empHtml = n.employees.map(emp => `
+    <tr>
+      <td>
+        <div class="name">${emp.name}</div>
+        <div class="pos">${emp.position}</div>
+      </td>
+      <td class="mono">${emp.salary_base.toLocaleString('es-CO')}</td>
+      <td class="mono" style="text-align:center;">${emp.days}</td>
+      <td class="mono" style="text-align:center;">${emp.ot_h || '—'}</td>
+      <td class="mono" style="text-align:center;">${emp.recargo_h || '—'}</td>
+      <td class="mono" style="font-weight:700;color:var(--midnight);">${emp.total.toLocaleString('es-CO')}</td>
+    </tr>`).join('');
+  const empTotal = n.employees.reduce((s, x) => s + x.total, 0);
+
+  return `
+    ${summaryHtml}
+
+    <div class="alert-banner">
+      <div class="alert-text">
+        <div class="icon">!</div>
+        <div class="copy"><strong>Quincena lista para aprobar.</strong> Tras su aprobación, el motor genera JE-04 (nómina + parafiscales + prestaciones) y dispara el pago vía Prometeo.</div>
+      </div>
+    </div>
+
+    <div class="section-label">Detalle por empleado</div>
+    <div class="panel" style="padding:0;">
+      <table class="emp-table">
+        <thead>
+          <tr>
+            <th style="text-align:left;">Empleado</th>
+            <th style="text-align:right;">Salario base</th>
+            <th style="text-align:center;">Días</th>
+            <th style="text-align:center;">HE</th>
+            <th style="text-align:center;">Recargos</th>
+            <th style="text-align:right;">Total</th>
+          </tr>
+        </thead>
+        <tbody>${empHtml}</tbody>
+        <tfoot>
+          <tr>
+            <td colspan="5" style="font-weight:700;color:var(--midnight);text-align:right;border-top:2px solid var(--midnight);">Total nómina</td>
+            <td class="mono" style="font-weight:700;color:var(--midnight);font-size:14.5px;border-top:2px solid var(--midnight);">${empTotal.toLocaleString('es-CO')}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <div class="section-label">Acciones</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;">
+      <button class="btn btn-secondary" onclick="alert('Devolución a Yari/Nick para revisar marcaciones (simulado).')">Devolver al gerente</button>
+      <button class="btn btn-secondary" onclick="location.href='journal-entries.html'">Ver JE-04 propuesto</button>
+      <button class="btn btn-primary"   onclick="alert('Aprobado (simulado) — el motor postea JE-04 a ${meta.accounting_system} y dispara pago vía Prometeo.')">Aprobar y pagar quincena</button>
+    </div>`;
+}
+
+function formatShortDate(iso) {
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('es-CO', { day:'2-digit', month:'short' });
+}
+</script>
 </body>
 </html>

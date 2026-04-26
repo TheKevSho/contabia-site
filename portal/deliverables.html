@@ -6,195 +6,205 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%231B2A4A%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27Georgia%27 font-size=%2718%27 fill=%27%23D4704A%27 text-anchor=%27middle%27 font-weight=%27bold%27%3EC%3C/text%3E%3C/svg%3E">
   <title>ContabIA — Entregables</title>
   <link rel="stylesheet" href="css/portal.css">
+  <style>
+    .period-group {
+      margin-bottom: 22px;
+    }
+    .period-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--light-gray);
+    }
+    .period-head .pname {
+      font-family: var(--font-display);
+      color: var(--midnight);
+      font-size: 19px;
+    }
+    .period-head .pmeta {
+      font-size: 12px;
+      color: var(--warm-gray);
+      font-family: var(--font-mono);
+    }
+
+    .file-row {
+      background: var(--white);
+      border: 1px solid var(--light-gray);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 8px;
+      display: grid;
+      grid-template-columns: 44px 1fr auto auto;
+      gap: 14px;
+      align-items: center;
+    }
+    .file-row.not-ready { opacity: .55; }
+    .file-row .ftype {
+      width: 44px; height: 44px;
+      border-radius: var(--radius);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--cream);
+    }
+    .file-row .ftype.xlsx     { background: #1F7E3A; }
+    .file-row .ftype.pdf      { background: #B22222; }
+    .file-row .ftype.docx     { background: var(--ocean); }
+    .file-row .ftype.json     { background: var(--midnight); }
+
+    .file-row .fname {
+      font-weight: 600;
+      color: var(--midnight);
+      font-size: 14.5px;
+    }
+    .file-row .fnote {
+      font-size: 12px;
+      color: var(--warm-gray);
+      margin-top: 3px;
+    }
+    .file-row .source-tag {
+      font-size: 10px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 10px;
+      font-weight: 700;
+      background: var(--sand);
+      color: var(--midnight);
+      font-family: var(--font-mono);
+    }
+    .file-row .source-tag.free_scan { background: #FBE8C9; color: #876022; }
+    .file-row .fsize {
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      color: var(--warm-gray);
+    }
+  </style>
 </head>
 <body>
-<div class="portal-shell">
+<div class="shell">
   <div id="sidebar-mount"></div>
 
-  <div class="main-content">
-    <div class="top-bar">
-      <div class="top-bar-title">Entregables</div>
-      <div class="top-bar-actions">
-        <button class="btn btn-ghost btn-sm">Descargar todo (Marzo)</button>
-      </div>
-    </div>
+  <main class="main">
+    <div id="topbar-mount"></div>
 
-    <div class="page-content">
+    <div class="content">
 
-      <div class="alert alert-warning">
-        <span>⚠️</span>
-        <div>Los informes de <strong>Marzo 2026</strong> están incompletos. Se generarán una vez resueltas las 2 excepciones críticas y aprobados los JEs pendientes.</div>
-      </div>
-
-      <!-- March 2026 -->
-      <div class="section-header mt-16">
-        <div>
-          <div class="section-title">Marzo 2026</div>
-          <div class="section-sub">Cierre en progreso — algunos documentos aún no disponibles</div>
+      <div class="page-head">
+        <div class="title-block">
+          <h1>Entregables</h1>
+          <div class="meta" id="page-meta">…</div>
         </div>
-        <span class="badge badge-progress">En progreso</span>
-      </div>
-      <div class="card">
-        <div class="card-body" style="padding:8px 20px;">
-          <div class="deliverable-row">
-            <div class="deliverable-icon xlsx">📊</div>
-            <div class="deliverable-info">
-              <div class="deliverable-name">Libro de Cierre — Marzo 2026</div>
-              <div class="deliverable-meta">Xlsx · 284 KB · Generado el 01/04/2026 · P&L USALI + Balances + Flujo de Caja</div>
-            </div>
-            <div class="deliverable-actions">
-              <button class="btn btn-secondary btn-sm">↓ Descargar</button>
-              <button class="btn btn-ghost btn-sm">Vista previa</button>
-            </div>
-          </div>
-          <div class="deliverable-row">
-            <div class="deliverable-icon pdf">📄</div>
-            <div class="deliverable-info">
-              <div class="deliverable-name">Resumen P&L USALI — Marzo 2026</div>
-              <div class="deliverable-meta">PDF · 1.2 MB · Generado el 01/04/2026 · Departamental por GOP</div>
-            </div>
-            <div class="deliverable-actions">
-              <button class="btn btn-secondary btn-sm">↓ Descargar</button>
-              <button class="btn btn-ghost btn-sm">Vista previa</button>
-            </div>
-          </div>
-          <div class="deliverable-row" style="opacity:.45;">
-            <div class="deliverable-icon xlsx" style="background:#f0f0f0;color:#999;">📊</div>
-            <div class="deliverable-info">
-              <div class="deliverable-name" style="color:var(--warm-gray);">Conciliación Bancaria — Marzo 2026</div>
-              <div class="deliverable-meta">Xlsx · Pendiente — 2 items sin resolver</div>
-            </div>
-            <div class="deliverable-actions">
-              <button class="btn btn-ghost btn-sm" disabled style="opacity:.4;">No disponible</button>
-            </div>
-          </div>
-          <div class="deliverable-row" style="opacity:.45;">
-            <div class="deliverable-icon pdf" style="background:#f0f0f0;color:#999;">📄</div>
-            <div class="deliverable-info">
-              <div class="deliverable-name" style="color:var(--warm-gray);">Resumen Tributario — Marzo 2026</div>
-              <div class="deliverable-meta">PDF · Pendiente — requiere cierre completo</div>
-            </div>
-            <div class="deliverable-actions">
-              <button class="btn btn-ghost btn-sm" disabled style="opacity:.4;">No disponible</button>
-            </div>
-          </div>
-          <div class="deliverable-row" style="opacity:.45;">
-            <div class="deliverable-icon pdf" style="background:#f0f0f0;color:#999;">📄</div>
-            <div class="deliverable-info">
-              <div class="deliverable-name" style="color:var(--warm-gray);">Informe de Deducibilidad — Marzo 2026</div>
-              <div class="deliverable-meta">PDF · Pendiente — documentos soporte en proceso</div>
-            </div>
-            <div class="deliverable-actions">
-              <button class="btn btn-ghost btn-sm" disabled style="opacity:.4;">No disponible</button>
-            </div>
-          </div>
+        <div class="actions">
+          <a class="btn btn-secondary" href="auditoria.html">Auditoría →</a>
+          <button class="btn btn-secondary" onclick="alert('Paquete completo descargado (mockup).')">↓ Todo</button>
         </div>
       </div>
 
-      <!-- February 2026 -->
-      <div class="section-header mt-24">
-        <div>
-          <div class="section-title">Febrero 2026</div>
-          <div class="section-sub">Cierre completado el 02/03/2026</div>
-        </div>
-        <span class="badge badge-closed">Cerrado</span>
-      </div>
-      <div class="card">
-        <div class="card-body" style="padding:8px 20px;">
-          <div class="deliverable-row">
-            <div class="deliverable-icon xlsx">📊</div>
-            <div class="deliverable-info">
-              <div class="deliverable-name">Libro de Cierre — Febrero 2026</div>
-              <div class="deliverable-meta">Xlsx · 271 KB · 02/03/2026 · P&L USALI + Balances + Flujo de Caja</div>
-            </div>
-            <div class="deliverable-actions">
-              <button class="btn btn-secondary btn-sm">↓ Descargar</button>
-              <button class="btn btn-ghost btn-sm">Vista previa</button>
-            </div>
-          </div>
-          <div class="deliverable-row">
-            <div class="deliverable-icon pdf">📄</div>
-            <div class="deliverable-info">
-              <div class="deliverable-name">Resumen P&L USALI — Febrero 2026</div>
-              <div class="deliverable-meta">PDF · 1.1 MB · 02/03/2026</div>
-            </div>
-            <div class="deliverable-actions">
-              <button class="btn btn-secondary btn-sm">↓ Descargar</button>
-              <button class="btn btn-ghost btn-sm">Vista previa</button>
-            </div>
-          </div>
-          <div class="deliverable-row">
-            <div class="deliverable-icon xlsx">📊</div>
-            <div class="deliverable-info">
-              <div class="deliverable-name">Conciliación Bancaria — Febrero 2026</div>
-              <div class="deliverable-meta">Xlsx · 88 KB · 02/03/2026</div>
-            </div>
-            <div class="deliverable-actions">
-              <button class="btn btn-secondary btn-sm">↓ Descargar</button>
-            </div>
-          </div>
-          <div class="deliverable-row">
-            <div class="deliverable-icon pdf">📄</div>
-            <div class="deliverable-info">
-              <div class="deliverable-name">Resumen Tributario — Febrero 2026</div>
-              <div class="deliverable-meta">PDF · 395 KB · 02/03/2026</div>
-            </div>
-            <div class="deliverable-actions">
-              <button class="btn btn-secondary btn-sm">↓ Descargar</button>
-            </div>
-          </div>
-          <div class="deliverable-row">
-            <div class="deliverable-icon pdf">📄</div>
-            <div class="deliverable-info">
-              <div class="deliverable-name">Informe de Deducibilidad — Febrero 2026</div>
-              <div class="deliverable-meta">PDF · 320 KB · 02/03/2026 · COP 976.400 recuperado</div>
-            </div>
-            <div class="deliverable-actions">
-              <button class="btn btn-secondary btn-sm">↓ Descargar</button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <div class="filter-chips" id="del-filters"></div>
 
-      <!-- January 2026 -->
-      <div class="section-header mt-24">
-        <div>
-          <div class="section-title">Enero 2026</div>
-          <div class="section-sub">Cierre completado el 03/02/2026</div>
-        </div>
-        <span class="badge badge-closed">Cerrado</span>
-      </div>
-      <div class="card">
-        <div class="card-body" style="padding:8px 20px;">
-          <div class="deliverable-row">
-            <div class="deliverable-icon xlsx">📊</div>
-            <div class="deliverable-info">
-              <div class="deliverable-name">Libro de Cierre — Enero 2026</div>
-              <div class="deliverable-meta">Xlsx · 258 KB · 03/02/2026</div>
-            </div>
-            <div class="deliverable-actions">
-              <button class="btn btn-secondary btn-sm">↓ Descargar</button>
-            </div>
-          </div>
-          <div class="deliverable-row">
-            <div class="deliverable-icon pdf">📄</div>
-            <div class="deliverable-info">
-              <div class="deliverable-name">Resumen Tributario — Enero 2026</div>
-              <div class="deliverable-meta">PDF · 380 KB · 03/02/2026 · COP 1.084.200 recuperado</div>
-            </div>
-            <div class="deliverable-actions">
-              <button class="btn btn-secondary btn-sm">↓ Descargar</button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <div id="del-list"></div>
 
     </div>
-  </div>
+  </main>
 </div>
-<script src="js/portal.js"></script>
+
 <script src="js/data.js"></script>
 <script src="js/nav.js"></script>
 <script src="js/auth.js"></script>
+<script>
+let currentDelFilter = 'all';
+
+document.addEventListener('DOMContentLoaded', () => {
+  const e = currentEntityData();
+  const meta = e.meta;
+  const ready = e.deliverables.filter(d => d.ready).length;
+
+  document.getElementById('page-meta').innerHTML =
+    `${meta.name} · archivo histórico · ${ready} de ${e.deliverables.length} listos para descargar`;
+
+  renderFilters(e);
+  renderList(e);
+});
+
+function renderFilters(e) {
+  const cierreCount = e.deliverables.filter(d => d.source === 'cierre').length;
+  const scanCount   = e.deliverables.filter(d => d.source === 'free_scan').length;
+  const chips = [
+    { key: 'all',       label: `Todos (${e.deliverables.length})` },
+    { key: 'cierre',    label: `Cierres mensuales (${cierreCount})` },
+    { key: 'free_scan', label: `Escaneo gratuito (${scanCount})` },
+  ];
+  document.getElementById('del-filters').innerHTML = chips.map(c => `
+    <div class="filter-chip ${c.key===currentDelFilter?'active':''}" onclick="setDelFilter('${c.key}')">${c.label}</div>
+  `).join('');
+}
+
+function setDelFilter(key) {
+  currentDelFilter = key;
+  const e = currentEntityData();
+  renderFilters(e);
+  renderList(e);
+}
+
+function renderList(e) {
+  let items = e.deliverables;
+  if (currentDelFilter !== 'all') items = items.filter(d => d.source === currentDelFilter);
+
+  /* group by period */
+  const byPeriod = items.reduce((acc, d) => {
+    (acc[d.period] = acc[d.period] || []).push(d);
+    return acc;
+  }, {});
+
+  /* sort periods most recent first — we'll trust insertion order matches data.js */
+  const periods = Object.keys(byPeriod);
+
+  document.getElementById('del-list').innerHTML = periods.length === 0
+    ? `<div class="panel" style="text-align:center;color:var(--warm-gray);">Sin entregables en este filtro.</div>`
+    : periods.map(p => {
+      const files = byPeriod[p];
+      const ready = files.filter(f => f.ready).length;
+      return `
+        <div class="period-group">
+          <div class="period-head">
+            <div class="pname">${p}</div>
+            <div class="pmeta">${ready} / ${files.length} listos</div>
+          </div>
+          ${files.map(f => renderFile(f)).join('')}
+        </div>`;
+    }).join('');
+}
+
+function renderFile(f) {
+  const cls = f.ready ? '' : 'not-ready';
+  const sourceTag = f.source === 'free_scan'
+    ? `<span class="source-tag free_scan" title="Escaneo gratuito de ContabIA">FREE-SCAN</span>`
+    : '';
+  const action = f.ready
+    ? (f.path
+        ? `<a class="btn btn-primary btn-sm" href="${f.path}" target="_blank">↓ Descargar</a>`
+        : `<button class="btn btn-primary btn-sm" onclick="alert('Descarga simulada — archivo en S3.')">↓ Descargar</button>`)
+    : `<span class="text-xs text-muted">En preparación</span>`;
+  const note = f.note ? `<div class="fnote">${f.note}</div>` : '';
+  return `
+    <div class="file-row ${cls}">
+      <div class="ftype ${f.type}">${f.type.toUpperCase()}</div>
+      <div>
+        <div class="fname">${f.name}</div>
+        ${note}
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+        ${sourceTag}
+        <div class="fsize">${f.size}</div>
+      </div>
+      <div>${action}</div>
+    </div>`;
+}
+</script>
 </body>
 </html>
