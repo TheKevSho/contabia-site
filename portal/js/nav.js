@@ -24,6 +24,7 @@ const NAV_MODEL = [
     { id: 'tributario',      label: 'Tributario',              href: 'tributario.html',      roles: ['owner','accountant'] },
   ]},
   { section: 'Resultados', items: [
+    { id: 'boveda',          label: 'Bóveda',                  href: 'boveda.html',          roles: ['owner','accountant','manager'] },
     { id: 'deliverables',    label: 'Entregables',             href: 'deliverables.html',    roles: ['owner','accountant'] },
     { id: 'auditoria',       label: 'Auditoría',               href: 'auditoria.html',       roles: ['owner','accountant'] },
   ]},

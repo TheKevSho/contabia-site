@@ -335,6 +335,21 @@ const DATA = {
         path: '../../contabia public site/free-scan/escaneo_vamos_navegando_sas_20260404.pdf' },
     ],
 
+    /* ---- BÓVEDA — input/upload store. Inverse of Entregables. ---- */
+    boveda: [
+      { id:'b-1',  filename:'Bancolombia_extracto_marzo_2026.pdf',     folder:'Banco',                type:'pdf',  size:'380 KB', uploaded_by:'agent',   uploaded_at:'2026-04-04 06:12', tags:['banco','cierre'],     processed:true,  linked_to:'JE-05 (concil. bancaria)' },
+      { id:'b-2',  filename:'Bancolombia_extracto_febrero_2026.pdf',   folder:'Banco',                type:'pdf',  size:'372 KB', uploaded_by:'agent',   uploaded_at:'2026-03-04 06:00', tags:['banco','cierre'],     processed:true,  linked_to:'Cierre febrero' },
+      { id:'b-3',  filename:'ferreteria_el_tornillo_28032026.jpg',     folder:'Recibos',              type:'img',  size:'212 KB', uploaded_by:'whatsapp',uploaded_at:'2026-03-28 14:22', tags:['compras'],            processed:true,  linked_to:'EXC-003' },
+      { id:'b-4',  filename:'aws_invoice_marzo_2026.pdf',              folder:'Recibos',              type:'pdf',  size:'48 KB',  uploaded_by:'email',   uploaded_at:'2026-04-01 09:05', tags:['compras','exterior'],processed:false, linked_to:null },
+      { id:'b-5',  filename:'taxi_marina_15032026.jpg',                folder:'Recibos',              type:'img',  size:'180 KB', uploaded_by:'whatsapp',uploaded_at:'2026-03-15 18:40', tags:['compras'],            processed:true,  linked_to:null },
+      { id:'b-6',  filename:'transportes_sp_factura_22mar2026.pdf',    folder:'Facturas Proveedores', type:'pdf',  size:'92 KB',  uploaded_by:'agent',   uploaded_at:'2026-03-22 11:15', tags:['compras','retefuente'], processed:true, linked_to:'EXC-001' },
+      { id:'b-7',  filename:'booking_statement_marzo_2026.xlsx',       folder:'OTAs',                 type:'xls',  size:'140 KB', uploaded_by:'agent',   uploaded_at:'2026-04-02 08:30', tags:['ingresos'],           processed:true,  linked_to:'JE-02' },
+      { id:'b-8',  filename:'airbnb_payouts_marzo.pdf',                folder:'OTAs',                 type:'pdf',  size:'88 KB',  uploaded_by:'agent',   uploaded_at:'2026-04-02 08:32', tags:['ingresos'],           processed:true,  linked_to:null },
+      { id:'b-9',  filename:'F300_2024_2025.pdf',                      folder:'Onboarding',           type:'pdf',  size:'420 KB', uploaded_by:'kevin',   uploaded_at:'2026-01-15 16:00', tags:['onboarding'],         processed:true,  linked_to:'Posición fiscal base' },
+      { id:'b-10', filename:'retefuente_2025.pdf',                     folder:'Onboarding',           type:'pdf',  size:'310 KB', uploaded_by:'kevin',   uploaded_at:'2026-01-15 16:02', tags:['onboarding'],         processed:true,  linked_to:'Posición fiscal base' },
+      { id:'b-11', filename:'contrato_arriendo_local.pdf',             folder:'Otros',                type:'pdf',  size:'520 KB', uploaded_by:'kevin',   uploaded_at:'2026-02-01 10:00', tags:[],                     processed:false, linked_to:null },
+    ],
+
     /* ---- NÓMINA ---- */
     nomina: {
       payroll_summary: {
@@ -700,6 +715,20 @@ const DATA = {
       { name: 'Escaneo gratuito — abril 2026',          type: 'pdf',  size: '120 KB', period: 'Abril 2026',   ready: true,  source: 'free_scan',
         note: 'Detección inicial de documento soporte faltante en compras al exterior.',
         path: '../../contabia public site/free-scan/escaneo_sonata_mas_sas_20260404.pdf' },
+    ],
+
+    /* ---- BÓVEDA ---- */
+    boveda: [
+      { id:'b-1',  filename:'BBVA_extracto_marzo_2026.pdf',           folder:'Banco',                type:'pdf', size:'420 KB', uploaded_by:'agent',   uploaded_at:'2026-04-04 05:55', tags:['banco','cierre'],       processed:true,  linked_to:'JE-05 (concil. BBVA)' },
+      { id:'b-2',  filename:'Bancolombia_extracto_marzo_2026.pdf',    folder:'Banco',                type:'pdf', size:'298 KB', uploaded_by:'agent',   uploaded_at:'2026-04-04 05:56', tags:['banco','cierre'],       processed:true,  linked_to:'JE-05 (concil. Bancol.)' },
+      { id:'b-3',  filename:'astilleros_caribe_15mar2026.pdf',        folder:'Facturas Proveedores', type:'pdf', size:'154 KB', uploaded_by:'agent',   uploaded_at:'2026-03-15 11:00', tags:['compras','retefuente'], processed:true,  linked_to:'EXC-104' },
+      { id:'b-4',  filename:'combustible_marina_22mar2026.jpg',       folder:'Recibos',              type:'img', size:'240 KB', uploaded_by:'whatsapp',uploaded_at:'2026-03-22 14:30', tags:['compras'],              processed:true,  linked_to:null },
+      { id:'b-5',  filename:'repuestos_motor_18mar2026.jpg',          folder:'Recibos',              type:'img', size:'195 KB', uploaded_by:'whatsapp',uploaded_at:'2026-03-18 09:45', tags:['compras'],              processed:false, linked_to:null },
+      { id:'b-6',  filename:'civitatis_marzo_2026.xlsx',              folder:'OTAs',                 type:'xls', size:'112 KB', uploaded_by:'agent',   uploaded_at:'2026-04-02 09:00', tags:['ingresos'],             processed:true,  linked_to:null },
+      { id:'b-7',  filename:'viator_marzo_2026.pdf',                  folder:'OTAs',                 type:'pdf', size:'76 KB',  uploaded_by:'agent',   uploaded_at:'2026-04-02 09:05', tags:['ingresos'],             processed:true,  linked_to:null },
+      { id:'b-8',  filename:'getyourguide_PENDIENTE_2fa.txt',         folder:'OTAs',                 type:'pdf', size:'2 KB',   uploaded_by:'agent',   uploaded_at:'2026-04-04 05:05', tags:['ingresos','bloqueado'],processed:false, linked_to:'EXC-101' },
+      { id:'b-9',  filename:'F300_2024_2025_sonata.pdf',              folder:'Onboarding',           type:'pdf', size:'380 KB', uploaded_by:'kevin',   uploaded_at:'2026-01-20 14:30', tags:['onboarding'],           processed:true,  linked_to:'Posición fiscal base' },
+      { id:'b-10', filename:'certificado_navegacion_sonata.pdf',      folder:'Otros',                type:'pdf', size:'180 KB', uploaded_by:'nick',    uploaded_at:'2026-02-12 11:00', tags:['legal'],                processed:true,  linked_to:null },
     ],
 
     /* ---- NÓMINA ---- */

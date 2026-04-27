@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%231B2A4A%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27Georgia%27 font-size=%2718%27 fill=%27%23D4704A%27 text-anchor=%27middle%27 font-weight=%27bold%27%3EC%3C/text%3E%3C/svg%3E">
+  <title>ContabIA — Bóveda</title>
+  <link rel="stylesheet" href="css/portal.css">
+  <style>
+    /* upload zone */
+    .upload-zone {
+      border: 2px dashed var(--light-gray);
+      border-radius: var(--radius-lg);
+      padding: 28px 20px;
+      text-align: center;
+      background: var(--white);
+      transition: all .15s;
+      cursor: pointer;
+      margin-bottom: 18px;
+    }
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: var(--terracotta);
+      background: rgba(212,112,74,.04);
+    }
+    .upload-zone .icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+      opacity: .6;
+    }
+    .upload-zone .label {
+      font-family: var(--font-display);
+      font-size: 18px;
+      color: var(--midnight);
+      margin-bottom: 4px;
+    }
+    .upload-zone .sub {
+      font-size: 13px;
+      color: var(--warm-gray);
+    }
+    .upload-zone .actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    /* search row */
+    .vault-controls {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .search-box {
+      flex: 1; min-width: 240px;
+      padding: 10px 14px;
+      border: 1px solid var(--light-gray);
+      border-radius: var(--radius);
+      background: var(--white);
+      font-size: 14px;
+      font-family: var(--font-body);
+      color: var(--midnight);
+      outline: none;
+    }
+    .search-box:focus { border-color: var(--terracotta); }
+
+    /* file grid */
+    .vault-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+    }
+    .vault-file {
+      background: var(--white);
+      border: 1px solid var(--light-gray);
+      border-radius: var(--radius-lg);
+      padding: 14px 16px;
+      display: flex;
+      gap: 12px;
+      transition: box-shadow .15s, border-color .15s;
+      cursor: pointer;
+    }
+    .vault-file:hover {
+      box-shadow: 0 4px 12px rgba(27,42,74,.08);
+      border-color: var(--terracotta);
+    }
+    .vault-file .ftype {
+      width: 42px; height: 42px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--cream);
+      flex-shrink: 0;
+    }
+    .vault-file .ftype.pdf { background: #B22222; }
+    .vault-file .ftype.xls { background: #1F7E3A; }
+    .vault-file .ftype.img { background: var(--ocean); }
+    .vault-file .body { min-width: 0; flex: 1; }
+    .vault-file .fname {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--midnight);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .vault-file .fmeta {
+      font-size: 11.5px;
+      color: var(--warm-gray);
+      margin-top: 3px;
+      font-family: var(--font-mono);
+    }
+    .vault-file .ftags {
+      display: flex; flex-wrap: wrap; gap: 4px;
+      margin-top: 6px;
+    }
+    .vault-file .ftag {
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 3px;
+      background: var(--sand);
+      color: var(--warm-gray);
+    }
+    .vault-file .ftag.banco       { background: rgba(74,159,212,.12);  color: var(--sky); }
+    .vault-file .ftag.compras     { background: rgba(212,112,74,.12);  color: var(--terracotta); }
+    .vault-file .ftag.ingresos    { background: rgba(45,95,138,.12);   color: var(--ocean); }
+    .vault-file .ftag.cierre      { background: rgba(27,42,74,.10);    color: var(--midnight); }
+    .vault-file .ftag.onboarding  { background: rgba(74,139,111,.12);  color: var(--success); }
+    .vault-file .ftag.exterior    { background: rgba(196,74,58,.10);   color: var(--critical); }
+    .vault-file .ftag.retefuente  { background: rgba(212,160,74,.15);  color: #876022; }
+    .vault-file .ftag.bloqueado   { background: rgba(196,74,58,.10);   color: var(--critical); }
+    .vault-file .processed {
+      font-size: 10px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 3px 7px;
+      border-radius: 10px;
+      font-weight: 700;
+      align-self: flex-start;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+    .vault-file .processed.yes { background: #E0F0E5; color: var(--success); }
+    .vault-file .processed.no  { background: #FBE8C9; color: #876022; }
+    .vault-file .linked {
+      font-size: 11px;
+      color: var(--ocean);
+      margin-top: 4px;
+      font-family: var(--font-mono);
+    }
+
+    /* folder section header */
+    .folder-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin: 22px 0 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--light-gray);
+    }
+    .folder-head .fname {
+      font-family: var(--font-display);
+      color: var(--midnight);
+      font-size: 18px;
+    }
+    .folder-head .fcount {
+      font-size: 12px;
+      color: var(--warm-gray);
+      font-family: var(--font-mono);
+    }
+  </style>
+</head>
+<body>
+<div class="shell">
+  <div id="sidebar-mount"></div>
+
+  <main class="main">
+    <div id="topbar-mount"></div>
+
+    <div class="content">
+
+      <div class="page-head">
+        <div class="title-block">
+          <h1>Bóveda</h1>
+          <div class="meta" id="page-meta">…</div>
+        </div>
+        <div class="actions">
+          <a class="btn btn-secondary" href="auditoria.html">Auditoría →</a>
+        </div>
+      </div>
+
+      <div class="alert-banner">
+        <div class="alert-text">
+          <div class="icon">i</div>
+          <div class="copy">Aquí vive todo lo que entra al motor — extractos bancarios, recibos, facturas, estados de OTAs. <strong>Suba una vez, el agente lo usa para todo.</strong></div>
+        </div>
+      </div>
+
+      <!-- Upload zone -->
+      <div class="upload-zone" id="upload-zone" onclick="alert('Selector de archivos (mockup) — drag & drop o click para subir.')">
+        <div class="icon">⬆</div>
+        <div class="label">Arrastre archivos aquí o haga click para subir</div>
+        <div class="sub">PDFs · imágenes · Excel · CSV — el agente los etiqueta automáticamente</div>
+        <div class="actions">
+          <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();alert('WhatsApp: envíe el archivo al número de su entidad.')">📱 Vía WhatsApp</button>
+          <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();alert('Email: forward a la dirección dedicada de su cuenta.')">✉ Vía email</button>
+        </div>
+      </div>
+
+      <!-- Search + filters -->
+      <div class="vault-controls">
+        <input type="text" class="search-box" id="vault-search" placeholder="Buscar por nombre, etiqueta o referencia…">
+      </div>
+      <div class="filter-chips" id="vault-filters"></div>
+
+      <!-- Files grouped by folder -->
+      <div id="vault-list"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/auth.js"></script>
+<script>
+let currentFolderFilter = 'all';
+let currentSearch = '';
+
+document.addEventListener('DOMContentLoaded', () => {
+  const e = currentEntityData();
+  const role = currentRole();
+  const meta = e.meta;
+  const all = e.boveda || [];
+
+  /* Manager scope: only Recibos folder */
+  const visible = role === 'manager'
+    ? all.filter(f => f.folder === 'Recibos')
+    : all;
+
+  const processed = visible.filter(f => f.processed).length;
+  document.getElementById('page-meta').innerHTML =
+    `${meta.name} · ${visible.length} archivo${visible.length===1?'':'s'} · ${processed} procesado${processed===1?'':'s'} por el agente`;
+
+  /* Drag & drop placeholder */
+  const zone = document.getElementById('upload-zone');
+  zone.addEventListener('dragover', ev => { ev.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', ev => {
+    ev.preventDefault();
+    zone.classList.remove('dragover');
+    alert(`Carga simulada de ${ev.dataTransfer.files.length} archivo(s).`);
+  });
+
+  document.getElementById('vault-search').addEventListener('input', ev => {
+    currentSearch = ev.target.value.toLowerCase();
+    renderList(visible);
+  });
+
+  renderFilters(visible);
+  renderList(visible);
+});
+
+function renderFilters(items) {
+  const folders = ['all', ...new Set(items.map(f => f.folder))];
+  document.getElementById('vault-filters').innerHTML = folders.map(f => {
+    const count = f === 'all' ? items.length : items.filter(x => x.folder === f).length;
+    return `<div class="filter-chip ${f===currentFolderFilter?'active':''}" onclick="setFolderFilter('${f}', window._vaultItems || ${JSON.stringify(items).replace(/"/g, '&quot;')})">${f === 'all' ? 'Todas las carpetas' : f} (${count})</div>`;
+  }).join('');
+  /* stash items globally so chip clicks can re-render */
+  window._vaultItems = items;
+}
+
+function setFolderFilter(f) {
+  currentFolderFilter = f;
+  const items = window._vaultItems;
+  renderFilters(items);
+  renderList(items);
+}
+
+function renderList(items) {
+  let filtered = items;
+  if (currentFolderFilter !== 'all') filtered = filtered.filter(f => f.folder === currentFolderFilter);
+  if (currentSearch) {
+    filtered = filtered.filter(f =>
+      f.filename.toLowerCase().includes(currentSearch) ||
+      (f.tags || []).some(t => t.toLowerCase().includes(currentSearch)) ||
+      (f.linked_to || '').toLowerCase().includes(currentSearch)
+    );
+  }
+
+  if (filtered.length === 0) {
+    document.getElementById('vault-list').innerHTML =
+      `<div class="panel" style="text-align:center;color:var(--warm-gray);">Sin archivos con este filtro.</div>`;
+    return;
+  }
+
+  /* Group by folder unless we're already filtered to one */
+  if (currentFolderFilter !== 'all') {
+    document.getElementById('vault-list').innerHTML = `
+      <div class="vault-grid">${filtered.map(renderFile).join('')}</div>`;
+    return;
+  }
+
+  const byFolder = filtered.reduce((acc, f) => {
+    (acc[f.folder] = acc[f.folder] || []).push(f);
+    return acc;
+  }, {});
+  document.getElementById('vault-list').innerHTML = Object.entries(byFolder).map(([folder, files]) => `
+    <div>
+      <div class="folder-head">
+        <div class="fname">${folder}</div>
+        <div class="fcount">${files.length} archivo${files.length===1?'':'s'}</div>
+      </div>
+      <div class="vault-grid">${files.map(renderFile).join('')}</div>
+    </div>`).join('');
+}
+
+function renderFile(f) {
+  const tags = (f.tags || []).map(t => `<span class="ftag ${t}">${t}</span>`).join('');
+  const linked = f.linked_to ? `<div class="linked">↳ ${f.linked_to}</div>` : '';
+  return `
+    <div class="vault-file" onclick="openFileDetail('${f.id}')">
+      <div class="ftype ${f.type}">${f.type.toUpperCase()}</div>
+      <div class="body">
+        <div class="fname" title="${f.filename}">${f.filename}</div>
+        <div class="fmeta">${f.size} · ${f.uploaded_at} · ${f.uploaded_by}</div>
+        ${tags ? `<div class="ftags">${tags}</div>` : ''}
+        ${linked}
+      </div>
+      <span class="processed ${f.processed?'yes':'no'}">${f.processed?'✓':'…'}</span>
+    </div>`;
+}
+
+function openFileDetail(id) {
+  const f = (currentEntityData().boveda || []).find(x => x.id === id);
+  if (!f) return;
+  alert(
+    `${f.filename}\n\n` +
+    `Carpeta: ${f.folder}\n` +
+    `Tamaño: ${f.size}\n` +
+    `Subido: ${f.uploaded_at} por ${f.uploaded_by}\n` +
+    `Etiquetas: ${(f.tags || []).join(', ') || '(ninguna)'}\n` +
+    `Procesado por motor: ${f.processed ? 'Sí' : 'No'}\n` +
+    `Vinculado a: ${f.linked_to || '(nada)'}\n\n` +
+    `(En producción: preview + descarga + reasignar carpeta + agregar etiquetas.)`
+  );
+}
+</script>
+</body>
+</html>
