@@ -175,7 +175,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const topbarMount  = document.getElementById('topbar-mount');
   if (!sidebarMount) return;
 
-  const page = window.location.pathname.split('/').pop() || 'index.html';
+  /* normalize pretty URLs (Cloudflare Pages strips .html) — always
+     compare against the canonical xxx.html form */
+  let page = window.location.pathname.split('/').pop() || 'index.html';
+  if (page && !page.includes('.')) page += '.html';
 
   /* manager-only enforcement: redirect off pages they shouldn't see */
   const role = currentRole();
@@ -183,7 +186,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const allowedHrefs = NAV_MODEL.flatMap(s => s.items)
       .filter(i => i.roles.includes('manager'))
       .map(i => i.href);
-    if (!allowedHrefs.includes(page) && page !== 'login.html' && page !== 'login-contador.html' && page !== 'login-gerente.html') {
+    const loginPages = ['login.html', 'login-contador.html', 'login-gerente.html'];
+    if (!allowedHrefs.includes(page) && !loginPages.includes(page)) {
       location.replace('nomina.html');
       return;
     }

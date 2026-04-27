@@ -12,11 +12,10 @@
    ============================================================ */
 (function() {
   const auth = sessionStorage.getItem('contabia_auth');
+  /* match login pages with or without .html (Cloudflare Pages pretty URLs) */
+  const isLoginPage = /\/(login|login-contador|login-gerente)(\.html)?\/?$/.test(location.pathname);
   if (auth !== '1') {
-    /* not authenticated — bounce to default login */
-    if (!location.pathname.endsWith('login.html')
-     && !location.pathname.endsWith('login-contador.html')
-     && !location.pathname.endsWith('login-gerente.html')) {
+    if (!isLoginPage) {
       location.replace('login.html');
       return;
     }
