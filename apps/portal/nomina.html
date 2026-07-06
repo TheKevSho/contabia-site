@@ -6,6 +6,7 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%231B2A4A%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27Georgia%27 font-size=%2718%27 fill=%27%23D4704A%27 text-anchor=%27middle%27 font-weight=%27bold%27%3EC%3C/text%3E%3C/svg%3E">
   <title>ContabIA — Nómina</title>
   <link rel="stylesheet" href="css/portal.css">
+  <script src="js/theme.js"></script>
   <style>
     .ot-card {
       background: var(--white);
@@ -21,14 +22,14 @@
     .ot-card .meta-row {
       font-size: 12.5px; color: var(--warm-gray); margin-top: 4px;
     }
-    .ot-card .meta-row strong { color: var(--midnight); font-weight: 600; }
+    .ot-card .meta-row strong { color: var(--charcoal); font-weight: 600; }
     .ot-card .recargo {
       display: inline-block; font-size: 10.5px; padding: 3px 8px;
-      border-radius: 10px; background: var(--sand); color: var(--midnight);
+      border-radius: 10px; background: var(--sand); color: var(--charcoal);
       font-weight: 700; letter-spacing: .8px; margin-right: 6px;
     }
     .ot-actions { display: flex; gap: 8px; }
-    .btn-yes { background: var(--success); color: var(--cream); border: none; padding: 8px 14px; border-radius: var(--radius); font-weight: 600; cursor: pointer; }
+    .btn-yes { background: var(--success); color: var(--on-dark); border: none; padding: 8px 14px; border-radius: var(--radius); font-weight: 600; cursor: pointer; }
     .btn-no  { background: var(--white); color: var(--critical); border: 1px solid var(--critical); padding: 8px 14px; border-radius: var(--radius); font-weight: 600; cursor: pointer; }
 
     .marc-table { width: 100%; border-collapse: collapse; }
@@ -40,37 +41,40 @@
     .emp-table { width: 100%; border-collapse: collapse; }
     .emp-table th, .emp-table td { padding: 10px 12px; font-size: 13px; border-bottom: 1px solid var(--light-gray); }
     .emp-table th { font-size: 10.5px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--warm-gray); font-weight: 700; text-align: left; }
-    .emp-table .name { font-weight: 600; color: var(--midnight); }
+    .emp-table .name { font-weight: 600; color: var(--charcoal); }
     .emp-table .pos  { font-size: 12px; color: var(--warm-gray); margin-top: 2px; }
     .emp-table .mono { font-family: var(--font-mono); text-align: right; }
 
-    .summary-card {
-      background: linear-gradient(155deg, var(--midnight) 0%, var(--midnight-2) 100%);
-      color: var(--cream);
-      border-radius: var(--radius-xl);
-      padding: 28px 30px;
+    .payroll-tiles {
+      display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px;
       margin-bottom: 14px;
     }
-    .summary-card .head {
-      display: flex; justify-content: space-between; align-items: flex-start;
-      margin-bottom: 18px; gap: 12px; flex-wrap: wrap;
+    .payroll-tiles .tile {
+      border-radius: var(--radius-lg); padding: 18px 20px;
     }
-    .summary-card h2 { font-family: var(--font-display); font-size: 24px; }
-    .summary-card .sub { font-size: 13px; opacity: .7; margin-top: 2px; }
-    .summary-card .total {
-      font-family: var(--font-mono); font-weight: 700;
-      font-size: 38px; letter-spacing: -.5px;
+    .payroll-tiles .tile.dark { background: linear-gradient(155deg, var(--midnight) 0%, var(--midnight-2) 100%); color: var(--on-dark); position: relative; overflow: hidden; }
+    .payroll-tiles .tile.dark::before {
+      content: "";
+      position: absolute;
+      top: -40px; right: -30px;
+      width: 150px; height: 150px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(212,112,74,.28), transparent 70%);
+      pointer-events: none;
     }
-    .summary-card .total .currency { font-size: 16px; opacity: .55; margin-right: 6px; font-weight: 500; }
-    .summary-card .breakdown {
-      display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
-      padding-top: 18px; border-top: 1px solid rgba(255,248,240,.12);
+    .payroll-tiles .tile.dark > * { position: relative; }
+    .payroll-tiles .tile:not(.dark) { background: var(--white); border: 1px solid var(--light-gray); }
+    .payroll-tiles .tile .lbl {
+      font-family: var(--font-mono); font-size: 11px; text-transform: uppercase;
+      letter-spacing: 1.5px; font-weight: 700;
     }
-    .summary-card .b { font-size: 12px; opacity: .75; }
-    .summary-card .v { font-family: var(--font-mono); font-weight: 700; font-size: 18px; margin-top: 4px; }
-
+    .payroll-tiles .tile.dark .lbl { color: var(--terracotta); }
+    .payroll-tiles .tile:not(.dark) .lbl { color: var(--warm-gray); }
+    .payroll-tiles .tile .val { font-family: var(--font-mono); font-weight: 700; margin-top: 8px; }
+    .payroll-tiles .tile.dark .val { font-size: 26px; }
+    .payroll-tiles .tile:not(.dark) .val { font-size: 22px; color: var(--charcoal); }
     @media (max-width: 768px) {
-      .summary-card .breakdown { grid-template-columns: repeat(2, 1fr); }
+      .payroll-tiles { grid-template-columns: 1fr; }
       .ot-card { grid-template-columns: 1fr; }
     }
   </style>
@@ -102,8 +106,10 @@
 </div>
 
 <script src="js/data.js"></script>
-<script src="js/nav.js"></script>
+  <script src="js/nav.js"></script>
 <script src="js/auth.js"></script>
+<script src="js/help.js"></script>
+<script src="js/agent-widget.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   const e = currentEntityData();
@@ -133,7 +139,7 @@ function managerView(e) {
     : n.ot_pending.map(ot => `
       <div class="ot-card">
         <div>
-          <div style="font-weight:600;color:var(--midnight);font-size:14.5px;">${ot.employee}</div>
+          <div style="font-weight:600;color:var(--charcoal);font-size:14.5px;">${ot.employee}</div>
           <div class="meta-row">
             <span class="recargo">${ot.recargo}</span>
             <strong>${ot.hours}h</strong> el ${formatShortDate(ot.date)} · ${ot.reason}
@@ -202,22 +208,18 @@ function financialView(e) {
   const meta = e.meta;
 
   const summaryHtml = `
-    <div class="summary-card">
-      <div class="head">
-        <div>
-          <h2>${ps.period}</h2>
-          <div class="sub">${ps.employee_count} empleados · vence ${ps.due_date}</div>
-        </div>
-        <div style="text-align:right;">
-          <div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;opacity:.7;font-weight:700;">Total provisión quincena</div>
-          <div class="total"><span class="currency">COP</span>${ps.total_provision.toLocaleString('es-CO')}</div>
-        </div>
+    <div class="payroll-tiles">
+      <div class="tile dark">
+        <div class="lbl">Neto a pagar</div>
+        <div class="val">COP ${ps.total_provision.toLocaleString('es-CO')}</div>
       </div>
-      <div class="breakdown">
-        <div><div class="b">Salarios + horas extras</div><div class="v">${ps.total_nomina.toLocaleString('es-CO')}</div></div>
-        <div><div class="b">Parafiscales (4% Caja)</div><div class="v">${ps.parafiscales.toLocaleString('es-CO')}</div></div>
-        <div><div class="b">Prestaciones (provisión)</div><div class="v">${ps.prestaciones.toLocaleString('es-CO')}</div></div>
-        <div><div class="b">Cuenta a debitar</div><div class="v">BBVA · ${meta.bank_primary}</div></div>
+      <div class="tile">
+        <div class="lbl">Parafiscales</div>
+        <div class="val">COP ${ps.parafiscales.toLocaleString('es-CO')}</div>
+      </div>
+      <div class="tile">
+        <div class="lbl">Prestaciones</div>
+        <div class="val">COP ${ps.prestaciones.toLocaleString('es-CO')}</div>
       </div>
     </div>`;
 
@@ -231,7 +233,7 @@ function financialView(e) {
       <td class="mono" style="text-align:center;">${emp.days}</td>
       <td class="mono" style="text-align:center;">${emp.ot_h || '—'}</td>
       <td class="mono" style="text-align:center;">${emp.recargo_h || '—'}</td>
-      <td class="mono" style="font-weight:700;color:var(--midnight);">${emp.total.toLocaleString('es-CO')}</td>
+      <td class="mono" style="font-weight:700;color:var(--charcoal);">${emp.total.toLocaleString('es-CO')}</td>
     </tr>`).join('');
   const empTotal = n.employees.reduce((s, x) => s + x.total, 0);
 
@@ -241,7 +243,7 @@ function financialView(e) {
     <div class="alert-banner">
       <div class="alert-text">
         <div class="icon">!</div>
-        <div class="copy"><strong>Quincena lista para aprobar.</strong> Tras su aprobación, el motor genera JE-04 (nómina + parafiscales + prestaciones) y dispara el pago vía Prometeo.</div>
+        <div class="copy"><strong>Quincena lista para aprobar.</strong> Tras su aprobación, el motor genera JE-04 (nómina + parafiscales + prestaciones).</div>
       </div>
     </div>
 
@@ -261,8 +263,8 @@ function financialView(e) {
         <tbody>${empHtml}</tbody>
         <tfoot>
           <tr>
-            <td colspan="5" style="font-weight:700;color:var(--midnight);text-align:right;border-top:2px solid var(--midnight);">Total nómina</td>
-            <td class="mono" style="font-weight:700;color:var(--midnight);font-size:14.5px;border-top:2px solid var(--midnight);">${empTotal.toLocaleString('es-CO')}</td>
+            <td colspan="5" style="font-weight:700;color:var(--charcoal);text-align:right;border-top:2px solid var(--midnight);">Total nómina</td>
+            <td class="mono" style="font-weight:700;color:var(--charcoal);font-size:14.5px;border-top:2px solid var(--midnight);">${empTotal.toLocaleString('es-CO')}</td>
           </tr>
         </tfoot>
       </table>
@@ -272,7 +274,7 @@ function financialView(e) {
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;">
       <button class="btn btn-secondary" onclick="alert('Devolución a Yari/Nick para revisar marcaciones (simulado).')">Devolver al gerente</button>
       <button class="btn btn-secondary" onclick="location.href='journal-entries.html'">Ver JE-04 propuesto</button>
-      <button class="btn btn-primary"   onclick="alert('Aprobado (simulado) — el motor postea JE-04 a ${meta.accounting_system} y dispara pago vía Prometeo.')">Aprobar y pagar quincena</button>
+      <button class="btn btn-primary"   onclick="alert('Aprobado (simulado) — el motor postea JE-04 a ${meta.accounting_system}.')">Aprobar quincena</button>
     </div>`;
 }
 

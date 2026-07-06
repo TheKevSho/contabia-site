@@ -6,6 +6,7 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%231B2A4A%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27Georgia%27 font-size=%2718%27 fill=%27%23D4704A%27 text-anchor=%27middle%27 font-weight=%27bold%27%3EC%3C/text%3E%3C/svg%3E">
   <title>ContabIA — Chat con el Agente</title>
   <link rel="stylesheet" href="css/portal.css">
+  <script src="js/theme.js"></script>
   <style>
     .chat-wrap {
       max-width: 820px;
@@ -42,13 +43,13 @@
     }
     .msg.agent {
       background: var(--midnight);
-      color: var(--cream);
+      color: var(--on-dark);
       align-self: flex-start;
       border-bottom-left-radius: 4px;
     }
     .msg.user {
       background: var(--sand);
-      color: var(--midnight);
+      color: var(--charcoal);
       align-self: flex-end;
       border-bottom-right-radius: 4px;
     }
@@ -66,7 +67,7 @@
       border-radius: 18px;
       padding: 8px 14px;
       font-size: 13px;
-      color: var(--midnight);
+      color: var(--charcoal);
       cursor: pointer;
       transition: all .15s ease;
     }
@@ -86,7 +87,7 @@
       font-size: 15px;
       padding: 8px 10px;
       background: transparent;
-      color: var(--midnight);
+      color: var(--charcoal);
       font-family: var(--font-body);
     }
     .chat-meta {
@@ -133,8 +134,10 @@
 </div>
 
 <script src="js/data.js"></script>
-<script src="js/nav.js"></script>
+  <script src="js/nav.js"></script>
 <script src="js/auth.js"></script>
+<script src="js/help.js"></script>
+<script src="js/agent-widget.js"></script>
 <script>
 const SUGGESTIONS = [
   '¿Cuál es mi plata en riesgo este mes?',
@@ -154,17 +157,25 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('page-meta').innerHTML =
     `${meta.name} · agente respondiendo en español · contexto: ${meta.period.toLowerCase()}`;
 
-  /* seed conversation with role-aware welcome */
-  const greeting = `Hola, ${user.name.split(' ')[0]}. Soy su agente ContabIA. Aquí estoy para responder lo que necesite sobre el cierre de <strong>${meta.period.toLowerCase()}</strong> en <strong>${meta.name}</strong>.`;
-  messages = [
-    { who: 'agent', text: greeting },
-  ];
+  /* seed conversation with a role-aware, data-real example exchange
+     (close status + critical count, then a plata-en-riesgo drill-down) */
+  messages = buildAgentIntroThread(e, user);
   renderThread();
   renderSuggestions();
 
   document.getElementById('chat-input').addEventListener('keypress', ev => {
     if (ev.key === 'Enter') sendMsg();
   });
+
+  /* pick up a message handed off from the floating agent widget, if any */
+  try {
+    const pending = sessionStorage.getItem('contabia_pending_msg');
+    if (pending) {
+      sessionStorage.removeItem('contabia_pending_msg');
+      document.getElementById('chat-input').value = pending;
+      sendMsg();
+    }
+  } catch (e) {}
 });
 
 function renderThread() {

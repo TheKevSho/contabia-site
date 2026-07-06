@@ -6,6 +6,7 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%231B2A4A%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27Georgia%27 font-size=%2718%27 fill=%27%23D4704A%27 text-anchor=%27middle%27 font-weight=%27bold%27%3EC%3C/text%3E%3C/svg%3E">
   <title>ContabIA — Bóveda</title>
   <link rel="stylesheet" href="css/portal.css">
+  <script src="js/theme.js"></script>
   <style>
     /* upload zone */
     .upload-zone {
@@ -30,7 +31,7 @@
     .upload-zone .label {
       font-family: var(--font-display);
       font-size: 18px;
-      color: var(--midnight);
+      color: var(--charcoal);
       margin-bottom: 4px;
     }
     .upload-zone .sub {
@@ -61,7 +62,7 @@
       background: var(--white);
       font-size: 14px;
       font-family: var(--font-body);
-      color: var(--midnight);
+      color: var(--charcoal);
       outline: none;
     }
     .search-box:focus { border-color: var(--terracotta); }
@@ -93,7 +94,7 @@
       font-family: var(--font-mono);
       font-size: 11px;
       font-weight: 700;
-      color: var(--cream);
+      color: var(--on-dark);
       flex-shrink: 0;
     }
     .vault-file .ftype.pdf { background: #B22222; }
@@ -103,7 +104,7 @@
     .vault-file .fname {
       font-size: 13.5px;
       font-weight: 600;
-      color: var(--midnight);
+      color: var(--charcoal);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -131,7 +132,7 @@
     .vault-file .ftag.banco       { background: rgba(74,159,212,.12);  color: var(--sky); }
     .vault-file .ftag.compras     { background: rgba(212,112,74,.12);  color: var(--terracotta); }
     .vault-file .ftag.ingresos    { background: rgba(45,95,138,.12);   color: var(--ocean); }
-    .vault-file .ftag.cierre      { background: rgba(27,42,74,.10);    color: var(--midnight); }
+    .vault-file .ftag.cierre      { background: rgba(27,42,74,.10);    color: var(--charcoal); }
     .vault-file .ftag.onboarding  { background: rgba(74,139,111,.12);  color: var(--success); }
     .vault-file .ftag.exterior    { background: rgba(196,74,58,.10);   color: var(--critical); }
     .vault-file .ftag.retefuente  { background: rgba(212,160,74,.15);  color: #876022; }
@@ -167,7 +168,7 @@
     }
     .folder-head .fname {
       font-family: var(--font-display);
-      color: var(--midnight);
+      color: var(--charcoal);
       font-size: 18px;
     }
     .folder-head .fcount {
@@ -228,8 +229,10 @@
 </div>
 
 <script src="js/data.js"></script>
-<script src="js/nav.js"></script>
+  <script src="js/nav.js"></script>
 <script src="js/auth.js"></script>
+<script src="js/help.js"></script>
+<script src="js/agent-widget.js"></script>
 <script>
 let currentFolderFilter = 'all';
 let currentSearch = '';
