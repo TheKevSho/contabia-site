@@ -6,6 +6,7 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%231B2A4A%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27Georgia%27 font-size=%2718%27 fill=%27%23D4704A%27 text-anchor=%27middle%27 font-weight=%27bold%27%3EC%3C/text%3E%3C/svg%3E">
   <title>ContabIA — Seguimiento de Cierre</title>
   <link rel="stylesheet" href="css/portal.css">
+  <script src="js/theme.js"></script>
   <style>
     .month-grid {
       display: grid;
@@ -36,7 +37,7 @@
     .month-card.current .head { background: rgba(212,112,74,.05); }
     .month-card .month-name {
       font-family: var(--font-display);
-      color: var(--midnight);
+      color: var(--charcoal);
       font-size: 17px;
     }
     .month-card .modules {
@@ -58,9 +59,9 @@
       font-weight: 700; font-size: 11.5px;
       font-family: var(--font-mono);
     }
-    .module-row .icon.ok      { background: var(--success);    color: var(--cream); }
+    .module-row .icon.ok      { background: var(--success);    color: var(--on-dark); }
     .module-row .icon.warn    { background: var(--warning);    color: var(--midnight); }
-    .module-row .icon.fail    { background: var(--critical);   color: var(--cream); }
+    .module-row .icon.fail    { background: var(--critical);   color: var(--on-dark); }
     .module-row .icon.pending { background: var(--light-gray); color: var(--warm-gray); }
     .module-row .label { color: var(--charcoal); }
     .module-row .note  { font-size: 11.5px; color: var(--warm-gray); font-family: var(--font-mono); }
@@ -122,8 +123,10 @@
 </div>
 
 <script src="js/data.js"></script>
-<script src="js/nav.js"></script>
+  <script src="js/nav.js"></script>
 <script src="js/auth.js"></script>
+<script src="js/help.js"></script>
+<script src="js/agent-widget.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   const e = currentEntityData();

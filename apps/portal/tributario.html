@@ -6,6 +6,7 @@
   <title>ContabIA — Tributario</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231B2A4A'/%3E%3Ctext x='16' y='22' font-family='Georgia' font-size='18' fill='%23D4704A' text-anchor='middle' font-weight='bold'%3EC%3C/text%3E%3C/svg%3E">
   <link rel="stylesheet" href="css/portal.css">
+  <script src="js/theme.js"></script>
   <style>
     .filing-card {
       background: var(--white);
@@ -20,12 +21,12 @@
       padding-bottom: 14px; border-bottom: 1px solid var(--light-gray);
     }
     .filing-card .form-tag {
-      display: inline-block; background: var(--midnight); color: var(--cream);
+      display: inline-block; background: var(--midnight); color: var(--on-dark);
       padding: 4px 10px; border-radius: 5px; font-family: var(--font-mono);
       font-size: 11.5px; font-weight: 700; letter-spacing: 1px;
     }
     .filing-card .name {
-      font-family: var(--font-display); color: var(--midnight);
+      font-family: var(--font-display); color: var(--charcoal);
       font-size: 22px; margin-top: 8px;
     }
     .filing-card .meta {
@@ -34,7 +35,7 @@
     .filing-card .head-right { text-align: right; }
     .filing-card .total-amt {
       font-family: var(--font-mono); font-weight: 700;
-      font-size: 26px; color: var(--midnight);
+      font-size: 26px; color: var(--charcoal);
     }
     .filing-card .due {
       font-size: 12px; color: var(--warm-gray); margin-top: 2px;
@@ -101,8 +102,10 @@
 </div>
 
 <script src="js/data.js"></script>
-<script src="js/nav.js"></script>
+  <script src="js/nav.js"></script>
 <script src="js/auth.js"></script>
+<script src="js/help.js"></script>
+<script src="js/agent-widget.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   const e = currentEntityData();

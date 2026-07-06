@@ -6,6 +6,7 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%231B2A4A%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27Georgia%27 font-size=%2718%27 fill=%27%23D4704A%27 text-anchor=%27middle%27 font-weight=%27bold%27%3EC%3C/text%3E%3C/svg%3E">
   <title>ContabIA — Reconciliación</title>
   <link rel="stylesheet" href="css/portal.css">
+  <script src="js/theme.js"></script>
   <style>
     /* Page-specific layout */
     .three-way-hero {
@@ -25,7 +26,7 @@
     }
     .three-way-hero .hero-head h2 {
       font-family: var(--font-display);
-      color: var(--midnight);
+      color: var(--charcoal);
       font-size: 26px;
     }
     .three-way-hero .hero-head .sub {
@@ -78,7 +79,7 @@
     }
     .bank-card .acct {
       font-family: var(--font-display);
-      color: var(--midnight);
+      color: var(--charcoal);
       font-size: 18px;
     }
     .bank-card .acct .type {
@@ -110,7 +111,7 @@
       font-family: var(--font-mono);
       font-weight: 700;
       font-size: 16px;
-      color: var(--midnight);
+      color: var(--charcoal);
       margin-top: 4px;
     }
     .bank-card .bal.variance .v { color: var(--critical); }
@@ -187,8 +188,10 @@
 </div>
 
 <script src="js/data.js"></script>
-<script src="js/nav.js"></script>
+  <script src="js/nav.js"></script>
 <script src="js/auth.js"></script>
+<script src="js/help.js"></script>
+<script src="js/agent-widget.js"></script>
 <script>
 let currentLedgerFilter = 'all';
 
@@ -224,7 +227,7 @@ function renderHero(e) {
     <div class="three-way-hero">
       <div class="hero-head">
         <div>
-          <h2>Cruce de marzo</h2>
+          <h2>Cruce de julio</h2>
           <div class="sub">Cada peso debe aparecer en las tres fuentes. Variances se resuelven antes de cerrar.</div>
         </div>
       </div>
@@ -279,7 +282,7 @@ function renderLedger(e) {
     ? `<tr><td colspan="7" style="text-align:center;color:var(--warm-gray);padding:24px;">Sin items en este filtro.</td></tr>`
     : filtered.map(r => `
       <tr>
-        <td class="mono" style="font-weight:600;color:var(--midnight);">${r.res}</td>
+        <td class="mono" style="font-weight:600;color:var(--charcoal);">${r.res}</td>
         <td>${r.guest}</td>
         <td>${r.channel}</td>
         <td class="text-right mono">${r.pms ? r.pms.toLocaleString('es-CO') : '—'}</td>

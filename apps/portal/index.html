@@ -6,6 +6,7 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%231B2A4A%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27Georgia%27 font-size=%2718%27 fill=%27%23D4704A%27 text-anchor=%27middle%27 font-weight=%27bold%27%3EC%3C/text%3E%3C/svg%3E">
   <title>ContabIA — Resumen</title>
   <link rel="stylesheet" href="css/portal.css">
+  <script src="js/theme.js"></script>
 </head>
 <body>
 <div class="shell">
@@ -35,8 +36,10 @@
 </div>
 
 <script src="js/data.js"></script>
-<script src="js/nav.js"></script>
+  <script src="js/nav.js"></script>
 <script src="js/auth.js"></script>
+<script src="js/help.js"></script>
+<script src="js/agent-widget.js"></script>
 <script>
 /* ============================================================
    Resumen page — renders all sections from data.js,
@@ -69,8 +72,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* role-aware order */
   const order = role === 'accountant'
-    ? ['alert','queue','estado','rec_risk','detalle','cifras','activity']
-    : ['alert','queue','estado','cifras','detalle','rec_risk','activity'];
+    ? ['alert','cifras','queue','estado','rec_risk','detalle','activity']
+    : ['alert','cifras','queue','estado','detalle','rec_risk','activity'];
 
   document.getElementById('resumen-sections').innerHTML =
     order.map(k => sections[k]).join('');
@@ -145,49 +148,45 @@ function sectionCifras(e) {
   const c = e.cifras;
   const plata = c.plata_en_riesgo;
   const plataHtml = `
-    <div class="number-tile feature">
-      <div>
-        <div class="tile-label">Plata en riesgo</div>
-        <div class="tile-value"><span class="currency">COP</span>${plata.total.toLocaleString('es-CO')}</div>
-      </div>
+    <div class="number-tile feature hero-money">
+      <div class="tile-label">Plata en riesgo este mes</div>
+      <div class="tile-value"><span class="currency">COP</span>${plata.total.toLocaleString('es-CO')}</div>
+      <div class="hero-sub">Lo que cuesta no actuar antes de cerrar marzo</div>
       <div class="tile-breakdown">
         ${plata.breakdown.map(b => `
           <div class="row"><span>${b.label}</span><span class="v">${b.value.toLocaleString('es-CO')}</span></div>
         `).join('')}
       </div>
-      <div class="footer-link" onclick="location.href='exceptions.html'">Resolver brechas →</div>
+      <div class="hero-cta" onclick="location.href='exceptions.html'">Resolver las brechas <span class="mono">→</span></div>
+      <div class="hero-caption">Toque cualquier cifra para ver el cálculo y el documento que la respalda.</div>
     </div>`;
   const recu = c.recuperacion;
+  const recuLabelsJoined = recu.breakdown.map(b => b.label).join(' + ');
   const recuHtml = `
-    <div class="number-tile">
-      <div>
-        <div class="tile-label">Recuperación tributaria</div>
-        <div class="tile-value"><span class="currency">COP</span>${recu.total.toLocaleString('es-CO')}</div>
-      </div>
-      <div class="tile-breakdown">
-        ${recu.breakdown.map(b => `
-          <div class="row"><span>${b.label}</span><span class="v">${b.value}</span></div>
-        `).join('')}
-      </div>
+    <div class="number-tile sec-tile">
+      <div class="tile-label">Recuperación tributaria</div>
+      <div class="tile-value accent">+COP ${recu.total.toLocaleString('es-CO')}</div>
+      <div class="sec-sub">${recuLabelsJoined}</div>
       <div class="footer-link" onclick="location.href='tributario.html'">Ver detalle →</div>
     </div>`;
   const k = c.kpi_usali;
   const kpiHtml = `
-    <div class="number-tile">
-      <div>
-        <div class="tile-label">${k.primary_label}</div>
-        <div class="tile-value">${k.primary_value}<span class="currency" style="font-size:24px;margin-left:2px">${k.primary_unit}</span></div>
-      </div>
-      <div class="tile-breakdown">
+    <div class="number-tile sec-tile">
+      <div class="tile-label">${k.primary_label}</div>
+      <div class="tile-value">${k.primary_value}<span class="currency" style="font-size:24px;margin-left:2px">${k.primary_unit}</span></div>
+      <div class="kpi-inline">
         ${k.breakdown.map(b => `
-          <div class="row"><span>${b.label}</span><span class="v">${b.value}</span></div>
+          <div class="kpi-chip"><div class="k">${b.label}</div><div class="v">${b.value}</div></div>
         `).join('')}
       </div>
       <div class="footer-link">Ver KPIs operativos →</div>
     </div>`;
   return `
     <div class="section-label">Cifras del mes</div>
-    <div class="numbers-grid">${plataHtml}${recuHtml}${kpiHtml}</div>`;
+    <div class="cifras-grid">
+      ${plataHtml}
+      <div class="cifras-stack">${recuHtml}${kpiHtml}</div>
+    </div>`;
 }
 
 function sectionDetalle(e) {

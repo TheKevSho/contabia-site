@@ -6,6 +6,7 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%231B2A4A%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27Georgia%27 font-size=%2718%27 fill=%27%23D4704A%27 text-anchor=%27middle%27 font-weight=%27bold%27%3EC%3C/text%3E%3C/svg%3E">
   <title>ContabIA — Comprobantes</title>
   <link rel="stylesheet" href="css/portal.css">
+  <script src="js/theme.js"></script>
   <style>
     .je-card {
       background: var(--white);
@@ -25,7 +26,7 @@
     }
     .je-card .je-title {
       font-family: var(--font-display); font-size: 19px;
-      color: var(--midnight); margin-top: 2px;
+      color: var(--charcoal); margin-top: 2px;
     }
     .je-card .je-desc { font-size: 13px; color: var(--warm-gray); margin-top: 4px; }
     .je-card .head-right {
@@ -42,7 +43,7 @@
     }
     .je-lines .acc { font-family: var(--font-mono); color: var(--ocean); font-weight: 600; }
     .je-lines .amt { font-family: var(--font-mono); text-align: right; font-weight: 600; }
-    .je-lines .amt.dr { color: var(--midnight); }
+    .je-lines .amt.dr { color: var(--charcoal); }
     .je-lines .amt.cr { color: var(--ocean); }
     .je-lines tfoot td {
       border-top: 2px solid var(--midnight); border-bottom: none;
@@ -59,7 +60,7 @@
     }
     .je-actions .buttons { display: flex; gap: 8px; }
     .btn-approve {
-      background: var(--success); color: var(--cream); border: none;
+      background: var(--success); color: var(--on-dark); border: none;
       padding: 8px 14px; border-radius: var(--radius);
       font-weight: 600; cursor: pointer; font-size: 13px;
     }
@@ -73,7 +74,7 @@
       padding: 10px 14px; border-radius: var(--radius);
       font-size: 13px; margin-bottom: 12px;
     }
-    .je-blocked-note strong { color: var(--midnight); }
+    .je-blocked-note strong { color: var(--charcoal); }
   </style>
 </head>
 <body>
@@ -107,8 +108,10 @@
 
 <script src="js/portal.js"></script>
 <script src="js/data.js"></script>
-<script src="js/nav.js"></script>
+  <script src="js/nav.js"></script>
 <script src="js/auth.js"></script>
+<script src="js/help.js"></script>
+<script src="js/agent-widget.js"></script>
 <script>
 let currentJEFilter = 'all';
 
