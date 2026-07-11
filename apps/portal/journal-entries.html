@@ -75,6 +75,28 @@
       font-size: 13px; margin-bottom: 12px;
     }
     .je-blocked-note strong { color: var(--charcoal); }
+    .live-toggle-btn {
+      background: var(--white); border: 1px solid var(--terracotta); color: var(--terracotta);
+      padding: 8px 14px; border-radius: var(--radius); font-weight: 600; cursor: pointer; font-size: 13px;
+    }
+    .live-toggle-btn.on { background: var(--terracotta); color: var(--on-dark); }
+    .live-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+      color: var(--critical); margin-left: 10px;
+    }
+    .live-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--critical); }
+    .live-info-panel {
+      background: var(--sand); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 16px;
+    }
+    .live-info-panel h3 { font-size: 13px; margin: 0 0 10px; color: var(--charcoal); }
+    .live-info-panel ul { margin: 0; padding-left: 18px; font-size: 13px; color: var(--charcoal); line-height: 1.7; }
+    .live-info-panel .amt { font-family: var(--font-mono); color: var(--warm-gray); }
+    .group-heading {
+      font-size: 13px; font-weight: 700; color: var(--warm-gray);
+      text-transform: uppercase; letter-spacing: 1px;
+      margin: 22px 0 10px;
+    }
   </style>
 </head>
 <body>
@@ -91,7 +113,7 @@
           <h1>Comprobantes (JEs)</h1>
           <div class="meta" id="page-meta">…</div>
         </div>
-        <div class="actions">
+        <div class="actions" id="page-actions">
           <button class="btn btn-secondary" onclick="location.reload()">↻ Actualizar</button>
         </div>
       </div>
@@ -108,14 +130,43 @@
 
 <script src="js/portal.js"></script>
 <script src="js/data.js"></script>
+<script src="js/sonata-live.js"></script>
   <script src="js/nav.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/help.js"></script>
 <script src="js/agent-widget.js"></script>
 <script>
 let currentJEFilter = 'all';
+let liveJEData = null;   // { items, open_judgment_calls, recurring_routines, accepted_no_action }
+let liveEntityId = null;
 
 document.addEventListener('DOMContentLoaded', () => {
+  const entityId = currentEntityId();
+  liveEntityId = entityId;
+  renderLiveToggle(entityId);
+
+  if (isLiveMode() && liveAvailable(entityId)) {
+    initLivePage(entityId);
+  } else {
+    initDemoPage();
+  }
+});
+
+function renderLiveToggle(entityId) {
+  if (!liveAvailable(entityId)) return;
+  const cfg = LIVE_CONFIG[entityId];
+  const on = isLiveMode();
+  const btn = document.createElement('button');
+  btn.className = 'live-toggle-btn btn-sm' + (on ? ' on' : '');
+  btn.textContent = on ? `● Datos reales (${cfg.period_label}) — volver a demo` : `Ver datos reales (${cfg.period_label})`;
+  btn.onclick = () => setLiveMode(!on);
+  document.getElementById('page-actions').prepend(btn);
+}
+
+/* ============================================================
+   DEMO PATH — unchanged from the original mock-data implementation.
+   ============================================================ */
+function initDemoPage() {
   const e = currentEntityData();
   const meta = e.meta;
   const cs = e.closeSummary;
@@ -135,7 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   renderFilters(e);
   renderList(e);
-});
+}
 
 function renderFilters(e) {
   const items = e.journalEntries;
@@ -228,6 +279,204 @@ function statusLabel(s) {
            posted:'Registrado',blocked:'Bloqueado'})[s] || s;
 }
 function e_meta(k) { return currentEntityData().meta[k]; }
+
+/* ============================================================
+   LIVE PATH — Sonata Mas January 2026 proposed journal entries,
+   served by apps/api. Rendered grouped (A/B/C), per apps/api/README.md's
+   note that the real shape is richer than a flat journalEntries[] array
+   and needs a render change, not a pure re-point.
+   ============================================================ */
+async function initLivePage(entityId) {
+  document.getElementById('page-meta').textContent = 'Cargando datos reales…';
+  try {
+    const [summary, jeData] = await Promise.all([
+      fetchLiveSummary(entityId),
+      fetchLiveJournalEntries(entityId),
+    ]);
+    liveJEData = jeData;
+    const cfg = LIVE_CONFIG[entityId];
+    const pending = jeData.items.filter(x => x.status === 'pending_edwin_approval').length;
+
+    document.getElementById('page-meta').innerHTML =
+      `${summary.meta.name} · ${cfg.period_label} <span class="live-pill"><span class="dot"></span>Datos reales</span> · ` +
+      `${jeData.items.length} comprobantes propuestos (${pending} esperan a Edwin)`;
+
+    if (pending > 0) {
+      document.getElementById('alert-slot').innerHTML = `
+        <div class="alert-banner">
+          <div class="alert-text">
+            <div class="icon">!</div>
+            <div class="copy"><strong>${pending} comprobante${pending===1?'':'s'} esperan aprobación de Edwin.</strong> Nada se postea a Alegra hasta que Edwin apruebe cada uno (ver apps/api/main.py — POST de cierre deliberadamente no implementado en esta pasada).</div>
+          </div>
+        </div>`;
+    }
+
+    renderLiveFilters();
+    renderLiveList();
+  } catch (err) {
+    document.getElementById('page-meta').textContent = 'Error cargando datos reales.';
+    document.getElementById('alert-slot').innerHTML = `
+      <div class="alert-banner crit">
+        <div class="alert-text">
+          <div class="icon">!</div>
+          <div class="copy"><strong>No se pudo conectar con la API real</strong> (${err.message}). ¿Está corriendo apps/api en ${LIVE_CONFIG[entityId].api_base}?</div>
+        </div>
+      </div>`;
+    console.error(err);
+  }
+}
+
+function liveJEStatusClass(s) {
+  return ({pending_edwin_approval: 'pending', approved_by_edwin: 'approved', rejected: 'rejected', disclosure_only: 'needs_info'})[s] || s;
+}
+function liveJEStatusLabel(s) {
+  return ({pending_edwin_approval: 'Pendiente (Edwin)', approved_by_edwin: 'Aprobado por Edwin', rejected: 'Rechazado', disclosure_only: 'Solo revelar'})[s] || s;
+}
+
+function renderLiveFilters() {
+  const items = liveJEData.items;
+  const counts = {
+    all: items.length,
+    A_ready_to_post:   items.filter(x => x.group === 'A_ready_to_post').length,
+    B_estimated:       items.filter(x => x.group === 'B_estimated').length,
+    C_disclosure_only: items.filter(x => x.group === 'C_disclosure_only').length,
+    pending_edwin_approval: items.filter(x => x.status === 'pending_edwin_approval').length,
+    approved_by_edwin:      items.filter(x => x.status === 'approved_by_edwin').length,
+  };
+  const chips = [
+    { key: 'all',                    label: 'Todos' },
+    { key: 'A_ready_to_post',        label: 'A · Listos' },
+    { key: 'B_estimated',            label: 'B · Estimados' },
+    { key: 'C_disclosure_only',      label: 'C · Solo revelar' },
+    { key: 'pending_edwin_approval', label: 'Pendientes (Edwin)' },
+    { key: 'approved_by_edwin',      label: 'Aprobados' },
+  ];
+  document.getElementById('je-filters').innerHTML = chips.map(c => `
+    <div class="filter-chip ${c.key===currentJEFilter?'active':''}"
+         onclick="setLiveJEFilter('${c.key}')">${c.label} (${counts[c.key]||0})</div>
+  `).join('');
+}
+
+function setLiveJEFilter(key) {
+  currentJEFilter = key;
+  renderLiveFilters();
+  renderLiveList();
+}
+
+function renderLiveInfoPanels() {
+  const d = liveJEData;
+  const parts = [];
+  if (d.open_judgment_calls.length) {
+    parts.push(`
+      <div class="live-info-panel">
+        <h3>D · Decisiones pendientes de Edwin (sin asiento todavía)</h3>
+        <ul>${d.open_judgment_calls.map(o => `<li><strong>${o.ref}</strong> — ${o.title} <span class="amt">(COP ${o.amount_cop.toLocaleString('es-CO')})</span> — ${o.needed}</li>`).join('')}</ul>
+      </div>`);
+  }
+  if (d.recurring_routines.length) {
+    parts.push(`
+      <div class="live-info-panel">
+        <h3>E · Rutinas recurrentes a activar una vez aprobadas</h3>
+        <ul>${d.recurring_routines.map(r => `<li><strong>${r.id}</strong> — ${r.description} — ${r.status}</li>`).join('')}</ul>
+      </div>`);
+  }
+  if (d.accepted_no_action.length) {
+    parts.push(`
+      <div class="live-info-panel">
+        <h3>Ya aceptado, sin acción</h3>
+        <ul>${d.accepted_no_action.map(a => `<li>${a}</li>`).join('')}</ul>
+      </div>`);
+  }
+  return parts.join('');
+}
+
+function renderLiveList() {
+  const items = currentJEFilter === 'all'
+    ? liveJEData.items
+    : ['A_ready_to_post','B_estimated','C_disclosure_only'].includes(currentJEFilter)
+      ? liveJEData.items.filter(x => x.group === currentJEFilter)
+      : liveJEData.items.filter(x => x.status === currentJEFilter);
+
+  const groupOrder = ['A_ready_to_post', 'B_estimated', 'C_disclosure_only'];
+  let html = '';
+  groupOrder.forEach(g => {
+    const groupItems = items.filter(x => x.group === g);
+    if (!groupItems.length) return;
+    html += `<div class="group-heading">${JE_GROUP_LABEL[g]}</div>`;
+    html += groupItems.map(je => renderLiveJECard(je)).join('');
+  });
+  if (!html) html = `<div class="panel" style="text-align:center;color:var(--warm-gray);">Sin comprobantes en este filtro.</div>`;
+
+  html += renderLiveInfoPanels();
+  document.getElementById('je-list').innerHTML = html;
+}
+
+function renderLiveJECard(je) {
+  const totalDr = je.lines.reduce((s,l) => s + (l.debit  || 0), 0);
+  const totalCr = je.lines.reduce((s,l) => s + (l.credit || 0), 0);
+  const lines = je.lines.length === 0
+    ? `<tr><td colspan="3" style="text-align:center;color:var(--warm-gray);padding:18px;">Sin líneas — pendiente de estructurar</td></tr>`
+    : je.lines.map(l => `
+      <tr>
+        <td><span class="acc">${l.account}</span></td>
+        <td class="amt dr">${l.debit  ? l.debit.toLocaleString('es-CO')  : ''}</td>
+        <td class="amt cr">${l.credit ? l.credit.toLocaleString('es-CO') : ''}</td>
+      </tr>`).join('');
+
+  const linkedNote = je.linked_exceptions.length
+    ? `<div class="je-blocked-note"><strong>Excepciones vinculadas:</strong> ${je.linked_exceptions.join(', ')}</div>`
+    : '';
+
+  let actions;
+  if (je.group === 'C_disclosure_only') {
+    actions = `<span style="color:var(--warm-gray);font-weight:700;">ℹ Solo revelar — no requiere aprobación ni postea</span>`;
+  } else if (je.status === 'approved_by_edwin') {
+    actions = `<span style="color:var(--success);font-weight:700;">✓ Aprobado por Edwin · listo para postear</span>`;
+  } else if (je.status === 'rejected') {
+    actions = `<span style="color:var(--critical);font-weight:700;">✕ Rechazado${je.rejection_note ? ' — ' + je.rejection_note : ''}</span>`;
+  } else {
+    actions = `<button class="btn-reject" onclick="decideLiveJE('${je.id}','rejected')">Rechazar</button>
+               <button class="btn-approve" onclick="decideLiveJE('${je.id}','approved_by_edwin')">Aprobar</button>`;
+  }
+
+  return `
+    <div class="je-card">
+      <div class="head">
+        <div>
+          <div class="je-id">${je.id}</div>
+          <div class="je-title">${je.title}</div>
+          <div class="je-desc">${je.description}</div>
+        </div>
+        <div class="head-right">
+          <span class="badge badge-${liveJEStatusClass(je.status)}">${liveJEStatusLabel(je.status)}</span>
+          <span class="priority-badge badge-${je.priority}">${je.priority.toUpperCase()}</span>
+        </div>
+      </div>
+      ${linkedNote}
+      <table class="je-lines">
+        <thead><tr><th>Cuenta</th><th style="text-align:right;">Débito</th><th style="text-align:right;">Crédito</th></tr></thead>
+        <tbody>${lines}</tbody>
+        ${je.lines.length > 0 ? `<tfoot><tr><td>Total</td><td class="amt dr">${totalDr.toLocaleString('es-CO')}</td><td class="amt cr">${totalCr.toLocaleString('es-CO')}</td></tr></tfoot>` : ''}
+      </table>
+      <div class="je-actions">
+        <div class="meta"><span>Fuente: registro RFR enero 2026</span></div>
+        <div class="buttons">${actions}</div>
+      </div>
+    </div>`;
+}
+
+async function decideLiveJE(jeId, status) {
+  let note = null;
+  if (status === 'rejected') {
+    note = prompt('Nota de rechazo (opcional):') || null;
+  }
+  try {
+    await patchLiveJournalEntry(liveEntityId, jeId, status, note);
+    await initLivePage(liveEntityId);
+  } catch (err) {
+    alert(`No se pudo guardar: ${err.message}`);
+  }
+}
 </script>
 </body>
 </html>

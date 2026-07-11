@@ -1,0 +1,44 @@
+ID,Phase,Severity,Title,Amount_COP,Owner,Proposed_JE,Status,Disposition
+EX-4.1,4 AR,MED,GYG FE7459 uncollected at 31-Jan (64.9% of AR),39655000,ContabIA/Kevin,,Open,Monitor collection
+EX-4.6,4 AR,HIGH,1305 polluted by non-customers (SONATA own tercero + Cuantias Menores),9251376,Edwin,Reclass out of 1305,Open,Approved to reclass (Block 5)
+EX-4.7,4 AR,MED,1305 debit balances no open invoice (CANAT/RUTA CARIBE/AVIATUR/VIATOR/CORRALES),,Edwin,,Open,Investigate
+EX-5.1,5 Expenses,HIGH,Omitted retefuente on documentos soporte >10 UVT (35/36),1174647,Edwin,AJ-01,Open,Remediate Form 350
+EX-5.2,5 Expenses,HIGH,Omitted retefuente on purchase invoices >threshold (~12),700000,Edwin,AJ-02,Open,Estimate; confirm calidad tributaria
+EX-5.3,5 Expenses,HIGH,Missing documento soporte foreign vendors (Fisheries/LKQ/Starlink/Google Ads),,Edwin,AJ-04,Open,Non-deductible if no DS
+EX-5.5,5 Expenses,MED,Input IVA expensed 511570 (recoverable only if taxable/exento),6568768,Edwin,,Closed,RA-6 accepted (excluded posture)
+EX-5.6,5 Expenses,MED,Veronica interest 400k no accrual/contract,400000,Edwin,AJ-03,Open,See EX-12.6
+EX-6.1,6 Bank,HIGH,Bancolombia unreconciled net gap,1616492,ContabIA,,Open,Data complete; line-by-line match of ~285 GL movements vs ~180 statement lines is remaining follow-on work
+EX-6.2,6 Bank,MED,BBVA opening balance differs from statement (closing ties exactly),1210212,Edwin,,Open,Legacy/opening-balance item pre-dating January; Edwin to document source
+EX-6.3,6 Bank,HIGH,PayPal gross receipts no payouts/fees/FX,6811343,ContabIA,AJ-06,Closed,RESOLVED - real 31-Jan balance verified two independent ways; write-down to COP 2972971 proposed
+EX-6.4,6 Bank,MED,Bold balance/fees/settlements unconfirmed,493592,ContabIA,,Open,Internally verified against GL; settlement-timing match remaining
+EX-6.5,6 Bank,HIGH,TC empresarial (COP+USD) liability unconfirmed,25325322,ContabIA,,Open,Full cycle received; COP-plastic saldo reconciled; full tie-out to 211005 pending
+EX-6.6,6 Bank,LOW,Efectivo POS Cortesia micro-amounts,0,ContabIA,,Open,Reclassify as POS ticket/inventory issue
+EX-8.1,8 FX,MED,No FX account in chart; no closing-revaluation routine,,Edwin,R-12,Open,Create 530525/421020; activate monthly revaluation
+EX-8.2,8 FX,HIGH,PayPal USD asset not revalued at 31-Jan TRM,6811343,ContabIA,R-12,Closed,RESOLVED per EX-6.3 - revalued at certified TRM 3670.47
+EX-8.3,8 FX,MED,USD card foreign charges unbooked (Fisheries/LKQ),,ContabIA,,Open,RESOLVED per EX-6.5 - immaterial FX exposure for January
+EX-8.4,8 FX,LOW,FareHarbor contra-entry misposted to Efectivo POS instead of Bancolombia,838025,ContabIA,,Open,Reclassify to 111015 (current)
+EX-9.1,9 Payroll,HIGH,January payroll register/PILA not supplied,,Kevin,,Open,NOMINA ENERO 2026.pdf received; confirms figures already used; formal PILA filing/receipt still to confirm
+EX-9.2,9 Payroll,HIGH,Nick(Nicolas) cash vs accrual gap,11203595,Kevin/Edwin,AJ-N1/N2,Open,Reclass drafted; R1 resolved as loan (CxC socios), Art.35 not imputed
+EX-9.4,9 Payroll,MED,Bonuses uncertain salary character (full-constitutive contingency),11375147,Edwin,AJ-05b/c,Open,Kevin confirmed no signed pacts; full bonus salary-constitutive by default; standing contingency
+EX-9.5,9 Payroll,LOW,Social-security contributions accrued by entity not reconcilable per employee,,ContabIA,,Open,Narrowed by NOMINA register; formal PILA filing/receipt still missing
+EX-9.6,9 Payroll,MED,Ley 1393/2010 40% IBC rule - mandatory add-back computed per head,1859050,Edwin,AJ-N3,Open,Computed; Edwin to confirm exact PILA rates
+EX-10.1,10 Tax,HIGH,Retefuente under-withheld (only 201680 booked),1900000,Edwin,AJ-01/02,Open,Remediate Form 350
+EX-10.2,10 Tax,HIGH,Foreign-OTA assumed IVA not booked (Art.437-2),3000000,Edwin,AJ-08,Open,Reopened 2026-07-10 - re-examine voluntary Art.588 correction vs. accepted risk given penalty-avoidance economics; see tax note
+EX-10.3,10 Tax,HIGH,Input IVA expensed recoverable only prospectively,6568768,Edwin,,Closed,RA-1/RA-6 accepted (excluded)
+EX-10.4,10 Tax,MED,INC 8% real value to verify (CSV format error H-07),133186,Edwin,,Closed,Booked as-is (owner decision 2.2)
+EX-10.5,10 Tax,MED,Regimen Comun vs RST unconfirmed in RUT,,Edwin,,Closed,RUT confirms regimen ordinario, not RST
+EX-10.6,10 Tax,MED,Autorretencion de renta status unconfirmed,24641000,Edwin,,Open,RUT suggests never registered as autorretenedor; dormant/legacy balance, origin to confirm
+EX-11.1,11 Provisions,HIGH,Bonus-constitutive contingency (prestaciones+aportes) - full scenario,4300000,Edwin,AJ-05b/c,Open,40% rule; per-head IBC - see EX-9.6 for the mandatory (non-contingent) slice
+EX-11.2,11 Provisions,HIGH,Nick gap no labor provision,11203595,Kevin/Edwin,,Open,See EX-9.2 / R1 (resolved as loan, not labor provision)
+EX-11.3,11 Provisions,HIGH,Unrecognized tax liabilities (retefuente + OTA IVA),4900000,Edwin,AJ-01/02/08,Open,Per RA-2 partial
+EX-12.1,12 Assets,HIGH,Vessel basis book 74.18M vs real USD 100k,74180754,Kevin/Edwin,,Open,Confirmed - book value already tracks amortizing schedule; no undervaluation gap
+EX-12.2,12 Assets,HIGH,Depreciation stopped; fleet no accum. depreciation,111825646,Edwin,AJ-07 / R-11,Open,Needs FA register approval
+EX-12.3,12 Assets,HIGH,Art.35 presumptive interest on shareholder receivables,87162000,Edwin,,Closed,Company decision #14: not imputed
+EX-12.4,12 Assets,HIGH,Nick 4 roles incl 15M in fleet,15000000,Kevin/Edwin,,Open,Define nature
+EX-12.5,12 Assets,MED,Velas Sailing Supply foreign improvement,14180754,Edwin,AJ-04b,Closed,RA-4 accepted (no DS/autoret)
+EX-12.6,12 Assets,MED,Veronica loan interest/retefuente/Art.118-1/pagare,40000000,Edwin,AJ-03/AJ-V1,Open,Art.118-1 run and closed (no thin-cap bite); retefuente estimated 28000; contract/pagare still needed
+EX-12.7,12 Assets,MED,Abono Kevin classification,5011330,Kevin,,Closed,Decision #6: boat payment -> reduces shareholder payable
+EX-12.8,12 Assets,MED,Bank credit 246M schedule/interest,246048811,Edwin,,Open,Both banks contract-confirmed; BBVA January cuota shows 215480 gap needing Edwin's explanation
+EX-13.1,13 Inventory,LOW,Adjustments #42/#43/#44 no count sheets,146339,Kevin,,Open,Entries verified in Jan journal; pre-filled signature sheets awaiting Kevin's signature
+EX-14.1,14 Recurring,HIGH,Depreciation recurring JE not running,,Edwin,R-11,Open,Needs FA register
+EX-14.4,14 Recurring,MED,Interest accrual recurring JE not running,,Edwin,R-14,Open,Can activate from March 2026 forward per Veronica table; 246M bank credit legs still need Edwin's schedule
