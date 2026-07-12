@@ -54,6 +54,17 @@
       background: var(--white); color: var(--critical); border: 1px solid var(--critical);
       padding: 10px 16px; border-radius: var(--radius); font-weight: 600; cursor: pointer; font-size: 13.5px;
     }
+    .live-toggle-btn {
+      background: var(--white); border: 1px solid var(--terracotta); color: var(--terracotta);
+      padding: 8px 14px; border-radius: var(--radius); font-weight: 600; cursor: pointer; font-size: 13px;
+    }
+    .live-toggle-btn.on { background: var(--terracotta); color: var(--on-dark); }
+    .live-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+      color: var(--critical); margin-left: 10px;
+    }
+    .live-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--critical); }
   </style>
 </head>
 <body>
@@ -70,7 +81,7 @@
           <h1>Excepciones</h1>
           <div class="meta" id="page-meta">…</div>
         </div>
-        <div class="actions">
+        <div class="actions" id="page-actions">
           <button class="btn btn-secondary" onclick="location.reload()">↻ Actualizar</button>
         </div>
       </div>
@@ -125,22 +136,54 @@
 
     <div class="panel-actions">
       <button class="btn btn-secondary btn-sm" onclick="closeExcPanel()">Cerrar</button>
-      <button class="btn-reject" onclick="alert('Rechazo simulado — flujo de Angel pendiente.')">Rechazar</button>
-      <button class="btn-approve" onclick="alert('Aprobación simulada — motor procesa la corrección.')">Aprobar resolución</button>
+      <button class="btn-reject" id="p-btn-reject">Rechazar</button>
+      <button class="btn-approve" id="p-btn-approve">Aprobar resolución</button>
     </div>
   </div>
 </div>
 
 <script src="js/portal.js"></script>
 <script src="js/data.js"></script>
+<script src="js/sonata-live.js"></script>
   <script src="js/nav.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/help.js"></script>
 <script src="js/agent-widget.js"></script>
 <script>
 let currentExcFilter = 'all';
+let liveExceptions = null;     // populated when live mode is active
+let liveEntityId = null;
 
 document.addEventListener('DOMContentLoaded', () => {
+  const entityId = currentEntityId();
+  liveEntityId = entityId;
+  renderLiveToggle(entityId);
+
+  if (isLiveMode() && liveAvailable(entityId)) {
+    initLivePage(entityId);
+  } else {
+    initDemoPage();
+  }
+});
+
+/* ---- live/demo toggle button (only shown where a live backend exists) ---- */
+function renderLiveToggle(entityId) {
+  if (!liveAvailable(entityId)) return;
+  const cfg = LIVE_CONFIG[entityId];
+  const on = isLiveMode();
+  const btn = document.createElement('button');
+  btn.className = 'live-toggle-btn btn-sm' + (on ? ' on' : '');
+  btn.textContent = on ? `● Datos reales (${cfg.period_label}) — volver a demo` : `Ver datos reales (${cfg.period_label})`;
+  btn.onclick = () => setLiveMode(!on);
+  document.getElementById('page-actions').prepend(btn);
+}
+
+/* ============================================================
+   DEMO PATH — unchanged from the original mock-data implementation.
+   Reads data.js's sonata-001 mock block (period_iso 2026-06) exactly
+   as before. Nothing here was touched by the live integration.
+   ============================================================ */
+function initDemoPage() {
   const e = currentEntityData();
   const meta = e.meta;
   const cs = e.closeSummary;
@@ -148,7 +191,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('page-meta').innerHTML =
     `${meta.name} · ${meta.period.toLowerCase()} · ${cs.total_exceptions} excepción${cs.total_exceptions===1?'':'es'} en cola`;
 
-  /* alert if any criticals */
   if (cs.open_critical > 0) {
     document.getElementById('alert-slot').innerHTML = `
       <div class="alert-banner crit">
@@ -161,7 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   renderFilters(e);
   renderTable(e);
-});
+}
 
 function renderFilters(e) {
   const items = e.exceptions;
@@ -235,6 +277,8 @@ function openExcDetail(id) {
   document.getElementById('p-desc').textContent        = x.description;
   document.getElementById('p-rec').textContent         = x.ai_recommendation;
   document.getElementById('p-conf').innerHTML          = confidenceBar(x.ai_confidence);
+  document.getElementById('p-btn-reject').onclick  = () => alert('Rechazo simulado — flujo de Angel pendiente.');
+  document.getElementById('p-btn-approve').onclick = () => alert('Aprobación simulada — motor procesa la corrección.');
   document.getElementById('exc-panel').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -246,6 +290,148 @@ function closeExcPanel() {
 document.addEventListener('click', e => {
   if (e.target.id === 'exc-panel') closeExcPanel();
 });
+
+/* ============================================================
+   LIVE PATH — Sonata Mas January 2026 real exception register,
+   served by apps/api (FastAPI). Parallel render path; does not
+   share state with the demo path above.
+   ============================================================ */
+async function initLivePage(entityId) {
+  document.getElementById('page-meta').textContent = 'Cargando datos reales…';
+  try {
+    const [summary, exceptions] = await Promise.all([
+      fetchLiveSummary(entityId),
+      fetchLiveExceptions(entityId),
+    ]);
+    liveExceptions = exceptions;
+    const cfg = LIVE_CONFIG[entityId];
+    const cifras = summary.cifras;
+
+    document.getElementById('page-meta').innerHTML =
+      `${summary.meta.name} · ${cfg.period_label} <span class="live-pill"><span class="dot"></span>Datos reales</span> · ` +
+      `${cifras.total} excepción${cifras.total===1?'':'es'} · ${summary.closeSummary.rfr_status.replace('_',' ')} · nada posteado aún`;
+
+    if (cifras.open_high > 0) {
+      document.getElementById('alert-slot').innerHTML = `
+        <div class="alert-banner crit">
+          <div class="alert-text">
+            <div class="icon">!</div>
+            <div class="copy"><strong>${cifras.open_high} excepción${cifras.open_high===1?'':'es'} de prioridad alta</strong> abiertas en el registro de enero. ${cifras.closed} ya cerradas.</div>
+          </div>
+        </div>`;
+    }
+
+    renderLiveFilters();
+    renderLiveTable();
+  } catch (err) {
+    document.getElementById('page-meta').textContent = 'Error cargando datos reales.';
+    document.getElementById('alert-slot').innerHTML = `
+      <div class="alert-banner crit">
+        <div class="alert-text">
+          <div class="icon">!</div>
+          <div class="copy"><strong>No se pudo conectar con la API real</strong> (${err.message}). ¿Está corriendo apps/api en ${LIVE_CONFIG[entityId].api_base}?</div>
+        </div>
+      </div>`;
+    console.error(err);
+  }
+}
+
+function liveStatusClass(s) {
+  return ({open: 'pending', closed: 'approved', approved: 'approved', rejected: 'rejected'})[s] || s;
+}
+function liveStatusLabel(s) {
+  return ({open: 'Abierta', closed: 'Cerrada', approved: 'Aprobada', rejected: 'Rechazada'})[s] || s;
+}
+
+function renderLiveFilters() {
+  const items = liveExceptions;
+  const counts = {
+    all:    items.length,
+    high:   items.filter(x => x.priority === 'high').length,
+    medium: items.filter(x => x.priority === 'medium').length,
+    low:    items.filter(x => x.priority === 'low').length,
+    open:   items.filter(x => x.status === 'open').length,
+    closed: items.filter(x => x.status === 'closed').length,
+  };
+  const chips = [
+    { key: 'all',    label: 'Todas' },
+    { key: 'high',   label: 'Altas' },
+    { key: 'medium', label: 'Medias' },
+    { key: 'low',    label: 'Bajas' },
+    { key: 'open',   label: 'Abiertas' },
+    { key: 'closed', label: 'Cerradas' },
+  ];
+  document.getElementById('exc-filters').innerHTML = chips.map(c => `
+    <div class="filter-chip ${c.key===currentExcFilter?'active':''}"
+         onclick="setLiveExcFilter('${c.key}')">${c.label} (${counts[c.key]||0})</div>
+  `).join('');
+}
+
+function setLiveExcFilter(key) {
+  currentExcFilter = key;
+  renderLiveFilters();
+  renderLiveTable();
+}
+
+function renderLiveTable() {
+  const all = liveExceptions;
+  const filtered = currentExcFilter === 'all'
+    ? all
+    : ['high','medium','low'].includes(currentExcFilter)
+      ? all.filter(x => x.priority === currentExcFilter)
+      : all.filter(x => x.status === currentExcFilter);
+
+  const tbody = document.getElementById('exc-tbody');
+  tbody.innerHTML = filtered.length === 0
+    ? `<tr><td colspan="6" style="text-align:center;color:var(--warm-gray);padding:24px;">Sin items en este filtro.</td></tr>`
+    : filtered.map(x => `
+      <tr onclick="openLiveExcDetail('${x.id}')">
+        <td><span class="priority-dot ${x.priority}"></span></td>
+        <td class="title-cell">
+          <div class="t">${x.title}</div>
+          <div class="sub">${x.subtype}</div>
+        </td>
+        <td><span class="priority-badge badge-${x.priority}">${x.priority.toUpperCase()}</span></td>
+        <td><span class="badge badge-${liveStatusClass(x.status)}">${liveStatusLabel(x.status)}</span></td>
+        <td>${confidenceBar(x.ai_confidence)}</td>
+        <td class="text-right" style="color:var(--warm-gray);font-size:12.5px;">${fmtDate(x.created_at)}</td>
+      </tr>`).join('');
+}
+
+function openLiveExcDetail(id) {
+  const x = liveExceptions.find(i => i.id === id);
+  if (!x) return;
+  document.getElementById('p-title').textContent       = x.title;
+  document.getElementById('p-subtype').textContent     = x.subtype;
+  document.getElementById('p-priority').innerHTML      = `<span class="priority-badge badge-${x.priority}">${x.priority.toUpperCase()}</span>`;
+  document.getElementById('p-status').innerHTML        = `<span class="badge badge-${liveStatusClass(x.status)}">${liveStatusLabel(x.status)}</span>`;
+  document.getElementById('p-desc').textContent        = x.description;
+  document.getElementById('p-rec').textContent         = x.ai_recommendation;
+  document.getElementById('p-conf').innerHTML          = confidenceBar(x.ai_confidence);
+
+  const alreadyDecided = x.status === 'approved' || x.status === 'rejected';
+  document.getElementById('p-btn-reject').disabled  = alreadyDecided;
+  document.getElementById('p-btn-approve').disabled = alreadyDecided;
+  document.getElementById('p-btn-reject').onclick  = () => decideLiveExc(x.id, 'rejected');
+  document.getElementById('p-btn-approve').onclick = () => decideLiveExc(x.id, 'approved');
+
+  document.getElementById('exc-panel').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+async function decideLiveExc(excId, status) {
+  let note = null;
+  if (status === 'rejected') {
+    note = prompt('Nota de rechazo (opcional):') || null;
+  }
+  try {
+    await patchLiveException(liveEntityId, excId, status, note);
+    closeExcPanel();
+    await initLivePage(liveEntityId);
+  } catch (err) {
+    alert(`No se pudo guardar: ${err.message}`);
+  }
+}
 </script>
 </body>
 </html>
