@@ -30,6 +30,8 @@
 
   --sidebar-w: 280px;
   --sidebar-w-collapsed: 76px;
+  --header-h: 72px; /* .nav-brand and .topbar are both pinned to this so their
+                        bottom borders form one continuous seam across the app */
   --radius:    8px;
   --radius-lg: 12px;
   --radius-xl: 14px;
@@ -136,7 +138,8 @@ img { max-width: 100%; display: block; }
 .nav {
   background: var(--sidebar-bg);
   color: var(--on-dark);
-  padding: 28px 0;
+  padding: 0 0 28px; /* was: 28px 0 — no top padding, so .nav-brand starts
+                        flush at y=0, level with .topbar */
   position: sticky;
   top: 0;
   height: 100vh;
@@ -145,10 +148,15 @@ img { max-width: 100%; display: block; }
   z-index: 20;
 }
 .nav-brand {
-  padding: 0 28px 24px;
+  height: var(--header-h);
+  box-sizing: border-box;
+  padding: 0 28px;
   border-bottom: 1px solid rgba(255,248,240,.08);
-  margin-bottom: 24px;
-  margin-top: -9px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 0; /* was margin-bottom: 24px; margin-top: -9px; — no longer
+                       needed now that height is fixed and top padding is
+                       removed from .nav */
 }
 .nav-brand .logo {
   font-family: var(--font-display);
@@ -170,6 +178,8 @@ img { max-width: 100%; display: block; }
 /* multi-entity selector */
 .entity-switcher {
   position: relative;
+  height: 106px;
+  box-sizing: border-box;
   margin: 0 16px 24px;
   background: rgba(255,248,240,.06);
   border-radius: 10px;
@@ -177,6 +187,8 @@ img { max-width: 100%; display: block; }
   cursor: pointer;
   border: 1px solid rgba(212,112,74,.35);
   transition: background .15s ease, border-color .15s ease;
+  display: flex;
+  align-items: center;
 }
 .entity-switcher:hover { background: rgba(255,248,240,.10); border-color: rgba(212,112,74,.55); }
 .entity-switcher .label {
@@ -244,6 +256,10 @@ img { max-width: 100%; display: block; }
 
 /* nav sections + items */
 .nav-section-label {
+  height: 40px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
   padding: 0 28px;
   font-size: 10px;
   text-transform: uppercase;
@@ -256,7 +272,11 @@ img { max-width: 100%; display: block; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 11px 28px;
+  height: 40px;
+  box-sizing: border-box;
+  padding: 0 28px; /* was: 11px 28px — fixed height + centered content
+                      instead, so icon-only vs icon+label never differ
+                      in row height */
   color: rgba(255,248,240,.75);
   text-decoration: none;
   font-size: 14.5px;
@@ -346,6 +366,19 @@ img { max-width: 100%; display: block; }
 .nav { transition: width .18s ease; }
 .shell:has(.nav.collapsed) { grid-template-columns: var(--sidebar-w-collapsed) 1fr; }
 .nav.collapsed { width: var(--sidebar-w-collapsed); }
+/* hover-to-peek: while pinned-collapsed, hovering the rail temporarily
+   renders it at full expanded width as a flyout overlay — WITHOUT
+   changing the reserved column width above (--sidebar-w-collapsed), so
+   .content/.topbar never shift. Ends on mouseleave or on pinning open
+   via the toggle. See nav.js onSidebarMouseEnter/Leave. */
+.nav.peeking {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: var(--sidebar-w);
+  box-shadow: var(--shadow-lg);
+  z-index: 30; /* above the pinned-collapsed z-index: 20 */
+}
 .nav-collapse-btn {
   position: absolute; top: 26px; right: -14px;
   width: 28px; height: 28px; border-radius: 50%;
@@ -357,8 +390,10 @@ img { max-width: 100%; display: block; }
   display: flex; align-items: center; justify-content: center;
   z-index: 40;
 }
-.nav-brand.collapsed { padding: 0 0 20px; display: flex; justify-content: center; }
-.es-collapsed-logo-wrap { display: flex; justify-content: center; margin: 0 0 16px; }
+.nav-brand.collapsed { padding: 0; justify-content: center; }
+/* fixed height, identical to .entity-switcher above, so hovering the
+   collapsed rail into the peek state never shifts rows below it */
+.es-collapsed-logo-wrap { height: 106px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; margin: 0 0 16px; }
 .es-collapsed-logo { width: 32px; height: 32px; border-radius: 50%; object-fit: contain; display: block; }
 .es-collapsed-logo.logo-placeholder { font-size: 14px; }
 .brand-mark {
@@ -368,11 +403,26 @@ img { max-width: 100%; display: block; }
   display: flex; align-items: center; justify-content: center;
   line-height: 1;
 }
+/* collapsed rail: big borderless terracotta "C" instead of the small
+   two-tone wordmark badge */
+.nav-brand.collapsed .brand-mark {
+  background: transparent;
+  border-radius: 0;
+  width: auto;
+  height: auto;
+  color: var(--terracotta);
+  font-size: 38px;
+  line-height: 1;
+}
 .nav-scroll { flex: 1; overflow-y: auto; overflow-x: hidden; }
 .nav-item .item-main { display: flex; align-items: center; gap: 11px; min-width: 0; }
 .nav-item .glyph { width: 22px; text-align: center; font-family: var(--font-mono); font-size: 13px; flex-shrink: 0; }
 .nav-item .label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.nav.collapsed .nav-item { justify-content: center; padding: 11px 0; }
+.nav.collapsed .nav-item { padding: 0; } /* was: justify-content:center; padding:11px 0 —
+  dropped the re-centering so the glyph never slides sideways between
+  collapsed and peeking/expanded; the glyph column is a fixed 22px
+  either way (see .nav-item .glyph) so left-alignment already looks
+  intentional in the narrow rail */
 .nav.collapsed .nav-footer { padding: 20px 0; display: flex; justify-content: center; }
 .nav.collapsed .user-chip { justify-content: center; }
 
@@ -413,7 +463,9 @@ img { max-width: 100%; display: block; }
 .topbar {
   background: var(--topbar-bg);
   border-bottom: 1px solid var(--light-gray);
-  padding: 14px 32px;
+  height: var(--header-h);
+  box-sizing: border-box;
+  padding: 0 32px; /* was: 14px 32px — height now controls vertical sizing */
   display: flex;
   align-items: center;
   justify-content: space-between;

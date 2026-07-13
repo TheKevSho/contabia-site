@@ -75,6 +75,11 @@ function _setStoredNavCollapsed(v) {
 }
 let _navCollapsed = _getStoredNavCollapsed();
 
+/* peeking — transient, NOT persisted. True only while the mouse is over
+   a currently pinned-collapsed rail (see onSidebarMouseEnter/Leave,
+   wired in the DOMContentLoaded handler below). */
+let _navPeeking = false;
+
 /* ------------------------------------------------------------
    Sidebar render
    ------------------------------------------------------------ */
@@ -86,6 +91,12 @@ function renderSidebar(activeHref) {
   const entities = listEntitiesForUser();
   const user = currentUser();
   const collapsed = _navCollapsed;
+  /* expanded = whether to render the expanded CONTENT variant (labels,
+     entity card, section headers) — true when pinned open OR when
+     peeking over a pinned-collapsed rail. `collapsed` (above) still
+     alone controls the reserved grid column width / .nav.collapsed
+     class — peeking never changes that, only what's rendered inside. */
+  const expanded = !collapsed || _navPeeking;
 
   /* nav sections, role-filtered */
   const navHtml = NAV_MODEL.map(sec => {
@@ -98,10 +109,10 @@ function renderSidebar(activeHref) {
         const cls = i.badgeClass ? ` ${i.badgeClass}` : '';
         badge = `<span class="nav-badge${cls}">${badges[i.badge]}</span>`;
       }
-      const label = collapsed ? '' : `<span class="label">${i.label}</span>`;
+      const label = expanded ? `<span class="label">${i.label}</span>` : '';
       return `<a href="${i.href}" class="nav-item${active}" title="${i.label}"><span class="item-main"><span class="glyph">${i.glyph || '·'}</span>${label}</span>${badge}</a>`;
     }).join('');
-    const sectionLabel = collapsed ? '' : `<div class="nav-section-label">${sec.section}</div>`;
+    const sectionLabel = expanded ? `<div class="nav-section-label">${sec.section}</div>` : '';
     return `${sectionLabel}${itemsHtml}`;
   }).join('');
 
@@ -115,16 +126,15 @@ function renderSidebar(activeHref) {
       </div>`;
   }).join('');
 
-  const brandHtml = collapsed
-    ? `<div class="nav-brand collapsed"><div class="brand-mark" title="ContabIA">C</div></div>`
-    : `<div class="nav-brand">
+  const brandHtml = expanded
+    ? `<div class="nav-brand">
         <div class="logo">Contab<span class="ia">IA</span></div>
         <div class="tagline">Su agente cierra sus libros.</div>
-      </div>`;
+      </div>`
+    : `<div class="nav-brand collapsed"><div class="brand-mark" title="ContabIA">C</div></div>`;
 
-  const entityHtml = collapsed
-    ? `<div class="es-collapsed-logo-wrap" title="${meta.name}">${entityLogoHtml(meta, 'es-collapsed-logo')}</div>`
-    : `<div class="entity-switcher" id="entity-switcher">
+  const entityHtml = expanded
+    ? `<div class="entity-switcher" id="entity-switcher">
         <div class="es-row" onclick="toggleEntityDropdown(event)">
           <div class="es-logo-wrap">${entityLogoHtml(meta, 'es-logo')}</div>
           <div class="es-text">
@@ -136,18 +146,19 @@ function renderSidebar(activeHref) {
         <div class="entity-dropdown" id="entity-dropdown">
           ${entitiesHtml}
         </div>
-      </div>`;
+      </div>`
+    : `<div class="es-collapsed-logo-wrap" title="${meta.name}">${entityLogoHtml(meta, 'es-collapsed-logo')}</div>`;
 
-  const footerMeta = collapsed
-    ? ''
-    : `<div class="meta">
+  const footerMeta = expanded
+    ? `<div class="meta">
         <div class="name">${user.name}</div>
         <div class="role">${ROLE_LABELS[role]} · ${meta.name.split(' ')[0]}</div>
         <a href="login.html" class="signout" onclick="signOut(event)">Cerrar sesión</a>
-      </div>`;
+      </div>`
+    : '';
 
   return `
-  <nav class="nav${collapsed ? ' collapsed' : ''}">
+  <nav class="nav${collapsed ? ' collapsed' : ''}${_navPeeking ? ' peeking' : ''}">
     <div class="nav-collapse-btn" title="Colapsar / expandir" onclick="toggleSidebarCollapse()">${collapsed ? '›' : '‹'}</div>
     ${brandHtml}
     ${entityHtml}
@@ -230,12 +241,47 @@ function toggleConnectorStrip() {
    ------------------------------------------------------------ */
 function toggleSidebarCollapse() {
   _navCollapsed = !_navCollapsed;
+  _navPeeking = false; /* always start clean — avoids a stale peek carrying
+                          over into the freshly (un)pinned state */
   _setStoredNavCollapsed(_navCollapsed);
   const mount = document.getElementById('sidebar-mount');
   let page = window.location.pathname.split('/').pop() || 'index.html';
   if (page && !page.includes('.')) page += '.html';
   if (mount) mount.innerHTML = renderSidebar(page);
   renderAppearancePopover();
+  attachNavHoverListeners();
+}
+
+/* ------------------------------------------------------------
+   Hover-to-peek on the collapsed rail
+   ------------------------------------------------------------ */
+function onSidebarMouseEnter() {
+  if (_navCollapsed) {
+    _navPeeking = true;
+    updateNavPeekClass();
+  }
+}
+function onSidebarMouseLeave() {
+  _navPeeking = false;
+  updateNavPeekClass();
+}
+function updateNavPeekClass() {
+  const mount = document.getElementById('sidebar-mount');
+  let page = window.location.pathname.split('/').pop() || 'index.html';
+  if (page && !page.includes('.')) page += '.html';
+  // Re-render sidebar contents so labels/entity-card/section-headers match
+  // the "expanded" branch of the existing collapsed/expanded conditionals
+  // (same renderSidebar() call the toggle button already uses) — this also
+  // naturally applies/removes the .peeking class via the nav element's
+  // class list, computed inside renderSidebar().
+  if (mount) mount.innerHTML = renderSidebar(page);
+  attachNavHoverListeners();
+}
+function attachNavHoverListeners() {
+  const nav = document.querySelector('.nav');
+  if (!nav) return;
+  nav.addEventListener('mouseenter', onSidebarMouseEnter);
+  nav.addEventListener('mouseleave', onSidebarMouseLeave);
 }
 
 function toggleEntityDropdown(ev) {
@@ -334,6 +380,7 @@ document.addEventListener('DOMContentLoaded', () => {
   sidebarMount.innerHTML = renderSidebar(page);
   if (topbarMount) topbarMount.innerHTML = renderTopbar();
   renderAppearancePopover();
+  attachNavHoverListeners();
 
   if (typeof mountHelpPanel === 'function') mountHelpPanel();
   if (typeof mountAgentWidget === 'function') mountAgentWidget(page);
