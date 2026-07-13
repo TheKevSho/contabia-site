@@ -133,7 +133,6 @@ function renderSidebar(activeHref) {
       <div class="brand-mark" title="ContabIA">C</div>
       <div class="brand-full">
         <div class="logo">Contab<span class="ia">IA</span></div>
-        <div class="tagline">Su agente cierra sus libros.</div>
       </div>
     </div>`;
 
@@ -144,7 +143,7 @@ function renderSidebar(activeHref) {
         <div class="es-logo-wrap">${entityLogoHtml(meta, 'es-logo')}</div>
         <div class="es-text">
           <div class="label">Entidad activa</div>
-          <div class="name">${meta.name} <span class="chevron">▾</span></div>
+          <div class="name"><span class="name-text">${meta.name}</span><span class="chevron">▾</span></div>
           <div class="period">${meta.period.toUpperCase()}</div>
         </div>
       </div>
