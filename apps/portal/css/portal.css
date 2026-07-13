@@ -174,6 +174,10 @@ img { max-width: 100%; display: block; }
   margin-top: 6px;
   font-weight: 300;
 }
+/* wraps the full wordmark+tagline so it can be hidden as one unit while
+   collapsed-not-peeking (see SIDEBAR COLLAPSE section below); .brand-mark
+   (the small/then-big "C") is the alternate, mutually-exclusive sibling */
+.nav-brand .brand-full { display: flex; flex-direction: column; justify-content: center; min-width: 0; }
 
 /* multi-entity selector */
 .entity-switcher {
@@ -362,7 +366,19 @@ img { max-width: 100%; display: block; }
 }
 .user-chip .signout:hover { color: var(--terracotta); }
 
-/* ============ SIDEBAR COLLAPSE ============ */
+/* ============ SIDEBAR COLLAPSE ============
+   Both variants of every swappable bit (brand mark vs. full wordmark,
+   collapsed logo vs. entity switcher, glyph-only vs. glyph+label nav
+   items, no section header vs. section header, no footer meta vs.
+   footer meta) are ALWAYS present in the DOM — see nav.js renderSidebar().
+   Visibility between them is decided ENTIRELY here, by CSS, off
+   .nav.collapsed / .nav.collapsed.peeking. Nothing below ever triggers a
+   DOM re-render (see nav.js onSidebarMouseEnter/Leave) — that's
+   deliberate: an earlier version re-rendered the sidebar on every
+   mouseenter/mouseleave to swap these variants, which replaced the whole
+   <nav> subtree mid-hover and made the collapse button (and nav items)
+   unclickable, since the node under the cursor could be detached and
+   swapped out from under an in-flight click. */
 .nav { transition: width .18s ease; }
 .shell:has(.nav.collapsed) { grid-template-columns: var(--sidebar-w-collapsed) 1fr; }
 .nav.collapsed { width: var(--sidebar-w-collapsed); }
@@ -390,22 +406,40 @@ img { max-width: 100%; display: block; }
   display: flex; align-items: center; justify-content: center;
   z-index: 40;
 }
-.nav-brand.collapsed { padding: 0; justify-content: center; }
+/* keep the toggle at its collapsed-width position throughout the peek
+   flyout (rather than jumping ~200px to the now-280px-wide edge via its
+   normal right:-14px) — otherwise reaching for it is chasing a target
+   that runs away the moment the rail starts peeking on hover */
+.nav.peeking .nav-collapse-btn { right: auto; left: 62px; }
+
+/* -- collapsed (not peeking): show the compact variant, hide the full one -- */
+.nav.collapsed:not(.peeking) .nav-brand { padding: 0; justify-content: center; }
+.nav.collapsed:not(.peeking) .nav-brand .brand-full { display: none; }
+.nav.collapsed:not(.peeking) .brand-mark { display: flex; }
+.nav.collapsed:not(.peeking) .es-collapsed-logo-wrap { display: flex; }
+.nav.collapsed:not(.peeking) .entity-switcher { display: none; }
+.nav.collapsed:not(.peeking) .nav-item .label { display: none; }
+.nav.collapsed:not(.peeking) .nav-section-label { display: none; }
+.nav.collapsed:not(.peeking) .nav-footer { padding: 20px 0; display: flex; justify-content: center; }
+.nav.collapsed:not(.peeking) .user-chip { justify-content: center; }
+.nav.collapsed:not(.peeking) .user-chip .meta { display: none; }
+
 /* fixed height, identical to .entity-switcher above, so hovering the
    collapsed rail into the peek state never shifts rows below it */
-.es-collapsed-logo-wrap { height: 106px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; margin: 0 0 16px; }
+.es-collapsed-logo-wrap { display: none; height: 106px; box-sizing: border-box; align-items: center; justify-content: center; margin: 0 0 16px; }
 .es-collapsed-logo { width: 32px; height: 32px; border-radius: 50%; object-fit: contain; display: block; }
 .es-collapsed-logo.logo-placeholder { font-size: 14px; }
 .brand-mark {
+  display: none; /* shown only collapsed-not-peeking, see rule above */
   width: 40px; height: 40px; border-radius: 10px;
   background: var(--on-dark); color: var(--terracotta);
   font-family: var(--font-display); font-size: 22px;
-  display: flex; align-items: center; justify-content: center;
+  align-items: center; justify-content: center;
   line-height: 1;
 }
 /* collapsed rail: big borderless terracotta "C" instead of the small
    two-tone wordmark badge */
-.nav-brand.collapsed .brand-mark {
+.nav.collapsed:not(.peeking) .brand-mark {
   background: transparent;
   border-radius: 0;
   width: auto;
@@ -418,13 +452,11 @@ img { max-width: 100%; display: block; }
 .nav-item .item-main { display: flex; align-items: center; gap: 11px; min-width: 0; }
 .nav-item .glyph { width: 22px; text-align: center; font-family: var(--font-mono); font-size: 13px; flex-shrink: 0; }
 .nav-item .label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.nav.collapsed .nav-item { padding: 0; } /* was: justify-content:center; padding:11px 0 —
-  dropped the re-centering so the glyph never slides sideways between
-  collapsed and peeking/expanded; the glyph column is a fixed 22px
-  either way (see .nav-item .glyph) so left-alignment already looks
-  intentional in the narrow rail */
-.nav.collapsed .nav-footer { padding: 20px 0; display: flex; justify-content: center; }
-.nav.collapsed .user-chip { justify-content: center; }
+/* NOTE: deliberately no .nav.collapsed .nav-item padding/justify-content
+   override — .nav-item's base padding: 0 28px (below) applies in every
+   state so the glyph's horizontal position never changes between
+   collapsed, peeking, and expanded; only the label's visibility (above)
+   and the rail's own width change. */
 
 /* ============ APPEARANCE POPOVER (sidebar footer) ============ */
 .nav-footer { position: relative; }

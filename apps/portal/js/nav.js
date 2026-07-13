@@ -91,12 +91,16 @@ function renderSidebar(activeHref) {
   const entities = listEntitiesForUser();
   const user = currentUser();
   const collapsed = _navCollapsed;
-  /* expanded = whether to render the expanded CONTENT variant (labels,
-     entity card, section headers) — true when pinned open OR when
-     peeking over a pinned-collapsed rail. `collapsed` (above) still
-     alone controls the reserved grid column width / .nav.collapsed
-     class — peeking never changes that, only what's rendered inside. */
-  const expanded = !collapsed || _navPeeking;
+  /* Both the collapsed and expanded markup for every swappable part
+     (brand, entity card, item labels, section headers, footer meta)
+     are ALWAYS rendered below — which one is visible is decided purely
+     by CSS off .nav.collapsed / .nav.collapsed.peeking (see portal.css).
+     This function only runs on initial load and on an explicit pin
+     toggle click — never on hover — so a hover-triggered peek can never
+     replace/detach the very node the user is trying to click (that was
+     the bug in the first cut of this feature: re-rendering on
+     mouseenter destroyed the collapse button and nav-item links out
+     from under in-flight clicks). See onSidebarMouseEnter/Leave. */
 
   /* nav sections, role-filtered */
   const navHtml = NAV_MODEL.map(sec => {
@@ -109,11 +113,9 @@ function renderSidebar(activeHref) {
         const cls = i.badgeClass ? ` ${i.badgeClass}` : '';
         badge = `<span class="nav-badge${cls}">${badges[i.badge]}</span>`;
       }
-      const label = expanded ? `<span class="label">${i.label}</span>` : '';
-      return `<a href="${i.href}" class="nav-item${active}" title="${i.label}"><span class="item-main"><span class="glyph">${i.glyph || '·'}</span>${label}</span>${badge}</a>`;
+      return `<a href="${i.href}" class="nav-item${active}" title="${i.label}"><span class="item-main"><span class="glyph">${i.glyph || '·'}</span><span class="label">${i.label}</span></span>${badge}</a>`;
     }).join('');
-    const sectionLabel = expanded ? `<div class="nav-section-label">${sec.section}</div>` : '';
-    return `${sectionLabel}${itemsHtml}`;
+    return `<div class="nav-section-label">${sec.section}</div>${itemsHtml}`;
   }).join('');
 
   /* entity dropdown (expanded only) */
@@ -126,39 +128,40 @@ function renderSidebar(activeHref) {
       </div>`;
   }).join('');
 
-  const brandHtml = expanded
-    ? `<div class="nav-brand">
+  const brandHtml = `
+    <div class="nav-brand">
+      <div class="brand-mark" title="ContabIA">C</div>
+      <div class="brand-full">
         <div class="logo">Contab<span class="ia">IA</span></div>
         <div class="tagline">Su agente cierra sus libros.</div>
-      </div>`
-    : `<div class="nav-brand collapsed"><div class="brand-mark" title="ContabIA">C</div></div>`;
+      </div>
+    </div>`;
 
-  const entityHtml = expanded
-    ? `<div class="entity-switcher" id="entity-switcher">
-        <div class="es-row" onclick="toggleEntityDropdown(event)">
-          <div class="es-logo-wrap">${entityLogoHtml(meta, 'es-logo')}</div>
-          <div class="es-text">
-            <div class="label">Entidad activa</div>
-            <div class="name">${meta.name} <span class="chevron">▾</span></div>
-            <div class="period">${meta.period.toUpperCase()}</div>
-          </div>
+  const entityHtml = `
+    <div class="es-collapsed-logo-wrap" title="${meta.name}">${entityLogoHtml(meta, 'es-collapsed-logo')}</div>
+    <div class="entity-switcher" id="entity-switcher">
+      <div class="es-row" onclick="toggleEntityDropdown(event)">
+        <div class="es-logo-wrap">${entityLogoHtml(meta, 'es-logo')}</div>
+        <div class="es-text">
+          <div class="label">Entidad activa</div>
+          <div class="name">${meta.name} <span class="chevron">▾</span></div>
+          <div class="period">${meta.period.toUpperCase()}</div>
         </div>
-        <div class="entity-dropdown" id="entity-dropdown">
-          ${entitiesHtml}
-        </div>
-      </div>`
-    : `<div class="es-collapsed-logo-wrap" title="${meta.name}">${entityLogoHtml(meta, 'es-collapsed-logo')}</div>`;
+      </div>
+      <div class="entity-dropdown" id="entity-dropdown">
+        ${entitiesHtml}
+      </div>
+    </div>`;
 
-  const footerMeta = expanded
-    ? `<div class="meta">
-        <div class="name">${user.name}</div>
-        <div class="role">${ROLE_LABELS[role]} · ${meta.name.split(' ')[0]}</div>
-        <a href="login.html" class="signout" onclick="signOut(event)">Cerrar sesión</a>
-      </div>`
-    : '';
+  const footerMeta = `
+    <div class="meta">
+      <div class="name">${user.name}</div>
+      <div class="role">${ROLE_LABELS[role]} · ${meta.name.split(' ')[0]}</div>
+      <a href="login.html" class="signout" onclick="signOut(event)">Cerrar sesión</a>
+    </div>`;
 
   return `
-  <nav class="nav${collapsed ? ' collapsed' : ''}${_navPeeking ? ' peeking' : ''}">
+  <nav class="nav${collapsed ? ' collapsed' : ''}">
     <div class="nav-collapse-btn" title="Colapsar / expandir" onclick="toggleSidebarCollapse()">${collapsed ? '›' : '‹'}</div>
     ${brandHtml}
     ${entityHtml}
@@ -253,29 +256,24 @@ function toggleSidebarCollapse() {
 }
 
 /* ------------------------------------------------------------
-   Hover-to-peek on the collapsed rail
+   Hover-to-peek on the collapsed rail — a PURE CSS class toggle.
+   Both variants of every swappable bit are already in the DOM (see
+   renderSidebar), so peeking never touches innerHTML/replaces nodes;
+   it just flips .peeking on the existing <nav>, which is cheap and
+   can't race with — or eat — an in-flight click on the collapse
+   button or a nav-item link.
    ------------------------------------------------------------ */
 function onSidebarMouseEnter() {
   if (_navCollapsed) {
     _navPeeking = true;
-    updateNavPeekClass();
+    const nav = document.querySelector('.nav');
+    if (nav) nav.classList.add('peeking');
   }
 }
 function onSidebarMouseLeave() {
   _navPeeking = false;
-  updateNavPeekClass();
-}
-function updateNavPeekClass() {
-  const mount = document.getElementById('sidebar-mount');
-  let page = window.location.pathname.split('/').pop() || 'index.html';
-  if (page && !page.includes('.')) page += '.html';
-  // Re-render sidebar contents so labels/entity-card/section-headers match
-  // the "expanded" branch of the existing collapsed/expanded conditionals
-  // (same renderSidebar() call the toggle button already uses) — this also
-  // naturally applies/removes the .peeking class via the nav element's
-  // class list, computed inside renderSidebar().
-  if (mount) mount.innerHTML = renderSidebar(page);
-  attachNavHoverListeners();
+  const nav = document.querySelector('.nav');
+  if (nav) nav.classList.remove('peeking');
 }
 function attachNavHoverListeners() {
   const nav = document.querySelector('.nav');
