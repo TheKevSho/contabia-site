@@ -17,11 +17,18 @@
       transition: border-color 0.2s;
     }
     .form-group select:focus, .form-group input:focus { outline: none; border-color: var(--ocean); }
-    .result-box { background: var(--midnight); border-radius: 8px; padding: 2rem; color: var(--cream); margin-top: 1.5rem; display: none; }
+    .result-box { background: var(--midnight); border-radius: 8px; padding: 2rem; color: var(--cream); margin-top: 1.5rem; display: block; }
     .result-box .big-number { font-family: var(--font-mono); font-size: 2.2rem; font-weight: 700; color: var(--terracotta); }
     .result-box .secondary { font-family: var(--font-mono); font-size: 1.3rem; font-weight: 500; color: var(--sky); margin-top: 0.75rem; }
     .radio-group { display: flex; gap: 1rem; flex-wrap: wrap; }
     .radio-group label { display: flex; align-items: center; gap: 0.4rem; font-weight: 400; font-size: 0.88rem; cursor: pointer; color: var(--charcoal); }
+    .scan-step { border: 1px solid var(--light-gray); border-radius: 8px; padding: 1.25rem 1.5rem; margin-bottom: 1rem; background: var(--cream); }
+    .scan-step-primary { border-color: var(--terracotta); border-width: 2px; background: var(--white); }
+    .scan-step-head { display: flex; gap: 0.85rem; align-items: flex-start; margin-bottom: 0.85rem; }
+    .scan-step-num { flex: 0 0 auto; width: 26px; height: 26px; border-radius: 50%; background: var(--terracotta); color: var(--cream); font-family: var(--font-mono); font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+    .scan-step-title { font-weight: 600; color: var(--midnight); font-size: 0.95rem; margin-bottom: 0.2rem; }
+    .scan-step-optional { font-weight: 400; color: var(--warm-gray); font-size: 0.8rem; }
+    .scan-step-hint { font-size: 0.85rem; color: var(--warm-gray); }
   </style>
 </head>
 <body>
@@ -70,7 +77,7 @@
       <div class="tool-card reveal">
         <p class="label" style="margin-bottom: 0.75rem;">Tool 1</p>
         <h2 style="margin-bottom: 0.75rem;">Book Scanner</h2>
-        <p style="color: var(--warm-gray); font-size: 0.95rem; margin-bottom: 2rem;">Upload a trial balance or recent bank statement. Our agent scans for gaps: missing documentos soporte, unreconciled transactions, retefuente miscalculations, GMF discrepancies, OTA booking errors, and employee liability drift. The scan runs in seconds. You'll get an email instantly with access to your portal — your diagnostic report is waiting there, in Deliverables.</p>
+        <p style="color: var(--warm-gray); font-size: 0.95rem; margin-bottom: 2rem;">Connect your accounting system and in seconds we show you how much you're losing. Add your bank or your PMS for an even deeper diagnostic — each step is optional, and each one shows you more.</p>
 
         <div class="form-group">
           <label>Your name</label>
@@ -88,8 +95,15 @@
           <label>Email</label>
           <input type="email" placeholder="email@example.com">
         </div>
-        <div class="form-group">
-          <label>Accounting software</label>
+
+        <div class="scan-step scan-step-primary">
+          <div class="scan-step-head">
+            <span class="scan-step-num">1</span>
+            <div>
+              <p class="scan-step-title">Connect your accounting system</p>
+              <p class="scan-step-hint">We see your foreign purchases missing documento soporte and the general state of your books. Ready in seconds.</p>
+            </div>
+          </div>
           <select>
             <option value="">Select...</option>
             <option>Alegra</option>
@@ -98,10 +112,34 @@
             <option>Other</option>
           </select>
         </div>
-        <div class="form-group">
-          <label>Upload your trial balance or bank statement (PDF, CSV, or XLS)</label>
+
+        <div class="scan-step">
+          <div class="scan-step-head">
+            <span class="scan-step-num">2</span>
+            <div>
+              <p class="scan-step-title">Add your bank statement <span class="scan-step-optional">(optional)</span></p>
+              <p class="scan-step-hint">We also see what doesn't reconcile between your bank and your books.</p>
+            </div>
+          </div>
           <input type="file" accept=".pdf,.csv,.xls,.xlsx" style="padding: 0.5rem 0;">
         </div>
+
+        <div class="scan-step">
+          <div class="scan-step-head">
+            <span class="scan-step-num">3</span>
+            <div>
+              <p class="scan-step-title">Connect your PMS <span class="scan-step-optional">(optional, hospitality)</span></p>
+              <p class="scan-step-hint">We see your mis-recorded OTA commissions — usually where the most money leaks.</p>
+            </div>
+          </div>
+          <select>
+            <option value="">Not applicable / select...</option>
+            <option>LobbyPMS</option>
+            <option>Cloudbeds</option>
+            <option>Other</option>
+          </select>
+        </div>
+
         <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="alert('Thanks! Check your email — you already have portal access with your diagnostic report, ready in Deliverables.')">
           Submit for free scan →
         </button>
@@ -116,11 +154,11 @@
       <div class="tool-card reveal">
         <p class="label" style="margin-bottom: 0.75rem;">Tool 2</p>
         <h2 style="margin-bottom: 0.75rem;">Hours Calculator</h2>
-        <p style="color: var(--warm-gray); font-size: 0.95rem; margin-bottom: 2rem;">How many hours does your monthly close take? Answer a few questions and see the comparison — your current process vs. ContabIA.</p>
+        <p style="color: var(--warm-gray); font-size: 0.95rem; margin-bottom: 2rem;">Already calculated for a typical case. Adjust any variable below and watch the comparison change live — your current process vs. ContabIA.</p>
 
         <div class="form-group">
           <label>Number of bank accounts</label>
-          <select id="banks">
+          <select id="banks" onchange="calculate()">
             <option value="1">1</option>
             <option value="2" selected>2</option>
             <option value="3">3</option>
@@ -130,7 +168,7 @@
 
         <div class="form-group">
           <label>Number of OTA channels (0 if not hospitality)</label>
-          <select id="otas">
+          <select id="otas" onchange="calculate()">
             <option value="0">0 — not hospitality</option>
             <option value="1">1</option>
             <option value="2">2</option>
@@ -140,7 +178,7 @@
 
         <div class="form-group">
           <label>Number of employees</label>
-          <select id="employees">
+          <select id="employees" onchange="calculate()">
             <option value="5">1–5</option>
             <option value="10" selected>6–15</option>
             <option value="20">16–30</option>
@@ -150,7 +188,7 @@
 
         <div class="form-group">
           <label>Approximate monthly transactions</label>
-          <select id="transactions">
+          <select id="transactions" onchange="calculate()">
             <option value="50">Under 100</option>
             <option value="250" selected>100–500</option>
             <option value="750">500–1,000</option>
@@ -161,15 +199,13 @@
         <div class="form-group">
           <label>Do you currently generate documentos soporte for foreign purchases?</label>
           <div class="radio-group">
-            <label><input type="radio" name="docsoporte" value="yes"> Yes</label>
-            <label><input type="radio" name="docsoporte" value="no" checked> No</label>
-            <label><input type="radio" name="docsoporte" value="unsure"> Not sure</label>
+            <label><input type="radio" name="docsoporte" value="yes" onchange="calculate()"> Yes</label>
+            <label><input type="radio" name="docsoporte" value="no" checked onchange="calculate()"> No</label>
+            <label><input type="radio" name="docsoporte" value="unsure" onchange="calculate()"> Not sure</label>
           </div>
         </div>
 
-        <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="calculate()">
-          Calculate →
-        </button>
+        <p style="text-align: center; font-size: 0.82rem; color: var(--warm-gray); margin: 0.5rem 0 1.5rem;">The results below recalculate instantly with every change — nothing to click.</p>
 
         <div class="result-box" id="results">
           <p style="font-size: 0.85rem; color: rgba(255,248,240,0.6); margin-bottom: 0.5rem;">Your estimated monthly close:</p>
@@ -179,7 +215,7 @@
           <p style="font-size: 0.85rem; color: rgba(255,248,240,0.6); margin-top: 1rem; margin-bottom: 0.5rem;">Hours recovered per year:</p>
           <div class="secondary" id="yearlyHours"></div>
           <div id="taxNote" style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(255,248,240,0.15);"></div>
-          <a href="/en/#contact" class="btn btn-primary" style="margin-top: 1.5rem; width: 100%; justify-content: center;">Schedule a demo →</a>
+          <a href="https://app.contabia.co/login.html?demo=1" class="btn btn-primary" style="margin-top: 1.5rem; width: 100%; justify-content: center;" target="_blank" rel="noopener">See the portal in action →</a>
         </div>
       </div>
     </div>
@@ -192,10 +228,7 @@
         <h2>Ready for the real thing?</h2>
         <p class="lead">The free scan shows what you're missing. The agent fixes it — every month, automatically.</p>
         <div class="cta-buttons">
-          <a href="/en/#contact" class="btn btn-whatsapp">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492a.75.75 0 00.917.917l4.458-1.495A11.952 11.952 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-2.33 0-4.49-.778-6.225-2.088l-.434-.334-2.665.893.893-2.665-.334-.434A9.96 9.96 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
-            Schedule a demo
-          </a>
+          <a href="https://app.contabia.co/login.html?demo=1" class="btn btn-primary" target="_blank" rel="noopener">See the portal in action →</a>
           <a href="/en/pages/pricing.html" class="btn btn-outline">View pricing →</a>
         </div>
       </div>
@@ -262,9 +295,12 @@
         }
       }
       document.getElementById('taxNote').innerHTML = taxNote;
-      document.getElementById('results').style.display = 'block';
-      document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
+
+    // Runs once on load so the calculator shows a real, pre-filled result
+    // immediately -- no click required. Every onchange handler above re-runs
+    // this same function live.
+    document.addEventListener('DOMContentLoaded', calculate);
   </script>
 
   <!-- Password Gate -->

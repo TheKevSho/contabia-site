@@ -50,6 +50,18 @@
     const ROLE     = 'manager';
     const REDIRECT = 'nomina.html';
 
+    /* Marketing site "ver demo" links land here with ?demo=1 — skip the
+       password and drop straight into the sandboxed demo entity. */
+    const params = new URLSearchParams(location.search);
+    if (params.get('demo') === '1') {
+      sessionStorage.setItem('contabia_auth', '1');
+      sessionStorage.setItem('contabia_role', ROLE);
+      sessionStorage.setItem('contabia_entity', 'cantamar-001');
+      sessionStorage.setItem('contabia_demo', '1');
+      location.href = REDIRECT;
+      return;
+    }
+
     function attemptLogin() {
       const pw = document.getElementById('password').value;
       const err = document.getElementById('error');
