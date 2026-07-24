@@ -49,6 +49,8 @@ logging.basicConfig(level=logging.INFO)
 
 DATA_DIR = Path(os.environ.get("CONTABIA_DATA_DIR", Path(__file__).parent / "data"))
 DB_PATH = Path(os.environ.get("CONTABIA_DB_PATH", Path(__file__).parent / "sonata_mas_001.sqlite"))
+# Boveda uploads need persistent storage (Railway volume); registers stay in the repo.
+BOVEDA_DIR = Path(os.environ.get("CONTABIA_BOVEDA_DIR", DATA_DIR))
 
 # ---------------------------------------------------------------------------
 # Auth config - interim single-operator login per Kevin 2026-07-24.
@@ -548,7 +550,7 @@ async def upload_boveda_file(
     file_bytes = await file.read()
     tag_list = [t.strip() for t in tags.split(",") if t.strip()]
     return boveda_data.save_upload(
-        _db, DATA_DIR, entity_id, file.filename, file_bytes,
+        _db, BOVEDA_DIR, entity_id, file.filename, file_bytes,
         folder=folder, tags=tag_list,
         linked_exception_id=linked_exception_id, uploaded_by=uploaded_by,
     )
