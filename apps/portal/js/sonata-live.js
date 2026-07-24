@@ -25,11 +25,15 @@
 
 const LIVE_CONFIG = {
   'sonata-001': {
-    period_iso: '2026-01',
-    period_label: 'enero 2026',
+    // June-lock / July-live (File 28 final decision 2026-07-17): opening
+    // balance locked 2026-06-30; July 2026 is the live, ingesting period.
+    // Jan-June register rows ride along as the historical baseline.
+    period_iso: '2026-07',
+    period_label: 'julio 2026 (saldo inicial: 30-jun)',
     // Override from a page by setting window.CONTABIA_API_BASE before this
-    // script loads (e.g. once the apps/api service is deployed on Railway).
-    api_base: (window.CONTABIA_API_BASE || 'http://localhost:8000'),
+    // script loads. Defaults to the deployed API on https, localhost in dev.
+    api_base: (window.CONTABIA_API_BASE ||
+      (location.protocol === 'https:' ? 'https://api.contabia.co' : 'http://localhost:8000')),
   },
 };
 
@@ -48,6 +52,10 @@ function setLiveMode(on) {
 
 async function _liveFetch(entityId, path, opts) {
   const cfg = LIVE_CONFIG[entityId];
+  opts = opts || {};
+  const token = sessionStorage.getItem('contabia_api_token');
+  opts.headers = Object.assign({}, opts.headers,
+    token ? { 'Authorization': `Bearer ${token}` } : {});
   const res = await fetch(`${cfg.api_base}/entities/${entityId}${path}`, opts);
   if (!res.ok) {
     const detail = await res.text().catch(() => '');
@@ -86,6 +94,34 @@ async function patchLiveJournalEntry(entityId, jeId, status, rejectionNote) {
   });
 }
 
+/* ---- company config rules (configuracion.html, Reglas tab) ---------- */
+
+async function fetchLiveRules(entityId) {
+  return _liveFetch(entityId, '/rules');
+}
+
+async function createLiveRule(entityId, ruleText, category, source, linkedExceptionId) {
+  return _liveFetch(entityId, '/rules', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      rule_text: ruleText,
+      category: category || null,
+      source: source || 'client_choice',
+      linked_exception_id: linkedExceptionId || null,
+      created_by: sessionStorage.getItem('contabia_role') || 'portal',
+    }),
+  });
+}
+
+async function patchLiveRule(entityId, ruleId, patch) {
+  return _liveFetch(entityId, `/rules/${ruleId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(patch),
+  });
+}
+
 /* ---- shape adapters -------------------------------------------------
    Real backend field names (data_loader.py):
      { id, category, phase, severity, title, amount_cop, owner,
@@ -105,9 +141,11 @@ function adaptLiveException(e) {
   if (e.amount_cop != null) descParts.push(`Monto: COP ${e.amount_cop.toLocaleString('es-CO')}`);
   if (e.owner) descParts.push(`Responsable: ${e.owner}`);
   if (e.proposed_je_ref) descParts.push(`JE propuesto: ${e.proposed_je_ref}`);
+  const periodTag = e.period ? (e.period >= '2026-07' ? ` · ${e.period} (vivo)` : ` · ${e.period} (línea base)`) : '';
+  const gateTag = e.gate_b === 'disclose_forward' ? ' · Gate B: revelar, no postear' : '';
   return {
     id: e.id,
-    subtype: `Fase ${e.phase}${e.accepted_risk_tag ? ' · ' + e.accepted_risk_tag : ''}`,
+    subtype: `Fase ${e.phase}${periodTag}${gateTag}${e.accepted_risk_tag ? ' · ' + e.accepted_risk_tag : ''}`,
     status: e.status,                                   // open | closed | approved | rejected
     priority: SEVERITY_TO_PRIORITY[e.severity] || 'medium',
     title: e.title,

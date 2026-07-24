@@ -47,6 +47,9 @@
     const PASSWORD = 'Scrooge';
     const ROLE     = 'owner';
     const REDIRECT = 'index.html';
+    /* Live API base — same convention as sonata-live.js. */
+    const API_BASE = window.CONTABIA_API_BASE ||
+      (location.protocol === 'https:' ? 'https://api.contabia.co' : 'http://localhost:8000');
 
     /* Marketing site "ver demo" links land here with ?demo=1 — skip the
        password and drop straight into the sandboxed demo entity. */
@@ -60,19 +63,44 @@
       return;
     }
 
-    function attemptLogin() {
-      const pw = document.getElementById('password').value;
-      const err = document.getElementById('error');
+    async function attemptLogin() {
+      const user = (document.getElementById('email').value || '').trim().toLowerCase();
+      const pw   = document.getElementById('password').value;
+      const err  = document.getElementById('error');
+
+      /* Demo path — unchanged. Scrooge drops into the sandboxed demo entity. */
       if (pw === PASSWORD) {
         sessionStorage.setItem('contabia_auth', '1');
         sessionStorage.setItem('contabia_role', ROLE);
         sessionStorage.setItem('contabia_entity', 'cantamar-001');
         location.href = REDIRECT;
-      } else {
-        err.textContent = 'Contraseña incorrecta.';
-        document.getElementById('password').value = '';
-        document.getElementById('password').focus();
+        return;
       }
+
+      /* Live path — real credentials validated server-side; the API issues
+         the bearer token that unlocks live data (nothing secret in this file). */
+      const username = user.includes('@') ? user.split('@')[0] : user;
+      try {
+        const res = await fetch(`${API_BASE}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password: pw }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          sessionStorage.setItem('contabia_auth', '1');
+          sessionStorage.setItem('contabia_role', ROLE);
+          sessionStorage.setItem('contabia_entity', data.default_entity || 'sonata-001');
+          sessionStorage.setItem('contabia_api_token', data.token);
+          sessionStorage.setItem('contabia_live', '1');
+          location.href = REDIRECT;
+          return;
+        }
+      } catch (e) { /* API unreachable — fall through to the error message */ }
+
+      err.textContent = 'Credenciales incorrectas.';
+      document.getElementById('password').value = '';
+      document.getElementById('password').focus();
     }
 
     document.getElementById('signin').addEventListener('click', attemptLogin);
