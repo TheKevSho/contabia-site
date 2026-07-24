@@ -56,6 +56,7 @@ async function _liveFetch(entityId, path, opts) {
   const token = sessionStorage.getItem('contabia_api_token');
   opts.headers = Object.assign({}, opts.headers,
     token ? { 'Authorization': `Bearer ${token}` } : {});
+     opts.cache = opts.cache || 'no-store';
   const res = await fetch(`${cfg.api_base}/entities/${entityId}${path}`, opts);
   if (!res.ok) {
     const detail = await res.text().catch(() => '');
