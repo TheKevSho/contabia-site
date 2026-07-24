@@ -179,6 +179,20 @@ OPEN_JUDGMENT_CALLS = [
      "needed": "Define nature"},
     {"ref": "EX-4.1/4.7", "title": "AR uncollected / no invoice", "amount_cop": 39655000,
      "needed": "Monitor collection / investigate"},
+    {"ref": "EX-10.2", "title": "Foreign-OTA IVA self-retention never applied (Art. 437-2) "
+     "- REOPENED 2026-07-10", "amount_cop": 3000000,
+     "needed": (
+        "Was closed as RA-2 (accepted, no remediation); Kevin reopened it 2026-07-10 "
+        "because the economics favor revisiting: this is a real DIAN filing gap (Form 350), "
+        "not a bookkeeping entry, so fixing the GL doesn't fix the return. Art. 588 ET allows "
+        "voluntary correction of a filed declaracion increasing tax owed any time within "
+        "firmeza (~3yrs, Art. 714 ET - not close to binding at 6 months old). Interest accrues "
+        "from the original due date either way, but a voluntary correction before DIAN opens "
+        "an audit carries only the correction penalty, while DIAN finding it first carries the "
+        "much larger sancion por inexactitud. ~3.0M/mo unbooked historically (Jan onward per "
+        "the Jun-2026 audit pass) - Edwin's call: file the voluntary correction now, or "
+        "reaffirm the RA-2 no-remediation disposition with that penalty delta in view."
+     )},
 ]
 
 # Group E — recurring routines to activate once approved.
@@ -191,9 +205,11 @@ RECURRING_ROUTINES = [
 ]
 
 # Already accepted, no further action — context only, not up for review.
+# NOTE: RA-2 (OTA reteIVA) was pulled from this list 2026-07-10 and moved to
+# OPEN_JUDGMENT_CALLS as EX-10.2 - Kevin reopened it for a second look rather
+# than let it settle as silently accepted. See EX-10.2 above for the framing.
 ACCEPTED_NO_ACTION = [
     "RA-1/RA-6 (input IVA, excluded treatment)",
-    "RA-2 (OTA reteIVA, no remediation)",
     "RA-4 (Velas Sailing Supply, no DS/self-withholding)",
     "Decision #6 (Abono Kevin -> reduces vessel liability)",
     "Decision #14 (Art. 35 not imputed)",

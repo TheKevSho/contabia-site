@@ -1,0 +1,16 @@
+{
+  "period": "2026-07",
+  "as_of": "2026-07-24",
+  "source": "Alegra live pull, 2026-07-24 (ContabIA diagnostic pass)",
+  "invoices_count": 190,
+  "invoices_open": 29,
+  "open_ar_cop": 10548000,
+  "sales_before_taxes_cop": 100868119,
+  "sales_total_cop": 97315156,
+  "credit_notes_cop": 2122000,
+  "bills_count": 106,
+  "open_ap_cop": 13607861,
+  "journals_count_auto": 44,
+  "journals_count_manual": 0,
+  "notes": "Journals to date are all auto-generated anticipo adjustments; no manual close entries yet. Bank statements not yet ingested for July."
+}
