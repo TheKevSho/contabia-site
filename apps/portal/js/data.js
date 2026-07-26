@@ -38,6 +38,15 @@ const DATA = {
       accountant: { name: 'Edwin Restrepo',   initials: 'ER', email: 'edwin@balinessa.co'  },
       manager:    { name: 'Yaritza González', initials: 'YG', email: 'yaritza@cantamar.co' },
     },
+    /* NOTE (2026-07-26, File 28 B2.8): Nick is modeled here as manager, but
+       the real decision is Nick + Kevin both land as owner at Sonata Mas.
+       Not fixed yet, deliberately: this table only supports one person per
+       (entity, role) slot, and nobody actually needs individual access to
+       this mock anymore now that the public /demo entry point (B2.6) covers
+       role-preview access. Revisit as part of the real entitlements-table
+       design (B2.2) once Sonata Mas/Tayrona Sailing is genuinely live in the
+       portal on real auth — that table should support multiple users per
+       role from the start. */
     'sonata-001': {
       owner:      { name: 'Kevin Carey',      initials: 'KC', email: 'kevin@cantamar.co'        },
       accountant: { name: 'Edwin Restrepo',   initials: 'ER', email: 'edwin@balinessa.co'       },
