@@ -47,7 +47,7 @@ const NAV_MODEL = [
   ]},
   { section: 'Resultados', items: [
     { id: 'boveda',          label: 'Bóveda',                  href: 'boveda.html',          roles: ['owner','accountant','manager'], glyph: 'B' },
-    { id: 'deliverables',    label: 'Entregables',             href: 'deliverables.html',    roles: ['owner','accountant'], glyph: 'E' },
+    { id: 'deliverables',    label: 'Entregables',             href: 'deliverables.html',    roles: ['owner','accountant','manager'], glyph: 'E' },
     { id: 'auditoria',       label: 'Auditoría',               href: 'auditoria.html',       roles: ['owner','accountant'], glyph: '◷' },
   ]},
   { section: 'Sistema', items: [
@@ -232,6 +232,33 @@ function renderTopbar() {
     <div class="conn-strip${_connectorsOpen ? ' open' : ''}" id="conn-strip">${connRows}</div>`;
 }
 
+/* ------------------------------------------------------------
+   Demo-mode banner — shown whenever contabia_demo is set (real
+   client logins never set this flag; only the ?demo=1 landings
+   in login.html/login-contador.html/login-gerente.html do).
+   Keeps demo sessions visually distinct from a real client login.
+   ------------------------------------------------------------ */
+function renderDemoBanner() {
+  let isDemo = false;
+  try { isDemo = sessionStorage.getItem('contabia_demo') === '1'; } catch (e) {}
+  if (!isDemo) return '';
+  return `
+    <div class="demo-banner" style="background:var(--terracotta); color:var(--on-dark); font-size:13px; font-weight:600; text-align:center; padding:7px 12px; display:flex; align-items:center; justify-content:center; gap:10px;">
+      <span>Modo demostración — datos ficticios, no es una cuenta real</span>
+      <a href="#" style="color:var(--on-dark); text-decoration:underline;" onclick="exitDemo(event)">Salir de la demo</a>
+    </div>`;
+}
+function exitDemo(ev) {
+  if (ev) ev.preventDefault();
+  try {
+    sessionStorage.removeItem('contabia_auth');
+    sessionStorage.removeItem('contabia_role');
+    sessionStorage.removeItem('contabia_entity');
+    sessionStorage.removeItem('contabia_demo');
+  } catch (e) {}
+  location.href = 'https://contabia.co';
+}
+
 function toggleConnectorStrip() {
   _connectorsOpen = !_connectorsOpen;
   const strip = document.getElementById('conn-strip');
@@ -338,7 +365,7 @@ function toggleLang() {
   sessionStorage.setItem('contabia_lang', next);
   /* EN is UI-only; data stays Spanish. v1: visual feedback only. */
   const topbarMount = document.getElementById('topbar-mount');
-  if (topbarMount) topbarMount.innerHTML = renderTopbar();
+  if (topbarMount) topbarMount.innerHTML = renderDemoBanner() + renderTopbar();
 }
 function signOut(ev) {
   ev.preventDefault();
@@ -375,7 +402,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   sidebarMount.innerHTML = renderSidebar(page);
-  if (topbarMount) topbarMount.innerHTML = renderTopbar();
+  if (topbarMount) topbarMount.innerHTML = renderDemoBanner() + renderTopbar();
   renderAppearancePopover();
   attachNavHoverListeners();
 
