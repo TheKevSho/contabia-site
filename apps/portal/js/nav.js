@@ -24,6 +24,20 @@ const ENTITY_LOGOS = {
   'sonata-001':   'data:image/webp;base64,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',
 };
 
+/* The period shown in the switcher is the close period that is still OPEN —
+   the month the agent is working on, not the last one delivered. It is
+   labelled as such so "JUNIO 2026" can't be misread as "already closed".
+   Source of truth: DATA.entities_meta[].close_status. */
+function openPeriodLabel(meta) {
+  const row = (typeof DATA !== 'undefined' && DATA.entities_meta || [])
+    .find(e => e.id === meta.id);
+  const status = (row && row.close_status) || 'in_progress';
+  const suffix = status === 'closed' ? 'CERRADO'
+               : status === 'in_review' ? 'EN REVISIÓN'
+               : 'EN CURSO';
+  return `${meta.period.toUpperCase()} · ${suffix}`;
+}
+
 function entityLogoHtml(meta, sizeClass) {
   const src = ENTITY_LOGOS[meta.id];
   if (src) {
@@ -139,14 +153,15 @@ function renderSidebar(activeHref) {
   const entityHtml = `
     <div class="es-collapsed-logo-wrap" title="${meta.name}">${entityLogoHtml(meta, 'es-collapsed-logo')}</div>
     <div class="entity-switcher" id="entity-switcher">
-      <div class="es-row" onclick="toggleEntityDropdown(event)">
-        <div class="es-logo-wrap">${entityLogoHtml(meta, 'es-logo')}</div>
-        <div class="es-text">
-          <div class="label">Entidad activa</div>
-          <div class="name"><span class="name-text">${meta.name}</span><span class="chevron">▾</span></div>
-          <div class="period">${meta.period.toUpperCase()}</div>
+        <div class="es-row" onclick="toggleEntityDropdown(event)">
+          <div class="es-logo-wrap">${entityLogoHtml(meta, 'es-logo')}</div>
+          <div class="es-text">
+            <div class="label">Entidad activa</div>
+            <div class="name"><span class="name-text" title="${meta.name}">${meta.name}</span></div>
+          </div>
+          <span class="chevron">▾</span>
         </div>
-      </div>
+        <div class="period">${openPeriodLabel(meta)}</div>
       <div class="entity-dropdown" id="entity-dropdown">
         ${entitiesHtml}
       </div>
