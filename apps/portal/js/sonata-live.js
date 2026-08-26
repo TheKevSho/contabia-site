@@ -4,12 +4,9 @@
    Live-data bridge for the Sonata Mas SAS January 2026 RFR review.
    Backed by the FastAPI service in apps/api/ (see apps/api/README.md).
 
-   ADDITIVE BY DESIGN — this file never touches data.js. The sonata-001
-   mock block in data.js (period_iso '2026-06', the demo dataset used
-   everywhere else in the portal) stays exactly as it is. This file
-   layers a real/demo TOGGLE on top of the *same* entity id, scoped to
-   exceptions.html and journal-entries.html only, per Kevin's explicit
-   instruction not to trash or silently replace the sample data.
+   ADDITIVE BY DESIGN — this file never touches data.js. The mock
+   blocks in data.js are the `demo` / Scrooge account only. Real logins
+   (kevin, edwin, nick) are always live — there is no toggle.
 
    Real backend shapes differ from data.js's mock shapes (confirmed by
    reading apps/api/data_loader.py, je_data.py, main.py — not just
@@ -40,12 +37,14 @@ const LIVE_CONFIG = {
 function liveAvailable(entityId) {
   return !!LIVE_CONFIG[entityId];
 }
-function isLiveMode() {
-  return sessionStorage.getItem('contabia_live') === '1';
+function isDemoSession() {
+  return sessionStorage.getItem('contabia_demo') === '1';
 }
-function setLiveMode(on) {
-  sessionStorage.setItem('contabia_live', on ? '1' : '0');
-  location.reload();
+function isLiveMode() {
+  // Real users are always live. Demo account (demo/Scrooge) never is.
+  if (isDemoSession()) return false;
+  return sessionStorage.getItem('contabia_live') === '1' ||
+         !!sessionStorage.getItem('contabia_api_token');
 }
 
 /* ---- fetch helpers ------------------------------------------------- */

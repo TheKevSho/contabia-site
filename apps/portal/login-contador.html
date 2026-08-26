@@ -15,8 +15,8 @@
     <div class="login-role-pill">Portal del <span class="accent">Contador</span></div>
 
     <div class="form-group">
-      <label class="form-label">Correo electrónico</label>
-      <input type="email" id="email" class="form-input" placeholder="usted@firma.co" value="edwin@balinessa.co" autocomplete="email">
+      <label class="form-label">Usuario o correo</label>
+      <input type="text" id="email" class="form-input" placeholder="edwin · demo" autocomplete="username">
     </div>
     <div class="form-group">
       <label class="form-label">Contraseña</label>
@@ -41,43 +41,15 @@
     </div>
   </div>
 </div>
-
+<script src="js/login-live.js"></script>
 <script>
   (function() {
-    const PASSWORD = 'Scrooge';
-    const ROLE     = 'accountant';
+    const ROLE = 'accountant';
     const REDIRECT = 'index.html';
-
-    /* Marketing site "ver demo" links land here with ?demo=1 — skip the
-       password and drop straight into the sandboxed demo entity. */
-    const params = new URLSearchParams(location.search);
-    if (params.get('demo') === '1') {
-      sessionStorage.setItem('contabia_auth', '1');
-      sessionStorage.setItem('contabia_role', ROLE);
-      sessionStorage.setItem('contabia_entity', 'cantamar-001');
-      sessionStorage.setItem('contabia_demo', '1');
-      location.href = REDIRECT;
-      return;
-    }
-
-    function attemptLogin() {
-      const pw = document.getElementById('password').value;
-      const err = document.getElementById('error');
-      if (pw === PASSWORD) {
-        sessionStorage.setItem('contabia_auth', '1');
-        sessionStorage.setItem('contabia_role', ROLE);
-        sessionStorage.setItem('contabia_entity', 'cantamar-001');
-        location.href = REDIRECT;
-      } else {
-        err.textContent = 'Contraseña incorrecta.';
-        document.getElementById('password').value = '';
-        document.getElementById('password').focus();
-      }
-    }
-
-    document.getElementById('signin').addEventListener('click', attemptLogin);
+    contabiaMaybeDemo(ROLE, REDIRECT);
+    document.getElementById('signin').addEventListener('click', () => contabiaAttemptLogin({ role: ROLE, redirect: REDIRECT }));
     document.getElementById('password').addEventListener('keypress', e => {
-      if (e.key === 'Enter') attemptLogin();
+      if (e.key === 'Enter') contabiaAttemptLogin({ role: ROLE, redirect: REDIRECT });
     });
   })();
 </script>

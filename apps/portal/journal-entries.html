@@ -143,25 +143,12 @@ let liveEntityId = null;
 document.addEventListener('DOMContentLoaded', () => {
   const entityId = currentEntityId();
   liveEntityId = entityId;
-  renderLiveToggle(entityId);
-
   if (isLiveMode() && liveAvailable(entityId)) {
     initLivePage(entityId);
   } else {
     initDemoPage();
   }
 });
-
-function renderLiveToggle(entityId) {
-  if (!liveAvailable(entityId)) return;
-  const cfg = LIVE_CONFIG[entityId];
-  const on = isLiveMode();
-  const btn = document.createElement('button');
-  btn.className = 'live-toggle-btn btn-sm' + (on ? ' on' : '');
-  btn.textContent = on ? `● Datos reales (${cfg.period_label}) — volver a demo` : `Ver datos reales (${cfg.period_label})`;
-  btn.onclick = () => setLiveMode(!on);
-  document.getElementById('page-actions').prepend(btn);
-}
 
 /* ============================================================
    DEMO PATH — unchanged from the original mock-data implementation.
