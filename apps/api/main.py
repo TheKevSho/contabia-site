@@ -23,7 +23,6 @@ Run:
     pip install -r requirements.txt
     PORTAL_PASSWORD=... ALEGRA_EMAIL=... ALEGRA_API_TOKEN=... uvicorn main:app
 """
-import hashlib
 import json
 import logging
 import os
@@ -39,6 +38,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
+import auth_users
 import boveda_data
 from alegra_client import AlegraAuthError, AlegraClient
 from data_loader import load_exceptions, summarize
@@ -53,22 +53,14 @@ DB_PATH = Path(os.environ.get("CONTABIA_DB_PATH", Path(__file__).parent / "sonat
 BOVEDA_DIR = Path(os.environ.get("CONTABIA_BOVEDA_DIR", DATA_DIR))
 
 # ---------------------------------------------------------------------------
-# Auth config - interim single-operator login per Kevin 2026-07-24.
-# Token is deterministic (derived from creds) so restarts don't log out the
-# frontend. Replaced wholesale when Clerk lands (File 28 B2 Stage 1).
+# Auth: named users (Kevin owner / Edwin CPA / Nick owner) via PORTAL_USERS_JSON.
+# Falls back to the 2026-07-24 single PORTAL_USER + PORTAL_PASSWORD operator.
+# Tokens are deterministic per user so restarts don't log anyone out.
+# Cloudflare Access remains the outer identity gate on app.contabia.co (File 28 B2).
 # ---------------------------------------------------------------------------
-PORTAL_USER = os.environ.get("PORTAL_USER", "kevin")
-PORTAL_PASSWORD = os.environ.get("PORTAL_PASSWORD", "")
 DRY_RUN = os.environ.get("DRY_RUN", "true").lower() != "false"
 
-def _derive_token() -> str:
-    if not PORTAL_PASSWORD:
-        return ""
-    return hashlib.sha256(f"{PORTAL_USER}:{PORTAL_PASSWORD}:contabia-portal-v1".encode()).hexdigest()
-
-API_TOKEN = _derive_token()
-
-app = FastAPI(title="Contabia Portal Backend - Sonata Mas slice", version="2.0")
+app = FastAPI(title="Contabia Portal Backend - Sonata Mas slice", version="2.1")
 
 app.add_middleware(
     CORSMiddleware,
@@ -79,11 +71,16 @@ app.add_middleware(
 )
 
 
-def require_auth(authorization: Optional[str] = Header(None)):
-    if not API_TOKEN:
-        raise HTTPException(status_code=503, detail="PORTAL_PASSWORD not configured on the server")
-    if authorization != f"Bearer {API_TOKEN}":
+def require_auth(authorization: Optional[str] = Header(None)) -> dict:
+    if not auth_users.USERS:
+        raise HTTPException(
+            status_code=503,
+            detail="No portal users configured (set PORTAL_USERS_JSON, or PORTAL_USER+PORTAL_PASSWORD)",
+        )
+    user = auth_users.user_from_authorization(authorization)
+    if not user:
         raise HTTPException(status_code=401, detail="Missing or invalid token - log in via /auth/login")
+    return user
 
 
 # ---------------------------------------------------------------------------
@@ -206,20 +203,30 @@ class LoginBody(BaseModel):
 
 @app.post("/auth/login")
 def login(body: LoginBody):
-    if not API_TOKEN:
-        raise HTTPException(status_code=503, detail="PORTAL_PASSWORD not configured on the server")
-    if body.username.strip().lower() != PORTAL_USER or body.password != PORTAL_PASSWORD:
+    if not auth_users.USERS:
+        raise HTTPException(
+            status_code=503,
+            detail="No portal users configured (set PORTAL_USERS_JSON, or PORTAL_USER+PORTAL_PASSWORD)",
+        )
+    user = auth_users.authenticate(body.username, body.password)
+    if not user:
         raise HTTPException(status_code=401, detail="Credenciales inválidas")
     return {
-        "token": API_TOKEN,
+        "token": user["token"],
+        "user": auth_users.public_user(user),
         "entities": [{"id": eid, "name": e["name"]} for eid, e in ENTITIES.items()],
-        "default_entity": "sonata-001",
+        "default_entity": user["default_entity"],
     }
 
 
 @app.get("/healthz")
 def healthz():
-    return {"ok": True, "dry_run": DRY_RUN, "version": "2.0"}
+    return {
+        "ok": True,
+        "dry_run": DRY_RUN,
+        "version": "2.1",
+        "users_configured": len(auth_users.USERS),
+    }
 
 
 # ---------------------------------------------------------------------------

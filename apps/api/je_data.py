@@ -197,11 +197,77 @@ OPEN_JUDGMENT_CALLS = [
 
 # Group E — recurring routines to activate once approved.
 RECURRING_ROUTINES = [
-    {"id": "R-11", "description": "Depreciation", "status": "pending FA register approval"},
+    {"id": "R-11", "description": "Depreciation", "status": "July amount ready: COP 1,038,987. FA register approved at 5% vessel life."},
     {"id": "R-12", "description": "FX revaluation",
-     "status": "create accounts 530525/421020, activate monthly"},
+     "status": "TC 0992 ~USD 3,548 × TRM 3,132.42 = COP 11.1M carrying; compute vs Jun-30 TRM before posting"},
     {"id": "R-14", "description": "Interest accrual",
-     "status": "Veronica from March forward; 246M bank credit legs pending Edwin's schedule"},
+     "status": "July ready: COP 3,549,289 (Bancolombia 1,335,748 + BBVA 2,213,541)"},
+]
+
+# July 2026 live-period JEs (golden month). Nothing posted. Edwin retefuente /
+# seg-social / deterioro already in Alegra — do not duplicate those.
+JOURNAL_ENTRIES += [
+    {
+        "id": "R-11-JUL",
+        "group": "A_ready_to_post",
+        "description": "July 2026 depreciation (43-asset register, excl. Anna Leeza)",
+        "lines": [
+            {"account": "5160xx Depreciación PPE", "debit": 1038987, "credit": 0},
+            {"account": "159215 Depreciación acumulada", "debit": 0, "credit": 1038987},
+        ],
+        "basis": "Asset register monthly = COP 1,038,987. Edwin posted this exact amount Feb–May; skipped Jan+Jun (catch-up is R-11-CATCHUP) and has not posted July.",
+        "linked_exceptions": ["EX-J07-10"],
+        "status": "pending_edwin_approval",
+    },
+    {
+        "id": "R-11-CATCHUP",
+        "group": "A_ready_to_post",
+        "description": "Depreciation catch-up: Jan+Jun skipped (2,077,974) + Anna Leeza 30 months (7,500,000)",
+        "lines": [
+            {"account": "5160xx Depreciación PPE (Jan+Jun)", "debit": 2077974, "credit": 0},
+            {"account": "5160xx Depreciación PPE (Anna Leeza Jan24-Jun26)", "debit": 7500000, "credit": 0},
+            {"account": "159215 Depreciación acumulada", "debit": 0, "credit": 9577974},
+        ],
+        "basis": "Edwin skipped Jan+Jun on the 43-asset register. Anna Leeza (COP 60M, 5% SL = 250k/mo) has never been depreciated; 30 months Jan 2024–Jun 2026 = 7.5M. Going forward add 250k to monthly R-11.",
+        "linked_exceptions": ["EX-J07-10", "EX-J07-13"],
+        "status": "pending_edwin_approval",
+    },
+    {
+        "id": "R-14-JUL",
+        "group": "A_ready_to_post",
+        "description": "July 2026 loan interest accrual",
+        "lines": [
+            {"account": "5305xx Gasto financiero — intereses", "debit": 3549289, "credit": 0},
+            {"account": "2410 Intereses por pagar", "debit": 0, "credit": 3549289},
+        ],
+        "basis": "Bancolombia 7810099111 interest 1,335,748 + BBVA 9638124968 interest 2,213,541. Edwin has not posted July interest.",
+        "linked_exceptions": ["EX-J07-10"],
+        "status": "pending_edwin_approval",
+    },
+    {
+        "id": "AJ-J07-01",
+        "group": "A_ready_to_post",
+        "description": "Bold link-pago prepayments deferred to 2805 (voyages after July)",
+        "lines": [
+            {"account": "1110xx Bold clearing / CxC", "debit": 5600000, "credit": 0},
+            {"account": "2805 Ingresos recibidos por anticipado", "debit": 0, "credit": 5600000},
+        ],
+        "basis": "Pablo Alonso 4,250,000 (Sonata 11 Aug + DragonLady 14 Aug 50%) + Camilo Mendoza 1,350,000 (16 Aug Anna Leeza 50%). Datáfono POS 3,541,500 stays in July revenue.",
+        "linked_exceptions": ["EX-J07-12"],
+        "status": "pending_edwin_approval",
+    },
+    {
+        "id": "AJ-J06-REVERSE",
+        "group": "A_ready_to_post",
+        "description": "Recognize June Bold link-pago that rendered in July (2805 reverse)",
+        "lines": [
+            {"account": "2805 Ingresos recibidos por anticipado", "debit": 3641000, "credit": 0},
+            {"account": "4145 Ingresos por servicios", "debit": 0, "credit": 3641000},
+        ],
+        "basis": "Standing motor rule: every channel, bidirectional. Five June link-pago items totaling COP 3,641,000 whose voyages rendered in July.",
+        "linked_exceptions": ["EX-J07-12"],
+        "status": "pending_edwin_approval",
+    },
 ]
 
 # Already accepted, no further action — context only, not up for review.

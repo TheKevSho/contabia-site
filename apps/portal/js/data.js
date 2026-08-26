@@ -56,8 +56,8 @@ const DATA = {
 
   /* shape returned by /entities */
   entities_meta: [
-    { id: 'cantamar-001', name: 'Cantamar Beach Hostel', legal_name: 'Vamos Navegando S.A.S', nit: '901.138.128-0', period: 'Junio 2026', close_status: 'in_progress' },
-    { id: 'sonata-001',   name: 'Tayrona Sailing',       legal_name: 'Sonata Mas S.A.S',       nit: '901.528.910-1', period: 'Junio 2026', close_status: 'in_progress' },
+    { id: 'cantamar-001', name: 'Cantamar Beach Hostel', legal_name: 'Vamos Navegando S.A.S', nit: '901.138.128-0', period: 'Julio 2026', close_status: 'in_progress' },
+    { id: 'sonata-001',   name: 'Tayrona Sailing',       legal_name: 'Sonata Mas S.A.S',       nit: '901.528.910-1', period: 'Julio 2026', close_status: 'in_progress' },
   ],
 
   entities: {
@@ -71,8 +71,8 @@ const DATA = {
       name: 'Cantamar Beach Hostel',
       legal_name: 'Vamos Navegando S.A.S',
       nit: '901.138.128-0',
-      period: 'Junio 2026',
-      period_iso: '2026-06',
+      period: 'Julio 2026',
+      period_iso: '2026-07',
       accountant: 'Edwin Restrepo',
       owner: 'Kevin Carey',
       manager: 'Yaritza González',
@@ -91,9 +91,9 @@ const DATA = {
     ],
 
     closeSummary: {
-      period: '2026-06',
+      period: '2026-07',
       pct: 78,
-      eta: '6 jul',
+      eta: '6 ago',
       ready: false,
       total_exceptions: 14,
       open_critical: 2, open_high: 5, open_medium: 4, open_low: 3,
@@ -281,7 +281,7 @@ const DATA = {
 
     journalEntries: [
       { id: 'je-001', subtype: 'je.gmf_trueup',         status: 'pending',  priority: 'medium',
-        title: 'Ajuste GMF — Junio 2026',
+        title: 'Ajuste GMF — Julio 2026',
         description: 'Ajuste mensual del Gravamen a los Movimientos Financieros.',
         ai_confidence: 0.99, created_at: '2026-07-02',
         lines: [
@@ -289,7 +289,7 @@ const DATA = {
           { account: '2365', name: 'GMF por Pagar',                    debit: null,  credit: 48200 },
         ]},
       { id: 'je-002', subtype: 'je.ota_accrual.monthly_invoice', status: 'approved', priority: 'high',
-        title: 'Accrual comisión Booking.com — Junio 2026',
+        title: 'Accrual comisión Booking.com — Julio 2026',
         description: 'Accrual de comisión Booking.com (Modelo Factura Mensual).',
         ai_confidence: 0.97, created_at: '2026-07-02',
         lines: [
@@ -297,7 +297,7 @@ const DATA = {
           { account: '2805', name: 'Comisiones OTA por Pagar',   debit: null,   credit: 892000 },
         ]},
       { id: 'je-003', subtype: 'je.prestaciones_trueup', status: 'pending',  priority: 'high',
-        title: 'True-up cesantías — Junio 2026',
+        title: 'True-up cesantías — Julio 2026',
         description: 'Ajuste provisión cesantías. Divisor corregido a 30 (Art. 134 CST).',
         ai_confidence: 0.89, created_at: '2026-07-04',
         lines: [
@@ -305,7 +305,7 @@ const DATA = {
           { account: '2610', name: 'Provisión Cesantías', debit: null,   credit: 280000 },
         ]},
       { id: 'je-004', subtype: 'je.ica_accrual',         status: 'pending',  priority: 'medium',
-        title: 'Accrual ICA — Junio 2026',
+        title: 'Accrual ICA — Julio 2026',
         description: 'Tarifa: 5.5 × 1000. Base: ingresos brutos del mes.',
         ai_confidence: 0.95, created_at: '2026-07-02',
         lines: [
@@ -323,21 +323,21 @@ const DATA = {
     ],
 
     months: [
-      { month: 'Abril 2026',   status: 'closed',      modules: { bank_feed: 'ok', categorization: 'ok', reconciliation: 'ok',   reports: 'ok' } },
-      { month: 'Mayo 2026', status: 'closed',      modules: { bank_feed: 'ok', categorization: 'ok', reconciliation: 'ok',   reports: 'ok' } },
-      { month: 'Junio 2026',   status: 'in_progress', modules: { bank_feed: 'ok', categorization: 'ok', reconciliation: 'warn', reports: 'pending' }, open: 7, critical: 2 },
-      { month: 'Julio 2026',   status: 'pending',     modules: {} },
+      { month: 'Mayo 2026',    status: 'closed',      modules: { bank_feed: 'ok', categorization: 'ok', reconciliation: 'ok',   reports: 'ok' } },
+      { month: 'Junio 2026',   status: 'closed',      modules: { bank_feed: 'ok', categorization: 'ok', reconciliation: 'ok',   reports: 'ok' } },
+      { month: 'Julio 2026',   status: 'in_progress', modules: { bank_feed: 'ok', categorization: 'ok', reconciliation: 'warn', reports: 'pending' }, open: 7, critical: 2 },
+      { month: 'Agosto 2026',  status: 'pending',     modules: {} },
     ],
 
     deliverables: [
-      { name: 'Libro de Cierre — Junio 2026',         type: 'xlsx', size: '284 KB', period: 'Junio 2026',   ready: true,  source: 'cierre' },
-      { name: 'Resumen P&L USALI — Junio 2026',       type: 'pdf',  size: '1.2 MB', period: 'Junio 2026',   ready: true,  source: 'cierre' },
-      { name: 'Conciliación Bancaria — Junio 2026',   type: 'xlsx', size: '96 KB',  period: 'Junio 2026',   ready: false, source: 'cierre' },
-      { name: 'Resumen Tributario — Junio 2026',      type: 'pdf',  size: '410 KB', period: 'Junio 2026',   ready: false, source: 'cierre' },
-      { name: 'Libro de Cierre — Mayo 2026',       type: 'xlsx', size: '271 KB', period: 'Mayo 2026', ready: true,  source: 'cierre' },
-      { name: 'Resumen P&L USALI — Mayo 2026',     type: 'pdf',  size: '1.1 MB', period: 'Mayo 2026', ready: true,  source: 'cierre' },
-      { name: 'Conciliación Bancaria — Mayo 2026', type: 'xlsx', size: '88 KB',  period: 'Mayo 2026', ready: true,  source: 'cierre' },
-      { name: 'Resumen Tributario — Mayo 2026',    type: 'pdf',  size: '395 KB', period: 'Mayo 2026', ready: true,  source: 'cierre' },
+      { name: 'Libro de Cierre — Julio 2026',         type: 'xlsx', size: '284 KB', period: 'Julio 2026',   ready: true,  source: 'cierre' },
+      { name: 'Resumen P&L USALI — Julio 2026',       type: 'pdf',  size: '1.2 MB', period: 'Julio 2026',   ready: true,  source: 'cierre' },
+      { name: 'Conciliación Bancaria — Julio 2026',   type: 'xlsx', size: '96 KB',  period: 'Julio 2026',   ready: false, source: 'cierre' },
+      { name: 'Resumen Tributario — Julio 2026',      type: 'pdf',  size: '410 KB', period: 'Julio 2026',   ready: false, source: 'cierre' },
+      { name: 'Libro de Cierre — Junio 2026',       type: 'xlsx', size: '271 KB', period: 'Junio 2026', ready: true,  source: 'cierre' },
+      { name: 'Resumen P&L USALI — Junio 2026',     type: 'pdf',  size: '1.1 MB', period: 'Junio 2026', ready: true,  source: 'cierre' },
+      { name: 'Conciliación Bancaria — Junio 2026', type: 'xlsx', size: '88 KB',  period: 'Junio 2026', ready: true,  source: 'cierre' },
+      { name: 'Resumen Tributario — Junio 2026',    type: 'pdf',  size: '395 KB', period: 'Junio 2026', ready: true,  source: 'cierre' },
       /* Free-scan artifact — first thing in their archive when they convert */
       { name: 'Escaneo gratuito — abril 2026',         type: 'pdf',  size: '120 KB', period: 'Abril 2026',   ready: true,  source: 'free_scan',
         note: 'Detección inicial de documento soporte faltante en compras al exterior.',
@@ -362,7 +362,7 @@ const DATA = {
     /* ---- NÓMINA ---- */
     nomina: {
       payroll_summary: {
-        period: '2da quincena junio 2026',
+        period: '2da quincena julio 2026',
         total_nomina:    4218500,
         parafiscales:     169000,
         prestaciones:     782300,
@@ -408,14 +408,14 @@ const DATA = {
     /* ---- TRIBUTARIO ---- */
     tributario: {
       filings: [
-        { id:'f300-mar', form:'F300', name:'IVA bimestral', period:'Jun–Jul 2026', due:'15 ago',
+        { id:'f300-mar', form:'F300', name:'IVA bimestral', period:'Jul–Ago 2026', due:'15 sep',
           status:'draft', total: 412300,
           lines: [
             { row:'IVA generado por ventas',     amount: 1254600 },
             { row:'IVA descontable (compras)',   amount: -842300 },
             { row:'Saldo a pagar',               amount:  412300, total:true },
           ] },
-        { id:'f350-mar', form:'F350', name:'Retefuente', period:'Junio 2026', due:'11 jul',
+        { id:'f350-mar', form:'F350', name:'Retefuente', period:'Julio 2026', due:'11 ago',
           status:'ready', total: 284500,
           lines: [
             { row:'Honorarios (10%)',  amount: 184500 },
@@ -423,7 +423,7 @@ const DATA = {
             { row:'Compras (2.5%)',    amount:  36000 },
             { row:'Total a pagar',     amount: 284500, total:true },
           ] },
-        { id:'ica-mar', form:'ICA',  name:'Industria y Comercio · Santa Marta', period:'Junio 2026', due:'15 jul',
+        { id:'ica-mar', form:'ICA',  name:'Industria y Comercio · Santa Marta', period:'Julio 2026', due:'15 ago',
           status:'draft', total: 412500,
           lines: [
             { row:'Base gravable (ingresos brutos)', amount: 75000000 },
@@ -478,8 +478,8 @@ const DATA = {
       name: 'Tayrona Sailing',
       legal_name: 'Sonata Mas S.A.S',
       nit: '901.528.910-1',
-      period: 'Junio 2026',
-      period_iso: '2026-06',
+      period: 'Julio 2026',
+      period_iso: '2026-07',
       accountant: 'Edwin Restrepo',
       owner: 'Kevin Carey',
       manager: 'Nicolás Giraldo',
@@ -498,9 +498,9 @@ const DATA = {
     ],
 
     closeSummary: {
-      period: '2026-06',
+      period: '2026-07',
       pct: 64,
-      eta: '8 jul',
+      eta: '8 ago',
       ready: false,
       total_exceptions: 9,
       open_critical: 1, open_high: 4, open_medium: 3, open_low: 1,
@@ -669,7 +669,7 @@ const DATA = {
 
     journalEntries: [
       { id: 'je-101', subtype: 'je.gmf_trueup',           status: 'pending',  priority: 'medium',
-        title: 'Ajuste GMF — Junio 2026',
+        title: 'Ajuste GMF — Julio 2026',
         description: 'Ajuste mensual del Gravamen a los Movimientos Financieros.',
         ai_confidence: 0.99, created_at: '2026-07-02',
         lines: [
@@ -677,7 +677,7 @@ const DATA = {
           { account: '2365', name: 'GMF por Pagar',                    debit: null,  credit: 39500 },
         ]},
       { id: 'je-102', subtype: 'je.ota_accrual.gyg',      status: 'pending',  priority: 'high',
-        title: 'Accrual comisión GetYourGuide — Junio 2026',
+        title: 'Accrual comisión GetYourGuide — Julio 2026',
         description: 'Comisión GYG estimada (portal sin acceso).',
         ai_confidence: 0.78, created_at: '2026-07-02',
         lines: [
@@ -685,7 +685,7 @@ const DATA = {
           { account: '2805', name: 'Comisiones OTA por Pagar',   debit: null,   credit: 892400 },
         ]},
       { id: 'je-103', subtype: 'je.depreciation.vessels', status: 'pending',  priority: 'high',
-        title: 'Depreciación embarcaciones — Junio 2026',
+        title: 'Depreciación embarcaciones — Julio 2026',
         description: 'Sonata + Anna Lezah (50%). Dragon Lady excluida (ver EXC-103).',
         ai_confidence: 0.96, created_at: '2026-07-02',
         lines: [
@@ -693,7 +693,7 @@ const DATA = {
           { account: '1592', name: 'Depreciación Acumulada',     debit: null,    credit: 1240000 },
         ]},
       { id: 'je-104', subtype: 'je.ica_accrual',          status: 'pending',  priority: 'medium',
-        title: 'Accrual ICA — Junio 2026',
+        title: 'Accrual ICA — Julio 2026',
         description: 'Tarifa: 5.5 × 1000.',
         ai_confidence: 0.95, created_at: '2026-07-02',
         lines: [
@@ -708,19 +708,19 @@ const DATA = {
     ],
 
     months: [
-      { month: 'Abril 2026',   status: 'closed',      modules: { bank_feed: 'ok',  categorization: 'ok',   reconciliation: 'ok',   reports: 'ok' } },
-      { month: 'Mayo 2026', status: 'closed',      modules: { bank_feed: 'ok',  categorization: 'ok',   reconciliation: 'ok',   reports: 'ok' } },
-      { month: 'Junio 2026',   status: 'in_progress', modules: { bank_feed: 'warn', categorization: 'ok', reconciliation: 'warn', reports: 'pending' }, open: 5, critical: 1 },
-      { month: 'Julio 2026',   status: 'pending',     modules: {} },
+      { month: 'Mayo 2026',    status: 'closed',      modules: { bank_feed: 'ok',  categorization: 'ok',   reconciliation: 'ok',   reports: 'ok' } },
+      { month: 'Junio 2026',   status: 'closed',      modules: { bank_feed: 'ok',  categorization: 'ok',   reconciliation: 'ok',   reports: 'ok' } },
+      { month: 'Julio 2026',   status: 'in_progress', modules: { bank_feed: 'warn', categorization: 'ok', reconciliation: 'warn', reports: 'pending' }, open: 5, critical: 1 },
+      { month: 'Agosto 2026',  status: 'pending',     modules: {} },
     ],
 
     deliverables: [
-      { name: 'Libro de Cierre — Junio 2026',           type: 'xlsx', size: '218 KB', period: 'Junio 2026',   ready: false, source: 'cierre' },
-      { name: 'P&L por Embarcación — Junio 2026',       type: 'pdf',  size: '0.9 MB', period: 'Junio 2026',   ready: false, source: 'cierre' },
-      { name: 'Conciliación Bancaria — Junio 2026',     type: 'xlsx', size: '74 KB',  period: 'Junio 2026',   ready: false, source: 'cierre' },
-      { name: 'Libro de Cierre — Mayo 2026',         type: 'xlsx', size: '208 KB', period: 'Mayo 2026', ready: true,  source: 'cierre' },
-      { name: 'P&L por Embarcación — Mayo 2026',     type: 'pdf',  size: '0.8 MB', period: 'Mayo 2026', ready: true,  source: 'cierre' },
-      { name: 'Conciliación Bancaria — Mayo 2026',   type: 'xlsx', size: '69 KB',  period: 'Mayo 2026', ready: true,  source: 'cierre' },
+      { name: 'Libro de Cierre — Julio 2026',           type: 'xlsx', size: '218 KB', period: 'Julio 2026',   ready: false, source: 'cierre' },
+      { name: 'P&L por Embarcación — Julio 2026',       type: 'pdf',  size: '0.9 MB', period: 'Julio 2026',   ready: false, source: 'cierre' },
+      { name: 'Conciliación Bancaria — Julio 2026',     type: 'xlsx', size: '74 KB',  period: 'Julio 2026',   ready: false, source: 'cierre' },
+      { name: 'Libro de Cierre — Junio 2026',         type: 'xlsx', size: '208 KB', period: 'Junio 2026', ready: true,  source: 'cierre' },
+      { name: 'P&L por Embarcación — Junio 2026',     type: 'pdf',  size: '0.8 MB', period: 'Junio 2026', ready: true,  source: 'cierre' },
+      { name: 'Conciliación Bancaria — Junio 2026',   type: 'xlsx', size: '69 KB',  period: 'Junio 2026', ready: true,  source: 'cierre' },
       { name: 'Escaneo gratuito — abril 2026',          type: 'pdf',  size: '120 KB', period: 'Abril 2026',   ready: true,  source: 'free_scan',
         note: 'Detección inicial de documento soporte faltante en compras al exterior.',
         path: '../../contabia public site/free-scan/escaneo_sonata_mas_sas_20260405.pdf' },
@@ -743,7 +743,7 @@ const DATA = {
     /* ---- NÓMINA ---- */
     nomina: {
       payroll_summary: {
-        period: '2da quincena junio 2026',
+        period: '2da quincena julio 2026',
         total_nomina:    3620400,
         parafiscales:     145000,
         prestaciones:     668700,
@@ -780,14 +780,14 @@ const DATA = {
     /* ---- TRIBUTARIO ---- */
     tributario: {
       filings: [
-        { id:'f300-mar', form:'F300', name:'IVA bimestral', period:'Jun–Jul 2026', due:'15 ago',
+        { id:'f300-mar', form:'F300', name:'IVA bimestral', period:'Jul–Ago 2026', due:'15 sep',
           status:'draft', total: 198400,
           lines: [
             { row:'IVA generado por ventas',     amount:  810800 },
             { row:'IVA descontable (compras)',   amount: -612400 },
             { row:'Saldo a pagar',               amount:  198400, total:true },
           ] },
-        { id:'f350-mar', form:'F350', name:'Retefuente', period:'Junio 2026', due:'11 jul',
+        { id:'f350-mar', form:'F350', name:'Retefuente', period:'Julio 2026', due:'11 ago',
           status:'ready', total: 218400,
           lines: [
             { row:'Honorarios (10%)',  amount: 142000 },
@@ -795,7 +795,7 @@ const DATA = {
             { row:'Compras (2.5%)',    amount:  28000 },
             { row:'Total a pagar',     amount: 218400, total:true },
           ] },
-        { id:'ica-mar', form:'ICA',  name:'Industria y Comercio · Santa Marta', period:'Junio 2026', due:'15 jul',
+        { id:'ica-mar', form:'ICA',  name:'Industria y Comercio · Santa Marta', period:'Julio 2026', due:'15 ago',
           status:'draft', total: 298300,
           lines: [
             { row:'Base gravable (ingresos brutos)', amount: 54200000 },
