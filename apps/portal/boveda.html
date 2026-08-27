@@ -228,8 +228,13 @@
   </main>
 </div>
 
+  
+
 <script src="js/data.js"></script>
-  <script src="js/nav.js"></script>
+<script src="js/sonata-live.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/live-shell.js"></script>
+<script src="js/nav.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/help.js"></script>
 <script src="js/agent-widget.js"></script>
@@ -238,6 +243,10 @@ let currentFolderFilter = 'all';
 let currentSearch = '';
 
 document.addEventListener('DOMContentLoaded', () => {
+  if (typeof isLiveMode === 'function' && isLiveMode()) {
+    initLiveBoveda();
+    return;
+  }
   const e = currentEntityData();
   const role = currentRole();
   const meta = e.meta;
@@ -355,6 +364,72 @@ function openFileDetail(id) {
     `Vinculado a: ${f.linked_to || '(nada)'}\n\n` +
     `(En producción: preview + descarga + reasignar carpeta + agregar etiquetas.)`
   );
+}
+
+function adaptBovedaItem(f) {
+  return {
+    id: f.id || f.filename,
+    filename: f.filename || f.name || 'archivo',
+    folder: f.folder || 'General',
+    type: (f.type || (f.filename || '').split('.').pop() || 'file').toLowerCase(),
+    size: f.size || f.size_label || '—',
+    uploaded_at: (f.uploaded_at || f.created_at || '').slice(0, 16),
+    uploaded_by: f.uploaded_by || 'portal',
+    tags: f.tags || [],
+    linked_to: f.linked_to || '',
+    processed: !!f.processed,
+  };
+}
+
+async function initLiveBoveda() {
+  document.getElementById('page-meta').textContent = 'Tayrona Sailing · bóveda en vivo';
+  const zone = document.getElementById('upload-zone');
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.style.display = 'none';
+  document.body.appendChild(fileInput);
+
+  const reload = async () => {
+    try {
+      const raw = await fetchLiveBoveda('sonata-001');
+      const items = (Array.isArray(raw) ? raw : (raw.items || raw.files || [])).map(adaptBovedaItem);
+      window._vaultItems = items;
+      document.getElementById('page-meta').innerHTML =
+        `Tayrona Sailing · ${items.length} archivo${items.length===1?'':'s'} · bóveda en vivo`;
+      renderFilters(items);
+      renderList(items);
+    } catch (err) {
+      document.getElementById('vault-list').innerHTML =
+        `<div class="panel" style="padding:18px;color:var(--warm-gray);">No se pudo cargar la bóveda: ${err.message}</div>`;
+    }
+  };
+
+  const upload = async (file) => {
+    try {
+      await uploadLiveBoveda('sonata-001', file, currentFolderFilter === 'all' ? 'General' : currentFolderFilter);
+      await reload();
+    } catch (err) {
+      alert('No se pudo subir: ' + err.message);
+    }
+  };
+
+  zone.onclick = () => fileInput.click();
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files && fileInput.files[0]) upload(fileInput.files[0]);
+    fileInput.value = '';
+  });
+  zone.addEventListener('dragover', ev => { ev.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', ev => {
+    ev.preventDefault();
+    zone.classList.remove('dragover');
+    if (ev.dataTransfer.files && ev.dataTransfer.files[0]) upload(ev.dataTransfer.files[0]);
+  });
+  document.getElementById('vault-search').addEventListener('input', ev => {
+    currentSearch = ev.target.value.toLowerCase();
+    renderList(window._vaultItems || []);
+  });
+  await reload();
 }
 </script>
 </body>

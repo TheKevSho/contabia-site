@@ -187,8 +187,13 @@
   </main>
 </div>
 
+  
+
 <script src="js/data.js"></script>
-  <script src="js/nav.js"></script>
+<script src="js/sonata-live.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/live-shell.js"></script>
+<script src="js/nav.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/help.js"></script>
 <script src="js/agent-widget.js"></script>
@@ -196,6 +201,24 @@
 let currentLedgerFilter = 'all';
 
 document.addEventListener('DOMContentLoaded', () => {
+
+  if (typeof isLiveMode === 'function' && isLiveMode()) {
+    const lang = (typeof currentLang === 'function' ? currentLang() : 'es');
+    const metaEl = document.getElementById('page-meta');
+    if (metaEl) metaEl.textContent = 'Tayrona Sailing · julio 2026 · EN CURSO';
+    const slot = document.querySelector('.content');
+    if (slot) {
+      const head = slot.querySelector('.page-head');
+      Array.from(slot.children).filter(el => el !== head).forEach(el => el.remove());
+      const wrap = document.createElement('div');
+      wrap.innerHTML = (typeof honestStubHtml === 'function')
+        ? honestStubHtml({ title: lang==='en' ? 'Not connected yet' : 'Aún no conectado' })
+        : '<div class="panel">Aún no conectado.</div>';
+      slot.appendChild(wrap);
+    }
+    return;
+  }
+
   const e = currentEntityData();
   const meta = e.meta;
 

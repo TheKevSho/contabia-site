@@ -43,6 +43,7 @@ import boveda_data
 from alegra_client import AlegraAuthError, AlegraClient
 from data_loader import load_exceptions, summarize
 from je_data import ACCEPTED_NO_ACTION, JOURNAL_ENTRIES, OPEN_JUDGMENT_CALLS, RECURRING_ROUTINES
+from seed_rules import seed_standing_rules
 
 log = logging.getLogger("contabia.api")
 logging.basicConfig(level=logging.INFO)
@@ -185,6 +186,7 @@ def _init_db() -> None:
 
 
 _init_db()
+seed_standing_rules(_db, "sonata-001")
 
 
 def _status_overrides(table: str) -> dict[str, dict]:
@@ -249,19 +251,40 @@ def get_summary(entity_id: str):
     ingestion_path = DATA_DIR / f"ingestion_{entity['live_period']}.json"
     if ingestion_path.exists():
         ingestion = json.loads(ingestion_path.read_text())
+    cifras = summarize(exceptions)
+    live_open = (cifras.get("live_period") or {}).get("open_high", 0) + (cifras.get("live_period") or {}).get("open_medium", 0) + (cifras.get("live_period") or {}).get("open_low", 0)
+    live_jes = [je for je in JOURNAL_ENTRIES if je.get("bucket") == "live" and je.get("status") == "pending_edwin_approval"]
     return {
-        "meta": {"id": entity_id, "name": entity["name"], "nit": entity["nit"]},
+        "meta": {
+            "id": entity_id,
+            "name": "Tayrona Sailing",
+            "legal_name": entity["name"],
+            "nit": entity["nit"],
+            "period": "Julio 2026",
+            "period_iso": entity["live_period"],
+            "close_status": "in_progress",
+        },
         "ingestion": ingestion,
         "closeSummary": {
             "period": entity["live_period"],
             "opening_balance_lock": entity["opening_balance_lock"],
             "baseline_periods": entity["baseline_periods"],
-            "rfr_status": "baseline_reconciliation",  # Jan-June baseline feeding the June-30 lock
-            "live_status": "ingesting",               # July: continuous ingestion, close ~Aug 1
+            "rfr_status": "baseline_reconciliation",
+            "live_status": "ingesting",
             "nothing_posted": True,
             "dry_run": DRY_RUN,
+            "status_label": "EN CURSO",
         },
-        "cifras": summarize(exceptions),
+        "cifras": cifras,
+        "nav_badges": {
+            "exceptions": live_open,
+            "jes": len(live_jes),
+        },
+        "whatsapp": {
+            "mode": "self-chat",
+            "hint_es": "Reenvíe documentos a su chat personal con Hermes (el mismo número). El agente los archiva en la bóveda de Tayrona.",
+            "hint_en": "Forward documents to your personal Hermes self-chat (same number). The agent files them into the Tayrona vault.",
+        },
     }
 
 
@@ -318,6 +341,8 @@ def get_journal_entries(entity_id: str):
             je["status"] = overrides[je["id"]]["status"]
             je["rejection_note"] = overrides[je["id"]].get("rejection_note")
         je["gate_b"] = "disclose_forward" if je["id"] in GATE_B_BLOCKED_JES else "postable_now"
+        je.setdefault("period", "2026-01")
+        je.setdefault("bucket", "baseline" if je.get("period", "2026-01") < "2026-07" else "live")
     return {
         "ready_to_post": [je for je in entries if je["group"] == "A_ready_to_post"],
         "estimated": [je for je in entries if je["group"] == "B_estimated"],
@@ -602,3 +627,104 @@ def mark_boveda_file_processed(entity_id: str, file_id: str, linked_to: Optional
     if not updated:
         raise HTTPException(status_code=404, detail=f"Unknown boveda file '{file_id}'")
     return updated
+
+
+# ---------------------------------------------------------------------------
+# Portal chat → Hermes (business profile, Tayrona source).
+# Hermes API server stays on loopback; this proxy is the only public hop.
+# WhatsApp self-chat on Kevin's personal number remains the document-forward
+# rail — the portal never invents cifras.
+# ---------------------------------------------------------------------------
+HERMES_CHAT_URL = os.environ.get("HERMES_CHAT_URL", "http://127.0.0.1:8642/p/business/v1/chat/completions")
+HERMES_CHAT_KEY = os.environ.get("HERMES_CHAT_KEY", "")
+HERMES_CHAT_FALLBACK_URL = os.environ.get("HERMES_CHAT_FALLBACK_URL", "http://127.0.0.1:8642/v1/chat/completions")
+
+
+class ChatBody(BaseModel):
+    message: str
+    lang: Optional[str] = "es"
+    session_id: Optional[str] = None
+
+
+@app.get("/entities/{entity_id}/chat/status", dependencies=[Depends(require_auth)])
+def chat_status(entity_id: str):
+    _get_entity_or_404(entity_id)
+    configured = bool(HERMES_CHAT_KEY)
+    return {
+        "wired": configured,
+        "profile": "business",
+        "source": "tayrona",
+        "whatsapp": {
+            "mode": "self-chat",
+            "number_hint": "+57 301 441 0022",
+            "hint_es": "Reenvíe documentos a su chat personal con Hermes (el mismo número). El agente los archiva en la bóveda de Tayrona.",
+            "hint_en": "Forward documents to your personal Hermes self-chat (same number). The agent files them into the Tayrona vault.",
+        },
+    }
+
+
+@app.post("/entities/{entity_id}/chat", dependencies=[Depends(require_auth)])
+def portal_chat(entity_id: str, body: ChatBody, user: dict = Depends(require_auth)):
+    _get_entity_or_404(entity_id)
+    if not HERMES_CHAT_KEY:
+        raise HTTPException(
+            status_code=503,
+            detail="Agente no conectado. Reenvíe por WhatsApp a su chat personal con Hermes.",
+        )
+    lang = (body.lang or "es").lower()
+    if lang not in {"es", "en"}:
+        lang = "es"
+    session_id = body.session_id or f"portal-{entity_id}-{user.get('username', 'user')}"
+    system = (
+        "You are the ContabIA agent for Tayrona Sailing (Sonata Mas SAS, NIT 901528910, "
+        "entity sonata-001). Period in progress: July 2026 (EN CURSO). "
+        "Work under Hermes profile `business` with --source tayrona. "
+        "Never invent cifras. If you do not have a live number, say so and point to "
+        "Excepciones / Comprobantes. Do not offer Cantamar as a live entity. "
+        "WhatsApp document intake is Kevin's personal self-chat — tell the user to "
+        "forward files there, not to invent a ContabIA business number. "
+        f"Reply in {'Spanish' if lang == 'es' else 'English'}."
+    )
+    payload = {
+        "model": "hermes-agent",
+        "messages": [
+            {"role": "system", "content": system},
+            {"role": "user", "content": body.message},
+        ],
+        "stream": False,
+    }
+    headers = {
+        "Authorization": f"Bearer {HERMES_CHAT_KEY}",
+        "Content-Type": "application/json",
+        "X-Hermes-Session-Id": session_id,
+        "X-Hermes-Session-Key": f"contabia:portal:{entity_id}:{user.get('username', 'user')}",
+    }
+    import urllib.error
+    import urllib.request
+
+    def _post(url: str):
+        req = urllib.request.Request(
+            url, data=json.dumps(payload).encode("utf-8"), headers=headers, method="POST"
+        )
+        with urllib.request.urlopen(req, timeout=180) as resp:
+            return json.loads(resp.read().decode("utf-8"))
+
+    try:
+        try:
+            data = _post(HERMES_CHAT_URL)
+        except urllib.error.HTTPError as exc:
+            if exc.code == 404 and HERMES_CHAT_FALLBACK_URL != HERMES_CHAT_URL:
+                data = _post(HERMES_CHAT_FALLBACK_URL)
+            else:
+                raise
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="replace")[:400]
+        raise HTTPException(status_code=502, detail=f"Hermes {exc.code}: {detail}") from exc
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"Hermes no disponible: {exc}") from exc
+
+    choices = data.get("choices") or []
+    text = ""
+    if choices:
+        text = ((choices[0].get("message") or {}).get("content")) or ""
+    return {"reply": text, "session_id": session_id, "source": "tayrona"}

@@ -150,14 +150,28 @@
   </main>
 </div>
 
+
+  
+
 <script src="js/data.js"></script>
 <script src="js/sonata-live.js"></script>
-  <script src="js/nav.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/live-shell.js"></script>
+<script src="js/nav.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/help.js"></script>
 <script src="js/agent-widget.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+  const live = typeof isLiveMode === 'function' && isLiveMode();
+  if (live) {
+    renderLiveConfig();
+    return;
+  }
+  renderDemoConfig();
+});
+
+function renderDemoConfig() {
   const e = currentEntityData();
   const meta = e.meta;
 
@@ -220,13 +234,6 @@ document.addEventListener('DOMContentLoaded', () => {
     <div style="margin-top:24px;padding:14px 18px;background:var(--cream);border-radius:8px;font-size:13px;color:var(--warm-gray);">
       <strong style="color:var(--charcoal);">Reglas del sistema</strong> (ley tributaria, USALI, conectores) — read-only, no editables. Transparencia, no opinión.
     </div>`;
-
-  /* Reglas — LIVE MODE: real company-config rules from the API (additive;
-     the mock render above stays untouched for demo entities). */
-  const entityId = sessionStorage.getItem('contabia_entity');
-  if (typeof liveAvailable === 'function' && liveAvailable(entityId) && isLiveMode()) {
-    renderLiveRules(entityId);
-  }
 
   /* OTAs */
   document.getElementById('sec-otas').innerHTML = `
@@ -294,7 +301,81 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('sec-' + tab.dataset.tab).classList.add('active');
     });
   });
-});
+}
+
+function bindConfTabs() {
+  document.querySelectorAll('.conf-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.conf-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.conf-section').forEach(s => s.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('sec-' + tab.dataset.tab).classList.add('active');
+    });
+  });
+}
+
+function renderLiveConfig() {
+  const e = currentEntityData();
+  const meta = e.meta;
+  document.getElementById('page-meta').innerHTML =
+    `${meta.name} · ${meta.legal_name} · NIT ${meta.nit}`;
+
+  document.getElementById('sec-entidad').innerHTML = `
+    <div class="panel">
+      ${field('Razón social',     meta.legal_name)}
+      ${field('Nombre comercial', meta.name)}
+      ${field('NIT',              meta.nit, true)}
+      ${field('Régimen tributario','Responsable de IVA · Régimen ordinario')}
+      ${field('Municipio ICA',    'Santa Marta · 5,5 × 1.000')}
+      ${field('Sistema contable', meta.accounting_system || 'Alegra')}
+      ${field('PMS',              meta.pms || 'FareHarbor')}
+      ${field('Banco principal',  meta.bank_primary || 'Bancolombia')}
+      ${field('Periodo activo',   'Julio 2026 · EN CURSO')}
+    </div>`;
+
+  document.getElementById('sec-conectores').innerHTML = (e.connectors || []).map(c => `
+    <div class="conn-card">
+      <div class="left">
+        <span class="dot ${c.status==='ok'?'':c.status}"></span>
+        <div>
+          <div class="name">${c.name}</div>
+          <div class="sync">Última sincronización: ${c.last_sync}</div>
+        </div>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('sec-otas').innerHTML = `
+    <div class="panel" style="padding:18px;color:var(--warm-gray);font-size:13.5px;">
+      Desglose OTA de julio aún no está cableado a un endpoint. No se muestran cifras de demostración.
+    </div>`;
+
+  document.getElementById('sec-equipo').innerHTML = `
+    <div class="panel">
+      <div class="team-row">
+        <div class="av">KC</div>
+        <div><div class="name">Kevin Carey</div><div class="email">kevin</div></div>
+        <span class="role">owner</span>
+      </div>
+      <div class="team-row">
+        <div class="av">EM</div>
+        <div><div class="name">Edwin Montenegro</div><div class="email">edwin</div></div>
+        <span class="role">accountant</span>
+      </div>
+      <div class="team-row">
+        <div class="av">NG</div>
+        <div><div class="name">Nicolás Giraldo</div><div class="email">nick</div></div>
+        <span class="role">manager</span>
+      </div>
+    </div>`;
+
+  document.getElementById('sec-notif').innerHTML = `
+    <div class="panel" style="padding:18px;color:var(--warm-gray);font-size:13.5px;">
+      Notificaciones: reenvíe documentos a su chat personal de Hermes en WhatsApp.
+    </div>`;
+
+  bindConfTabs();
+  renderLiveRules('sonata-001');
+}
 
 function field(label, value, mono) {
   return `

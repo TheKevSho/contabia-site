@@ -21,8 +21,15 @@
     }
   }
 
-  /* ensure role + entity defaults from DATA.user (data.js loaded earlier) */
-  if (typeof DATA !== 'undefined') {
+  /* ensure role + entity defaults. Live sessions never inherit
+     DATA.user.default_entity (cantamar-001). */
+  if (typeof isLiveMode === 'function' && isLiveMode()) {
+    if (!sessionStorage.getItem('contabia_role')) {
+      const rec = (() => { try { return JSON.parse(sessionStorage.getItem('contabia_user') || 'null'); } catch (e) { return null; } })();
+      sessionStorage.setItem('contabia_role', (rec && rec.role) || 'owner');
+    }
+    sessionStorage.setItem('contabia_entity', 'sonata-001');
+  } else if (typeof DATA !== 'undefined') {
     if (!sessionStorage.getItem('contabia_role')) {
       sessionStorage.setItem('contabia_role', DATA.user.default_role);
     }

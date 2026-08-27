@@ -125,7 +125,7 @@
           <button class="btn btn-primary" onclick="sendMsg()">Enviar</button>
         </div>
         <div class="chat-meta">
-          También puede escribir al agente por <strong>WhatsApp Business</strong> al número de su entidad.
+          Reenvíe documentos a su chat personal de Hermes en WhatsApp.
         </div>
       </div>
 
@@ -133,8 +133,13 @@
   </main>
 </div>
 
+  
+
 <script src="js/data.js"></script>
-  <script src="js/nav.js"></script>
+<script src="js/sonata-live.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/live-shell.js"></script>
+<script src="js/nav.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/help.js"></script>
 <script src="js/agent-widget.js"></script>
@@ -153,13 +158,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const e = currentEntityData();
   const meta = e.meta;
   const user = currentUser();
+  const live = typeof isLiveMode === 'function' && isLiveMode();
 
-  document.getElementById('page-meta').innerHTML =
-    `${meta.name} · agente respondiendo en español · contexto: ${meta.period.toLowerCase()}`;
+  document.getElementById('page-meta').innerHTML = live
+    ? `${meta.name} · julio 2026 · agente en vivo`
+    : `${meta.name} · agente respondiendo en español · contexto: ${meta.period.toLowerCase()}`;
 
-  /* seed conversation with a role-aware, data-real example exchange
-     (close status + critical count, then a plata-en-riesgo drill-down) */
-  messages = buildAgentIntroThread(e, user);
+  messages = (typeof buildAgentIntroThread === 'function')
+    ? buildAgentIntroThread(e, user)
+    : [{ who: 'agent', text: 'Hola. Soy el agente ContabIA.' }];
   renderThread();
   renderSuggestions();
 
@@ -167,7 +174,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (ev.key === 'Enter') sendMsg();
   });
 
-  /* pick up a message handed off from the floating agent widget, if any */
   try {
     const pending = sessionStorage.getItem('contabia_pending_msg');
     if (pending) {
@@ -199,14 +205,30 @@ function askQuick(text) {
   sendMsg();
 }
 
-function sendMsg() {
+async function sendMsg() {
   const input = document.getElementById('chat-input');
   const text = input.value.trim();
   if (!text) return;
   messages.push({ who: 'user', text });
   input.value = '';
   renderThread();
-  /* simulated agent response */
+  if (typeof isLiveMode === 'function' && isLiveMode() && typeof postLiveChat === 'function') {
+    messages.push({ who: 'agent', text: '…' });
+    renderThread();
+    try {
+      const lang = (typeof currentLang === 'function' ? currentLang() : 'es');
+      const sessionId = sessionStorage.getItem('contabia_chat_session') || null;
+      const res = await postLiveChat('sonata-001', text, lang, sessionId);
+      if (res && res.session_id) sessionStorage.setItem('contabia_chat_session', res.session_id);
+      messages.pop();
+      messages.push({ who: 'agent', text: (res && (res.reply || res.message)) || 'Sin respuesta.' });
+    } catch (err) {
+      messages.pop();
+      messages.push({ who: 'agent', text: 'No pude contactar al agente: ' + err.message });
+    }
+    renderThread();
+    return;
+  }
   setTimeout(() => {
     messages.push({ who: 'agent', text: agentReply(text) });
     renderThread();
