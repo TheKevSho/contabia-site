@@ -189,35 +189,35 @@
 
       <div class="page-head">
         <div class="title-block">
-          <h1>Bóveda</h1>
+          <h1 data-i18n="bov.h1">Bóveda</h1>
           <div class="meta" id="page-meta">…</div>
         </div>
         <div class="actions">
-          <a class="btn btn-secondary" href="auditoria.html">Auditoría →</a>
+          <a class="btn btn-secondary" href="auditoria.html"><span data-i18n="bov.link_auditoria">Auditoría →</span></a>
         </div>
       </div>
 
       <div class="alert-banner">
         <div class="alert-text">
           <div class="icon">i</div>
-          <div class="copy">Aquí vive todo lo que entra al motor — extractos bancarios, recibos, facturas, estados de OTAs. <strong>Suba una vez, el agente lo usa para todo.</strong></div>
+          <div class="copy" data-i18n="bov.alert_banner">Aquí vive todo lo que entra al motor — extractos bancarios, recibos, facturas, estados de OTAs. <strong>Suba una vez, el agente lo usa para todo.</strong></div>
         </div>
       </div>
 
       <!-- Upload zone -->
       <div class="upload-zone" id="upload-zone" onclick="alert('Selector de archivos (mockup) — drag & drop o click para subir.')">
         <div class="icon">⬆</div>
-        <div class="label">Arrastre archivos aquí o haga click para subir</div>
-        <div class="sub">PDFs · imágenes · Excel · CSV — el agente los etiqueta automáticamente</div>
+        <div class="label" data-i18n="bov.upload_label">Arrastre archivos aquí o haga click para subir</div>
+        <div class="sub" data-i18n="bov.upload_sub">PDFs · imágenes · Excel · CSV — el agente los etiqueta automáticamente</div>
         <div class="actions">
-          <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();alert('WhatsApp: envíe el archivo al número de su entidad.')">📱 Vía WhatsApp</button>
-          <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();alert('Email: forward a la dirección dedicada de su cuenta.')">✉ Vía email</button>
+          <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();alert('WhatsApp: envíe el archivo al número de su entidad.')"><span data-i18n="bov.btn_whatsapp">📱 Vía WhatsApp</span></button>
+          <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();alert('Email: forward a la dirección dedicada de su cuenta.')"><span data-i18n="bov.btn_email">✉ Vía email</span></button>
         </div>
       </div>
 
       <!-- Search + filters -->
       <div class="vault-controls">
-        <input type="text" class="search-box" id="vault-search" placeholder="Buscar por nombre, etiqueta o referencia…">
+        <input type="text" class="search-box" id="vault-search" placeholder="" data-i18n-placeholder="boveda.search">
       </div>
       <div class="filter-chips" id="vault-filters"></div>
 
@@ -431,6 +431,11 @@ async function initLiveBoveda() {
   });
   await reload();
 }
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  document.title = t('page.title_boveda');
+});
 </script>
 </body>
 </html>

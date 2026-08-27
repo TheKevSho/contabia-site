@@ -68,7 +68,7 @@
       }
     } catch (e) { /* API unreachable */ }
 
-    err.textContent = 'Credenciales incorrectas.';
+    err.textContent = typeof t === 'function' ? t('login.error') : 'Credenciales incorrectas.';
     document.getElementById('password').value = '';
     document.getElementById('password').focus();
   };

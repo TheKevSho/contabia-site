@@ -153,9 +153,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 const STATUS_LABEL = {
-  closed:      'Cerrado',
-  in_progress: 'En progreso',
-  pending:     'Pendiente',
+  closed:      t('tracker.status.closed'),
+  in_progress: t('tracker.status.in_progress'),
+  pending:     t('tracker.status.pending'),
 };
 const STATUS_BADGE_CLASS = {
   closed:      'badge-approved',
@@ -164,10 +164,10 @@ const STATUS_BADGE_CLASS = {
 };
 
 const MODULE_LABELS = {
-  bank_feed:      { label: 'Ingesta bancaria',      ok_note: 'Sincronizado', warn_note: 'Con avisos' },
-  categorization: { label: 'Categorización OTA',    ok_note: 'Cruzada',      warn_note: 'Por revisar' },
-  reconciliation: { label: 'Conciliación bancaria', ok_note: 'Balanceado',   warn_note: 'Sin resolver' },
-  reports:        { label: 'Informes generados',    ok_note: 'Xlsx + PDF',   warn_note: 'En cálculo' },
+  bank_feed:      { label: t('tracker.module.bank_feed'),      ok_note: t('tracker.module.bank_feed_ok'), warn_note: t('tracker.module.bank_feed_warn') },
+  categorization: { label: t('tracker.module.categorization'),    ok_note: t('tracker.module.categorization_ok'), warn_note: t('tracker.module.categorization_warn') },
+  reconciliation: { label: t('tracker.module.reconciliation_t'), ok_note: t('tracker.module.reconciliation_ok'), warn_note: t('tracker.module.reconciliation_warn') },
+  reports:        { label: t('tracker.module.reports'),       ok_note: t('tracker.module.reports_ok'),   warn_note: t('tracker.module.reports_warn') },
 };
 
 function renderMonthGrid(e) {
@@ -207,7 +207,7 @@ function renderMonthGrid(e) {
           modules += `
             <div class="module-row">
               <div class="icon fail">×</div>
-              <div class="label">Excepciones críticas</div>
+              <div class="label">${t('tracker.live_exc_label')}</div>
               <div class="note crit">${m.critical} sin resolver</div>
             </div>`;
         }
@@ -215,7 +215,7 @@ function renderMonthGrid(e) {
           modules += `
             <div class="module-row">
               <div class="icon warn">!</div>
-              <div class="label">Excepciones abiertas</div>
+              <div class="label">${t('tracker.live_exc_label')}</div>
               <div class="note warn">${m.open} en cola</div>
             </div>`;
         }
@@ -303,9 +303,7 @@ function renderYearTable(e) {
 
 async function renderLiveTracker() {
   const lang = (typeof currentLang === 'function' ? currentLang() : 'es');
-  document.getElementById('page-meta').textContent = lang === 'en'
-    ? 'Tayrona Sailing · July 2026 IN PROGRESS'
-    : 'Tayrona Sailing · julio 2026 EN CURSO';
+  document.getElementById('page-meta').textContent = t('tracker.meta_live');
   const s = window.__liveSummary || (typeof fetchLiveSummary === 'function' ? await fetchLiveSummary('sonata-001').catch(() => null) : null);
   window.__liveSummary = s || window.__liveSummary;
   const live = (s && s.cifras && s.cifras.live_period) || {};
@@ -352,6 +350,24 @@ async function renderLiveTracker() {
     </tr>`;
   document.getElementById('year-foot').innerHTML = '';
 }
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  document.title = t('tracker.page_title');
+  var sl = document.querySelectorAll('.section-label');
+  if (sl[0]) sl[0].textContent = t('tracker.section_months');
+  if (sl[1]) sl[1].textContent = t('tracker.section_year_summary');
+  var ths = document.querySelector('.data-table thead tr');
+  if (ths) {
+    var cells = ths.children;
+    if (cells[0]) cells[0].textContent = t('tracker.th_month');
+    if (cells[1]) cells[1].textContent = t('tracker.th_status');
+    if (cells[2]) cells[2].textContent = t('tracker.th_exceptions_t');
+    if (cells[3]) cells[3].textContent = t('tracker.th_jes');
+    if (cells[4]) cells[4].textContent = t('tracker.th_recovery');
+    if (cells[5]) cells[5].textContent = t('tracker.th_deliverables');
+  }
+});
 </script>
 </body>
 </html>

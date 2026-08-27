@@ -112,34 +112,34 @@ const DATA = {
        Owner sees urgency + approvals; accountant sees JE/exception queue. */
     action_queue: {
       owner: [
-        { id: 'a-1', label: 'Crítico',    label_class: 'urgent', accent: 'urgent',
+        { id: 'a-1', t_label: 'queue.critico',    label_class: 'urgent', accent: 'urgent',
           title: 'Revisar 2 excepciones críticas',
           meta: 'EXC-001 · retefuente · COP 32K en riesgo<br>EXC-004 · OTA gross-up · Hostelworld',
-          cta: 'Resolver →', href: 'exceptions.html' },
-        { id: 'a-2', label: 'Por aprobar', label_class: '', accent: '',
+          t_cta: 'cta.resolver', href: 'exceptions.html' },
+        { id: 'a-2', t_label: 'queue.por_aprobar', label_class: '', accent: '',
           title: 'Aprobar nómina quincenal',
           amount: 'COP 4.218.500',
           meta: '11 empleados · vence 30 jun',
-          cta: 'Revisar y aprobar →', href: 'nomina.html' },
-        { id: 'a-3', label: 'Por aprobar', label_class: '', accent: 'routine',
+          t_cta: 'cta.revisar_aprobar', href: 'nomina.html' },
+        { id: 'a-3', t_label: 'queue.por_aprobar', label_class: '', accent: 'routine',
           title: 'Aprobar pago IVA',
           amount: 'COP 842.300',
           meta: 'F300 listo · vence 11 jul',
-          cta: 'Revisar y aprobar →', href: 'tributario.html' },
+          t_cta: 'cta.revisar_aprobar', href: 'tributario.html' },
       ],
       accountant: [
-        { id: 'a-1', label: 'En cola',    label_class: 'urgent', accent: 'urgent',
+        { id: 'a-1', t_label: 'queue.en_cola',    label_class: 'urgent', accent: 'urgent',
           title: 'Aprobar 5 comprobantes',
           meta: 'JE-001 GMF · JE-003 Cesantías · JE-004 ICA · +2',
-          cta: 'Revisar JEs →', href: 'journal-entries.html' },
-        { id: 'a-2', label: 'En cola',    label_class: '', accent: '',
+          t_cta: 'cta.revisar_jes', href: 'journal-entries.html' },
+        { id: 'a-2', t_label: 'queue.en_cola',    label_class: '', accent: '',
           title: 'Resolver 7 excepciones',
           meta: '2 críticas · 5 altas',
-          cta: 'Abrir cola →', href: 'exceptions.html' },
-        { id: 'a-3', label: 'Pendiente',  label_class: '', accent: 'routine',
+          t_cta: 'cta.abrir_cola', href: 'exceptions.html' },
+        { id: 'a-3', t_label: 'queue.pendiente',  label_class: '', accent: 'routine',
           title: 'Validar conciliación 3 vías',
           meta: 'COP 492.200 sin reconciliar',
-          cta: 'Revisar →', href: 'reconciliacion.html' },
+          t_cta: 'cta.revisar', href: 'reconciliacion.html' },
       ],
     },
 
@@ -154,37 +154,37 @@ const DATA = {
       plata_en_riesgo: {
         total: 1428500,
         breakdown: [
-          { label: 'Documento soporte faltante (3)', value: 912300 },
-          { label: 'Retefuente no aplicada (2)',     value: 284500 },
-          { label: 'IVA no reclamado',               value: 231700 },
+          { t_key: 'breakdown.doc_soporte', n: 3, label: 'Documento soporte faltante (3)', value: 912300 },
+          { t_key: 'breakdown.retefuente_no_aplicada', n: 2, label: 'Retefuente no aplicada (2)',     value: 284500 },
+          { t_key: 'breakdown.iva_no_reclamado', label: 'IVA no reclamado',               value: 231700 },
         ],
       },
       recuperacion: {
         total: 1248500,
         breakdown: [
-          { label: 'Crédito fiscal IVA',     value: '+842.300' },
-          { label: 'Retefuente recibida',    value: '+156.200' },
-          { label: 'DS generados',           value: '+250.000' },
+          { t_key: 'recovery.credito_fiscal',     label: 'Crédito fiscal IVA',     value: '+842.300' },
+          { t_key: 'recovery.retefuente_recibida',    label: 'Retefuente recibida',    value: '+156.200' },
+          { t_key: 'recovery.ds_generados',           label: 'DS generados',           value: '+250.000' },
         ],
       },
       kpi_usali: {
         primary_value: 42, primary_unit: '%',
         primary_label: 'Operación · GOP%',
         breakdown: [
-          { label: 'Ocupación', value: '71%' },
-          { label: 'ADR',       value: '128.400' },
-          { label: 'RevPAR',    value: '91.200' },
+          { t_key: 'kpi.ocupacion', label: 'Ocupación', value: '71%' },
+          { t_key: 'kpi.adr',       label: 'ADR',       value: '128.400' },
+          { t_key: 'kpi.revpar',    label: 'RevPAR',    value: '91.200' },
         ],
       },
     },
 
     tax_summary: [
-      { name: 'IVA — Crédito fiscal',         desc: 'Saldo recuperable estimado',     amount: '+842.300', amount_class: 'pos', status: 'computing', status_label: 'En cálculo' },
-      { name: 'Retefuente retenida',          desc: 'Como agente retenedor',          amount: '−284.500', amount_class: 'neg', status: 'calc',      status_label: 'Calculado' },
-      { name: 'Retefuente recibida',          desc: 'Activo tributario',              amount: '+156.200', amount_class: 'pos', status: 'calc',      status_label: 'Calculado' },
-      { name: 'ICA Santa Marta',              desc: '5,5 × 1.000',                    amount: '−412.500', amount_class: 'neg', status: 'review',    status_label: 'Por aprobar' },
-      { name: 'GMF',                          desc: '4 × 1.000 sobre movimientos',    amount: '−48.200',  amount_class: 'neg', status: 'review',    status_label: 'Por aprobar' },
-      { name: 'Retefuente perdida (alerta)',  desc: 'EXC-001 · corrección requerida', amount: '−32.000',  amount_class: 'neg', status: 'crit',      status_label: 'Crítico' },
+      { name: 'IVA — Crédito fiscal',         desc: 'Saldo recuperable estimado',     amount: '+842.300', amount_class: 'pos', status: 'computing', status_label: 'En cálculo', t_status: 'en_calculo' },
+      { name: 'Retefuente retenida',          desc: 'Como agente retenedor',          amount: '−284.500', amount_class: 'neg', status: 'calc',      status_label: 'Calculado', t_status: 'calculado' },
+      { name: 'Retefuente recibida',          desc: 'Activo tributario',              amount: '+156.200', amount_class: 'pos', status: 'calc',      status_label: 'Calculado', t_status: 'calculado' },
+      { name: 'ICA Santa Marta',              desc: '5,5 × 1.000',                    amount: '−412.500', amount_class: 'neg', status: 'review',    status_label: 'Por aprobar', t_status: 'por_aprobar' },
+      { name: 'GMF',                          desc: '4 × 1.000 sobre movimientos',    amount: '−48.200',  amount_class: 'neg', status: 'review',    status_label: 'Por aprobar', t_status: 'por_aprobar' },
+      { name: 'Retefuente perdida (alerta)',  desc: 'EXC-001 · corrección requerida', amount: '−32.000',  amount_class: 'neg', status: 'crit',      status_label: 'Crítico', t_status: 'critico' },
     ],
 
     /* OTA breakdown — rooms-focused, hospitality OTAs */
@@ -227,18 +227,18 @@ const DATA = {
 
     /* Plata en riesgo · detalle (item-level) */
     plata_en_riesgo_detalle: [
-      { name: 'Booking.com — julio',           why: 'Documento soporte no generado para comisión COP 1.224.500',     amt: 232655, ct: 'deducción en riesgo' },
-      { name: 'AWS · Servicios cloud',         why: '3 cargos USD sin documento soporte (USD 240 total)',            amt: 182400, ct: 'deducción en riesgo' },
-      { name: 'Pago a "TRANSPORTES SP"',       why: 'COP 1.420.000 — debió retener 11% (10 UVT)',                    amt: 156200, ct: 'retefuente perdida' },
-      { name: 'Ferretería El Tornillo',        why: 'IVA recuperable no reclamado por falta de DS',                  amt: 231700, ct: 'IVA no reclamado' },
+      { name: 'Booking.com — julio',           why: 'Documento soporte no generado para comisión COP 1.224.500',     amt: 232655, ct: 'deducción en riesgo', t_ct: 'risk.deduccion' },
+      { name: 'AWS · Servicios cloud',         why: '3 cargos USD sin documento soporte (USD 240 total)',            amt: 182400, ct: 'deducción en riesgo', t_ct: 'risk.deduccion' },
+      { name: 'Pago a "TRANSPORTES SP"',       why: 'COP 1.420.000 — debió retener 11% (10 UVT)',                    amt: 156200, ct: 'retefuente perdida', t_ct: 'risk.retefuente_perdida' },
+      { name: 'Ferretería El Tornillo',        why: 'IVA recuperable no reclamado por falta de DS',                  amt: 231700, ct: 'IVA no reclamado', t_ct: 'risk.iva_no_reclamado' },
     ],
 
     activity: [
-      { time: 'hoy 6:12',   desc: 'Procesó <strong>147 transacciones bancarias</strong> de junio. 6 requieren revisión manual.', pill: 'done',   pill_label: 'Completado' },
-      { time: 'hoy 6:08',   desc: 'Cruce LobbyPMS × Alegra completado. <strong>2 reservas sin factura</strong> detectadas.',     pill: 'action', pill_label: 'Acción requerida' },
-      { time: 'hoy 5:55',   desc: 'Cálculo de prestaciones sociales completado. <strong>Drift COP 280.000</strong> en cesantías detectado.', pill: 'action', pill_label: 'Acción requerida' },
-      { time: 'hoy 5:32',   desc: '<strong>Retefuente perdida</strong> identificada en pago a TRANSPORTES SP por COP 1.420.000.', pill: 'crit',   pill_label: 'Crítico' },
-      { time: 'ayer 23:40', desc: 'Ingesta de datos LobbyPMS (junio 2026): <strong>89 reservas, 5 canales OTA</strong>.',        pill: 'done',   pill_label: 'Completado' },
+      { time: 'hoy 6:12',   desc: 'Procesó <strong>147 transacciones bancarias</strong> de junio. 6 requieren revisión manual.', pill: 'done',   pill_label: 'Completado', t_pill: 'completado' },
+      { time: 'hoy 6:08',   desc: 'Cruce LobbyPMS × Alegra completado. <strong>2 reservas sin factura</strong> detectadas.',     pill: 'action', pill_label: 'Acción requerida', t_pill: 'accion_requerida' },
+      { time: 'hoy 5:55',   desc: 'Cálculo de prestaciones sociales completado. <strong>Drift COP 280.000</strong> en cesantías detectado.', pill: 'action', pill_label: 'Acción requerida', t_pill: 'accion_requerida' },
+      { time: 'hoy 5:32',   desc: '<strong>Retefuente perdida</strong> identificada en pago a TRANSPORTES SP por COP 1.420.000.', pill: 'crit',   pill_label: 'Crítico', t_pill: 'critico' },
+      { time: 'ayer 23:40', desc: 'Ingesta de datos LobbyPMS (junio 2026): <strong>89 reservas, 5 canales OTA</strong>.',        pill: 'done',   pill_label: 'Completado', t_pill: 'completado' },
     ],
 
     exceptions: [
@@ -517,34 +517,34 @@ const DATA = {
 
     action_queue: {
       owner: [
-        { id: 'a-1', label: 'Crítico',    label_class: 'urgent', accent: 'urgent',
+        { id: 'a-1', t_label: 'queue.critico',    label_class: 'urgent', accent: 'urgent',
           title: 'Verificar portal GetYourGuide',
           meta: 'Comisión junio sin confirmar · 2FA bloqueado',
-          cta: 'Verificar →', href: 'reconciliacion.html' },
-        { id: 'a-2', label: 'Por aprobar', label_class: '', accent: '',
+          t_cta: 'cta.verificar', href: 'reconciliacion.html' },
+        { id: 'a-2', t_label: 'queue.por_aprobar', label_class: '', accent: '',
           title: 'Aprobar nómina quincenal',
           amount: 'COP 3.620.400',
           meta: '4 empleados · vence 30 jun',
-          cta: 'Revisar y aprobar →', href: 'nomina.html' },
-        { id: 'a-3', label: 'Por aprobar', label_class: '', accent: 'routine',
+          t_cta: 'cta.revisar_aprobar', href: 'nomina.html' },
+        { id: 'a-3', t_label: 'queue.por_aprobar', label_class: '', accent: 'routine',
           title: 'Aprobar pago IVA',
           amount: 'COP 612.800',
           meta: 'F300 listo · vence 11 jul',
-          cta: 'Revisar y aprobar →', href: 'tributario.html' },
+          t_cta: 'cta.revisar_aprobar', href: 'tributario.html' },
       ],
       accountant: [
-        { id: 'a-1', label: 'En cola',    label_class: 'urgent', accent: 'urgent',
+        { id: 'a-1', t_label: 'queue.en_cola',    label_class: 'urgent', accent: 'urgent',
           title: 'Aprobar 6 comprobantes',
           meta: 'JE-101 GMF · JE-103 Depreciación vesselos · +4',
-          cta: 'Revisar JEs →', href: 'journal-entries.html' },
-        { id: 'a-2', label: 'En cola',    label_class: '', accent: '',
+          t_cta: 'cta.revisar_jes', href: 'journal-entries.html' },
+        { id: 'a-2', t_label: 'queue.en_cola',    label_class: '', accent: '',
           title: 'Resolver 5 excepciones',
           meta: '1 crítica · 4 altas',
-          cta: 'Abrir cola →', href: 'exceptions.html' },
-        { id: 'a-3', label: 'Pendiente',  label_class: '', accent: 'routine',
+          t_cta: 'cta.abrir_cola', href: 'exceptions.html' },
+        { id: 'a-3', t_label: 'queue.pendiente',  label_class: '', accent: 'routine',
           title: 'Validar P&L por embarcación',
           meta: 'Sonata, Anna Lezah, Dragon Lady',
-          cta: 'Revisar →', href: 'tributario.html' },
+          t_cta: 'cta.revisar', href: 'tributario.html' },
       ],
     },
 
@@ -558,17 +558,17 @@ const DATA = {
       plata_en_riesgo: {
         total: 824700,
         breakdown: [
-          { label: 'Documento soporte faltante (4)', value: 512400 },
-          { label: 'Retefuente no aplicada (1)',     value: 184500 },
-          { label: 'IVA no reclamado',               value: 127800 },
+          { t_key: 'breakdown.doc_soporte', n: 4, label: 'Documento soporte faltante (4)', value: 512400 },
+          { t_key: 'breakdown.retefuente_no_aplicada', n: 1, label: 'Retefuente no aplicada (1)',     value: 184500 },
+          { t_key: 'breakdown.iva_no_reclamado', label: 'IVA no reclamado',               value: 127800 },
         ],
       },
       recuperacion: {
         total: 698200,
         breakdown: [
-          { label: 'Crédito fiscal IVA',     value: '+412.800' },
-          { label: 'Retefuente recibida',    value: '+85.400'  },
-          { label: 'DS generados',           value: '+200.000' },
+          { t_key: 'recovery.credito_fiscal',     label: 'Crédito fiscal IVA',     value: '+412.800' },
+          { t_key: 'recovery.retefuente_recibida',    label: 'Retefuente recibida',    value: '+85.400'  },
+          { t_key: 'recovery.ds_generados',           label: 'DS generados',           value: '+200.000' },
         ],
       },
       kpi_usali: {
@@ -583,11 +583,11 @@ const DATA = {
     },
 
     tax_summary: [
-      { name: 'IVA — Crédito fiscal',         desc: 'Saldo recuperable estimado',     amount: '+612.800', amount_class: 'pos', status: 'computing', status_label: 'En cálculo' },
-      { name: 'Retefuente retenida',          desc: 'Como agente retenedor',          amount: '−218.400', amount_class: 'neg', status: 'calc',      status_label: 'Calculado' },
-      { name: 'Retefuente recibida',          desc: 'Activo tributario',              amount: '+85.400',  amount_class: 'pos', status: 'calc',      status_label: 'Calculado' },
-      { name: 'ICA Santa Marta',              desc: '5,5 × 1.000',                    amount: '−298.300', amount_class: 'neg', status: 'review',    status_label: 'Por aprobar' },
-      { name: 'GMF',                          desc: '4 × 1.000 sobre movimientos',    amount: '−39.500',  amount_class: 'neg', status: 'review',    status_label: 'Por aprobar' },
+      { name: 'IVA — Crédito fiscal',         desc: 'Saldo recuperable estimado',     amount: '+612.800', amount_class: 'pos', status: 'computing', status_label: 'En cálculo', t_status: 'en_calculo' },
+      { name: 'Retefuente retenida',          desc: 'Como agente retenedor',          amount: '−218.400', amount_class: 'neg', status: 'calc',      status_label: 'Calculado', t_status: 'calculado' },
+      { name: 'Retefuente recibida',          desc: 'Activo tributario',              amount: '+85.400',  amount_class: 'pos', status: 'calc',      status_label: 'Calculado', t_status: 'calculado' },
+      { name: 'ICA Santa Marta',              desc: '5,5 × 1.000',                    amount: '−298.300', amount_class: 'neg', status: 'review',    status_label: 'Por aprobar', t_status: 'por_aprobar' },
+      { name: 'GMF',                          desc: '4 × 1.000 sobre movimientos',    amount: '−39.500',  amount_class: 'neg', status: 'review',    status_label: 'Por aprobar', t_status: 'por_aprobar' },
     ],
 
     /* OTAs — tour operator mix, no Booking/Airbnb/Hostelworld */
@@ -625,18 +625,18 @@ const DATA = {
     ],
 
     plata_en_riesgo_detalle: [
-      { name: 'GetYourGuide — junio',          why: 'Documento soporte no generado para comisión COP 892.400',     amt: 169500, ct: 'deducción en riesgo' },
-      { name: 'Stonex · procesador exterior',  why: '5 fees USD sin DS (USD 180 total)',                            amt: 137200, ct: 'deducción en riesgo' },
-      { name: 'Pago a "ASTILLEROS DEL CARIBE"', why: 'COP 980.000 mantenimiento Sonata — debió retener 11%',        amt: 107800, ct: 'retefuente perdida' },
-      { name: 'Combustibles Marina',           why: 'IVA recuperable no reclamado por falta de DS',                 amt: 127800, ct: 'IVA no reclamado' },
+      { name: 'GetYourGuide — junio',          why: 'Documento soporte no generado para comisión COP 892.400',     amt: 169500, ct: 'deducción en riesgo', t_ct: 'risk.deduccion' },
+      { name: 'Stonex · procesador exterior',  why: '5 fees USD sin DS (USD 180 total)',                            amt: 137200, ct: 'deducción en riesgo', t_ct: 'risk.deduccion' },
+      { name: 'Pago a "ASTILLEROS DEL CARIBE"', why: 'COP 980.000 mantenimiento Sonata — debió retener 11%',        amt: 107800, ct: 'retefuente perdida', t_ct: 'risk.retefuente_perdida' },
+      { name: 'Combustibles Marina',           why: 'IVA recuperable no reclamado por falta de DS',                 amt: 127800, ct: 'IVA no reclamado', t_ct: 'risk.iva_no_reclamado' },
     ],
 
     activity: [
-      { time: 'hoy 5:55',   desc: 'Procesó <strong>94 transacciones bancarias</strong> de junio. 3 requieren revisión manual.', pill: 'done',   pill_label: 'Completado' },
-      { time: 'hoy 5:42',   desc: 'Cruce LobbyPMS × Alegra completado. <strong>2 charters sin factura</strong> detectados.',     pill: 'action', pill_label: 'Acción requerida' },
-      { time: 'hoy 5:20',   desc: 'Depreciación calculada para <strong>3 embarcaciones</strong> (Sonata, Anna Lezah, Dragon Lady).', pill: 'done', pill_label: 'Completado' },
-      { time: 'hoy 5:05',   desc: '<strong>Portal GetYourGuide</strong> sin acceso (2FA). Comisión sin confirmar.',             pill: 'crit',   pill_label: 'Crítico' },
-      { time: 'ayer 22:50', desc: 'Ingesta de datos LobbyPMS (junio 2026): <strong>51 charters, 4 canales OTA</strong>.',        pill: 'done',   pill_label: 'Completado' },
+      { time: 'hoy 5:55',   desc: 'Procesó <strong>94 transacciones bancarias</strong> de junio. 3 requieren revisión manual.', pill: 'done',   pill_label: 'Completado', t_pill: 'completado' },
+      { time: 'hoy 5:42',   desc: 'Cruce LobbyPMS × Alegra completado. <strong>2 charters sin factura</strong> detectados.',     pill: 'action', pill_label: 'Acción requerida', t_pill: 'accion_requerida' },
+      { time: 'hoy 5:20',   desc: 'Depreciación calculada para <strong>3 embarcaciones</strong> (Sonata, Anna Lezah, Dragon Lady).', pill: 'done', pill_label: 'Completado', t_pill: 'completado' },
+      { time: 'hoy 5:05',   desc: '<strong>Portal GetYourGuide</strong> sin acceso (2FA). Comisión sin confirmar.',             pill: 'crit',   pill_label: 'Crítico', t_pill: 'critico' },
+      { time: 'ayer 22:50', desc: 'Ingesta de datos LobbyPMS (junio 2026): <strong>51 charters, 4 canales OTA</strong>.',        pill: 'done',   pill_label: 'Completado', t_pill: 'completado' },
     ],
 
     exceptions: [

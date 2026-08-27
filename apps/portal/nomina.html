@@ -90,11 +90,11 @@
 
       <div class="page-head">
         <div class="title-block">
-          <h1>Nómina</h1>
+          <h1 data-i18n="nom.h1">Nómina</h1>
           <div class="meta" id="page-meta">…</div>
         </div>
         <div class="actions">
-          <button class="btn btn-secondary" onclick="location.reload()">↻ Actualizar</button>
+          <button class="btn btn-secondary" onclick="location.reload()"><span data-i18n="refresh">↻ Actualizar</span></button>
         </div>
       </div>
 
@@ -117,6 +117,11 @@
 <script src="js/agent-widget.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+  // Translate static data-i18n elements
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    el.textContent = t(key);
+  });
 
   if (typeof isLiveMode === 'function' && isLiveMode()) {
     const lang = (typeof currentLang === 'function' ? currentLang() : 'es');
@@ -128,8 +133,8 @@ document.addEventListener('DOMContentLoaded', () => {
       Array.from(slot.children).filter(el => el !== head).forEach(el => el.remove());
       const wrap = document.createElement('div');
       wrap.innerHTML = (typeof honestStubHtml === 'function')
-        ? honestStubHtml({ title: lang==='en' ? 'Not connected yet' : 'Aún no conectado' })
-        : '<div class="panel">Aún no conectado.</div>';
+        ? honestStubHtml({ title: t('not_wired') })
+        : '<div class="panel">' + t('not_wired') + '.</div>';
       slot.appendChild(wrap);
     }
     return;
@@ -158,7 +163,7 @@ function managerView(e) {
   const n = e.nomina;
   const k = n.ops_kpis;
   const otHtml = n.ot_pending.length === 0
-    ? '<div class="panel" style="text-align:center;color:var(--warm-gray);">No hay horas extras pendientes de aprobación.</div>'
+    ? '<div class="panel" style="text-align:center;color:var(--warm-gray);">' + t('nom.empty_ot') + '</div>'
     : n.ot_pending.map(ot => `
       <div class="ot-card">
         <div>
@@ -169,8 +174,8 @@ function managerView(e) {
           </div>
         </div>
         <div class="ot-actions">
-          <button class="btn-no"  onclick="alert('Rechazado (simulado)')">Rechazar</button>
-          <button class="btn-yes" onclick="alert('Aprobado (simulado) — se suma al cálculo de la quincena')">Aprobar</button>
+          <button class="btn-no"  onclick="alert('Rechazado (simulado)')">${t('nom.btn_rechazar')}</button>
+          <button class="btn-yes" onclick="alert('Aprobado (simulado) — se suma al cálculo de la quincena')">${t('nom.btn_aprobar')}</button>
         </div>
       </div>`).join('');
 
@@ -186,27 +191,27 @@ function managerView(e) {
   /* KPI labels — use vessel KPI for Tayrona, ocupación for Cantamar */
   const kpiCards = [];
   if ('ocupacion_avg' in k) {
-    kpiCards.push(kpiCard('Ocupación promedio', k.ocupacion_avg + '%'));
+    kpiCards.push(kpiCard(t('nom.kpi_ocupacion'), k.ocupacion_avg + '%'));
   }
   if ('utilizacion_flota' in k) {
-    kpiCards.push(kpiCard('Utilización flota', k.utilizacion_flota + '%'));
+    kpiCards.push(kpiCard(t('nom.kpi_utilizacion'), k.utilizacion_flota + '%'));
   }
-  kpiCards.push(kpiCard('Productividad', k.productividad + '%'));
-  kpiCards.push(kpiCard('Rotación 30d', k.rotacion_30d));
-  kpiCards.push(kpiCard('Horas marcadas', k.horas_marcadas.toLocaleString('es-CO')));
-  kpiCards.push(kpiCard('Horas extras', k.horas_extras + ' h'));
+  kpiCards.push(kpiCard(t('nom.kpi_productividad'), k.productividad + '%'));
+  kpiCards.push(kpiCard(t('nom.kpi_rotacion'), k.rotacion_30d));
+  kpiCards.push(kpiCard(t('nom.kpi_horas_marcadas'), k.horas_marcadas.toLocaleString('es-CO')));
+  kpiCards.push(kpiCard(t('nom.kpi_horas_extras'), k.horas_extras + ' h'));
 
   return `
-    <div class="section-label">KPIs operativos</div>
+    <div class="section-label">${t('nom.section_kpis')}</div>
     <div class="numbers-grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));">${kpiCards.join('')}</div>
 
-    <div class="section-label">Horas extras por aprobar (${n.ot_pending.length})</div>
+    <div class="section-label">${t_fmt('nom.section_ot', {n: n.ot_pending.length})}</div>
     ${otHtml}
 
-    <div class="section-label">Marcaciones recientes</div>
+    <div class="section-label">${t('nom.section_marcaciones')}</div>
     <div class="panel" style="padding:0;">
       <table class="marc-table">
-        <thead><tr><th>Empleado</th><th>Fecha</th><th>Entrada</th><th>Salida</th><th style="text-align:right;">Horas</th></tr></thead>
+        <thead><tr><th>${t('nom.th_empleado')}</th><th>${t('nom.th_fecha')}</th><th>${t('nom.th_entrada')}</th><th>${t('nom.th_salida')}</th><th style="text-align:right;">${t('nom.th_horas')}</th></tr></thead>
         <tbody>${marcHtml}</tbody>
       </table>
     </div>`;
@@ -233,15 +238,15 @@ function financialView(e) {
   const summaryHtml = `
     <div class="payroll-tiles">
       <div class="tile dark">
-        <div class="lbl">Neto a pagar</div>
+        <div class="lbl">${t('nom.tile_neto')}</div>
         <div class="val">COP ${ps.total_provision.toLocaleString('es-CO')}</div>
       </div>
       <div class="tile">
-        <div class="lbl">Parafiscales</div>
+        <div class="lbl">${t('nom.tile_parafiscales')}</div>
         <div class="val">COP ${ps.parafiscales.toLocaleString('es-CO')}</div>
       </div>
       <div class="tile">
-        <div class="lbl">Prestaciones</div>
+        <div class="lbl">${t('nom.tile_prestaciones')}</div>
         <div class="val">COP ${ps.prestaciones.toLocaleString('es-CO')}</div>
       </div>
     </div>`;
@@ -266,38 +271,38 @@ function financialView(e) {
     <div class="alert-banner">
       <div class="alert-text">
         <div class="icon">!</div>
-        <div class="copy"><strong>Quincena lista para aprobar.</strong> Tras su aprobación, el motor genera JE-04 (nómina + parafiscales + prestaciones).</div>
+        <div class="copy"><strong>${t('nom.alert_quincena')}</strong></div>
       </div>
     </div>
 
-    <div class="section-label">Detalle por empleado</div>
+    <div class="section-label">${t('nom.section_empleado')}</div>
     <div class="panel" style="padding:0;">
       <table class="emp-table">
         <thead>
           <tr>
-            <th style="text-align:left;">Empleado</th>
-            <th style="text-align:right;">Salario base</th>
-            <th style="text-align:center;">Días</th>
-            <th style="text-align:center;">HE</th>
-            <th style="text-align:center;">Recargos</th>
-            <th style="text-align:right;">Total</th>
+            <th style="text-align:left;">${t('nom.th_empleado')}</th>
+            <th style="text-align:right;">${t('nom.th_salario')}</th>
+            <th style="text-align:center;">${t('nom.th_dias')}</th>
+            <th style="text-align:center;">${t('nom.th_he')}</th>
+            <th style="text-align:center;">${t('nom.th_recargos')}</th>
+            <th style="text-align:right;">${t('nom.th_total')}</th>
           </tr>
         </thead>
         <tbody>${empHtml}</tbody>
         <tfoot>
           <tr>
-            <td colspan="5" style="font-weight:700;color:var(--charcoal);text-align:right;border-top:2px solid var(--midnight);">Total nómina</td>
+            <td colspan="5" style="font-weight:700;color:var(--charcoal);text-align:right;border-top:2px solid var(--midnight);">${t('nom.total_nomina')}</td>
             <td class="mono" style="font-weight:700;color:var(--charcoal);font-size:14.5px;border-top:2px solid var(--midnight);">${empTotal.toLocaleString('es-CO')}</td>
           </tr>
         </tfoot>
       </table>
     </div>
 
-    <div class="section-label">Acciones</div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;">
-      <button class="btn btn-secondary" onclick="alert('Devolución a Yari/Nick para revisar marcaciones (simulado).')">Devolver al gerente</button>
-      <button class="btn btn-secondary" onclick="location.href='journal-entries.html'">Ver JE-04 propuesto</button>
-      <button class="btn btn-primary"   onclick="alert('Aprobado (simulado) — el motor postea JE-04 a ${meta.accounting_system}.')">Aprobar quincena</button>
+    <div class="section-label">${t('nom.section_acciones')}</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;">
+          <button class="btn btn-secondary" onclick="alert('Devolución a Yari/Nick para revisar marcaciones (simulado).')">${t('nom.btn_devolver')}</button>
+          <button class="btn btn-secondary" onclick="location.href='journal-entries.html'">${t('nom.btn_ver_je')}</button>
+          <button class="btn btn-primary"   onclick="alert('Aprobado (simulado) — el motor postea JE-04 a ${meta.accounting_system}.')">${t('nom.btn_aprobar_quincena')}</button>
     </div>`;
 }
 

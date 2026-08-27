@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%231B2A4A%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27Georgia%27 font-size=%2718%27 fill=%27%23D4704A%27 text-anchor=%27middle%27 font-weight=%27bold%27%3EC%3C/text%3E%3C/svg%3E">
-  <title>ContabIA — Excepciones</title>
+  <title id="page-title">ContabIA — Excepciones</title>
   <link rel="stylesheet" href="css/portal.css">
   <script src="js/theme.js"></script>
   <style>
@@ -78,7 +78,7 @@
 
       <div class="page-head">
         <div class="title-block">
-          <h1>Excepciones</h1>
+          <h1 id="page-h1">Excepciones</h1>
           <div class="meta" id="page-meta">…</div>
         </div>
         <div class="actions" id="page-actions">
@@ -122,20 +122,20 @@
     <div style="font-family:var(--font-mono);font-size:12px;color:var(--warm-gray);margin-bottom:18px;" id="p-subtype"></div>
 
     <div class="panel-section">
-      <div class="lbl">Descripción</div>
+      <div class="lbl" id="panel-desc-lbl">Descripción</div>
       <div id="p-desc" style="font-size:14px;line-height:1.7;color:var(--charcoal);"></div>
     </div>
 
     <div class="rec-box">
       <div class="head">
-        <div class="lbl" style="margin:0;">Recomendación del agente</div>
+        <div class="lbl" id="panel-rec-lbl" style="margin:0;">Recomendación del agente</div>
         <span id="p-conf"></span>
       </div>
       <div id="p-rec" style="font-size:13.5px;line-height:1.7;color:var(--charcoal);"></div>
     </div>
 
     <div class="panel-actions">
-      <button class="btn btn-secondary btn-sm" onclick="closeExcPanel()">Cerrar</button>
+      <button class="btn btn-secondary btn-sm" onclick="closeExcPanel()" id="panel-btn-cerrar">Cerrar</button>
       <button class="btn-reject" id="p-btn-reject">Rechazar</button>
       <button class="btn-approve" id="p-btn-approve">Aprobar resolución</button>
     </div>
@@ -160,6 +160,24 @@ let liveExceptions = null;     // populated when live mode is active
 let liveEntityId = null;
 
 document.addEventListener('DOMContentLoaded', () => {
+  /* i18n chrome */
+  const pt = document.getElementById('page-title');
+  if (pt && typeof t === 'function') pt.textContent = t('page.title_exceptions');
+  const ph = document.getElementById('page-h1');
+  if (ph && typeof t === 'function') ph.textContent = t('page.title_exceptions').replace('ContabIA — ','');
+  const dl = document.getElementById('panel-desc-lbl');
+  if (dl && typeof t === 'function') dl.textContent = t('exc.panel.descripcion');
+  const rl = document.getElementById('panel-rec-lbl');
+  if (rl && typeof t === 'function') rl.textContent = t('exc.panel.recomendacion');
+
+  /* panel buttons */
+  var pb = document.getElementById('panel-btn-cerrar');
+  if (pb && typeof t === 'function') pb.textContent = t('exc.panel.cerrar');
+  var pb2 = document.getElementById('p-btn-reject');
+  if (pb2 && typeof t === 'function') pb2.textContent = t('exc.panel.rechazar');
+  var pb3 = document.getElementById('p-btn-approve');
+  if (pb3 && typeof t === 'function') pb3.textContent = t('exc.panel.aprobar_resolucion');
+
   const entityId = currentEntityId();
   liveEntityId = entityId;
   if (isLiveMode() && liveAvailable(entityId)) {
@@ -180,14 +198,14 @@ function initDemoPage() {
   const cs = e.closeSummary;
 
   document.getElementById('page-meta').innerHTML =
-    `${meta.name} · ${meta.period.toLowerCase()} · ${cs.total_exceptions} excepción${cs.total_exceptions===1?'':'es'} en cola`;
+    `${meta.name} · ${meta.period.toLowerCase()} · ${t_fmt('exc.demo.meta_pending',{n:cs.total_exceptions,plural:cs.total_exceptions===1?'':'es'})}`;
 
   if (cs.open_critical > 0) {
     document.getElementById('alert-slot').innerHTML = `
       <div class="alert-banner crit">
         <div class="alert-text">
           <div class="icon">!</div>
-          <div class="copy"><strong>${cs.open_critical} excepción${cs.open_critical===1?'':'es'} crítica${cs.open_critical===1?'':'s'}</strong> bloquean el cierre. Resolver antes de generar informes.</div>
+          <div class="copy">${t_fmt('exc.block_close',{n:cs.open_critical,plural:cs.open_critical===1?'':'es',plural2:cs.open_critical===1?'':'s'})}</div>
         </div>
       </div>`;
   }
@@ -207,12 +225,12 @@ function renderFilters(e) {
     in_review:items.filter(x => x.status === 'in_review').length,
   };
   const chips = [
-    { key: 'all',       label: 'Todas' },
-    { key: 'critical',  label: 'Críticas' },
-    { key: 'high',      label: 'Altas' },
-    { key: 'medium',    label: 'Medias' },
-    { key: 'pending',   label: 'Pendientes' },
-    { key: 'in_review', label: 'En revisión' },
+    { key: 'all',       label: t('common.all') },
+    { key: 'critical',  label: t('exc.filter.criticas') },
+    { key: 'high',      label: t('exc.filter.altas') },
+    { key: 'medium',    label: t('exc.filter.medias') },
+    { key: 'pending',   label: t('exc.filter.pendientes') },
+    { key: 'in_review', label: t('exc.filter.en_revision') },
   ];
   document.getElementById('exc-filters').innerHTML = chips.map(c => `
     <div class="filter-chip ${c.key===currentExcFilter?'active':''}"
@@ -237,7 +255,7 @@ function renderTable(e) {
 
   const tbody = document.getElementById('exc-tbody');
   tbody.innerHTML = filtered.length === 0
-    ? `<tr><td colspan="6" style="text-align:center;color:var(--warm-gray);padding:24px;">Sin items en este filtro.</td></tr>`
+    ? `<tr><td colspan="6" style="text-align:center;color:var(--warm-gray);padding:24px;">${t('exc.nothing_in_filter')}</td></tr>`
     : filtered.map(x => `
       <tr onclick="openExcDetail('${x.id}')">
         <td><span class="priority-dot ${x.priority}"></span></td>
@@ -253,8 +271,9 @@ function renderTable(e) {
 }
 
 function statusLabel(s) {
-  return ({pending:'Pendiente',in_review:'En revisión',approved:'Aprobado',rejected:'Rechazado',
-           posted:'Registrado',blocked:'Bloqueado',needs_info:'Necesita info',overridden:'Modificado'})[s] || s;
+  const map = {pending:'exc.status.pending',in_review:'exc.status.in_review',approved:'exc.status.approved',rejected:'exc.status.rejected',
+           posted:'exc.status.posted',blocked:'exc.status.blocked',needs_info:'exc.status.needs_info',overridden:'exc.status.overridden'};
+  return map[s] ? t(map[s]) : s;
 }
 
 function openExcDetail(id) {
@@ -268,8 +287,8 @@ function openExcDetail(id) {
   document.getElementById('p-desc').textContent        = x.description;
   document.getElementById('p-rec').textContent         = x.ai_recommendation;
   document.getElementById('p-conf').innerHTML          = confidenceBar(x.ai_confidence);
-  document.getElementById('p-btn-reject').onclick  = () => alert('Rechazo simulado — flujo de Angel pendiente.');
-  document.getElementById('p-btn-approve').onclick = () => alert('Aprobación simulada — motor procesa la corrección.');
+  document.getElementById('p-btn-reject').onclick  = () => alert(t('exc.demo.rejected_alert'));
+  document.getElementById('p-btn-approve').onclick = () => alert(t('exc.demo.approved_alert'));
   document.getElementById('exc-panel').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -288,7 +307,7 @@ document.addEventListener('click', e => {
    share state with the demo path above.
    ============================================================ */
 async function initLivePage(entityId) {
-  document.getElementById('page-meta').textContent = 'Cargando datos reales…';
+  document.getElementById('page-meta').textContent = t('exc.loading');
   try {
     const [summary, exceptions] = await Promise.all([
       fetchLiveSummary(entityId),
@@ -300,15 +319,15 @@ async function initLivePage(entityId) {
     const cifras = summary.cifras;
 
     document.getElementById('page-meta').innerHTML =
-      `${summary.meta.name} · ${cfg.period_label} <span class="live-pill"><span class="dot"></span>Datos reales</span> · ` +
-      `${cifras.total} excepción${cifras.total===1?'':'es'} · ${summary.closeSummary.rfr_status.replace('_',' ')} · nada posteado aún`;
+      `${summary.meta.name} · ${cfg.period_label} <span class="live-pill"><span class="dot"></span>${t('exc.live_pill')}</span> · ` +
+      `${t_fmt('exc.demo.meta_pending',{n:cifras.total,plural:cifras.total===1?'':'es'})} · ${summary.closeSummary.rfr_status.replace('_',' ')} · ${t('exc.nada_posteado')}`;
 
     if (cifras.open_high > 0) {
       document.getElementById('alert-slot').innerHTML = `
         <div class="alert-banner crit">
           <div class="alert-text">
             <div class="icon">!</div>
-                        <div class="copy"><strong>${cifras.open_high} excepción${cifras.open_high===1?'':'es'} de prioridad alta</strong> abiertas — línea base ene-jun + julio en vivo. ${cifras.closed} ya cerradas.</div>
+                        <div class="copy">${t_fmt('exc.high_open',{n:cifras.open_high,plural:cifras.open_high===1?'':'es',closed:cifras.closed})}</div>
           </div>
         </div>`;
     }
@@ -316,12 +335,12 @@ async function initLivePage(entityId) {
     renderLiveFilters();
     renderLiveTable();
   } catch (err) {
-    document.getElementById('page-meta').textContent = 'Error cargando datos reales.';
+    document.getElementById('page-meta').textContent = t('exc.error_loading');
     document.getElementById('alert-slot').innerHTML = `
       <div class="alert-banner crit">
         <div class="alert-text">
           <div class="icon">!</div>
-          <div class="copy"><strong>No se pudo conectar con la API real</strong> (${err.message}). ¿Está corriendo apps/api en ${LIVE_CONFIG[entityId].api_base}?</div>
+          <div class="copy"><strong>${t_fmt('exc.api_error',{msg:err.message,base:LIVE_CONFIG[entityId].api_base})}</strong></div>
         </div>
       </div>`;
     console.error(err);
@@ -332,12 +351,15 @@ function liveStatusClass(s) {
   return ({open: 'pending', closed: 'approved', approved: 'approved', rejected: 'rejected'})[s] || s;
 }
 function liveStatusLabel(s) {
-  return (typeof statusLabelI18n === 'function') ? statusLabelI18n(s)
-    : ({open: 'Abierta', closed: 'Cerrada', approved: 'Aprobada', rejected: 'Rechazada'})[s] || s;
+  if (typeof t === 'function') {
+    const key = 'exc.live_status.' + s;
+    const val = t(key);
+    if (val !== key) return val;
+  }
+  return ({open: 'Abierta', closed: 'Cerrada', approved: 'Aprobada', rejected: 'Rechazada'})[s] || s;
 }
 
 function renderLiveFilters() {
-  const lang = (typeof currentLang === 'function' ? currentLang() : 'es');
   const items = liveExceptions;
   const counts = {
     all: items.length,
@@ -349,13 +371,13 @@ function renderLiveFilters() {
     rule: items.filter(x => x.handled_by_rule).length,
   };
   const chips = [
-    { key: 'all', label: lang==='en' ? 'All' : 'Todas' },
-    { key: 'live', label: lang==='en' ? 'July (live)' : 'Julio (vivo)' },
-    { key: 'baseline', label: lang==='en' ? 'Baseline' : 'Línea base' },
-    { key: 'high', label: lang==='en' ? 'High' : 'Altas' },
-    { key: 'open', label: lang==='en' ? 'Open' : 'Abiertas' },
-    { key: 'closed', label: lang==='en' ? 'Closed' : 'Cerradas' },
-    { key: 'rule', label: lang==='en' ? 'Covered by rule' : 'Cubierta por regla' },
+    { key: 'all', label: t('common.all') },
+    { key: 'live', label: t('exc.filter.julio_vivo') },
+    { key: 'baseline', label: t('exc.filter.linea_base') },
+    { key: 'high', label: t('exc.filter.altas') },
+    { key: 'open', label: t('exc.filter.abiertas') },
+    { key: 'closed', label: t('exc.filter.cerradas') },
+    { key: 'rule', label: t('exc.filter.cubierta_regla') },
   ];
   document.getElementById('exc-filters').innerHTML = chips.map(c => `
     <div class="filter-chip ${c.key===currentExcFilter?'active':''}"
@@ -370,8 +392,7 @@ function setLiveExcFilter(key) {
 }
 
 function renderLiveTable() {
-  const lang = (typeof currentLang === 'function' ? currentLang() : 'es');
-  const map = { 'th-exc': lang==='en'?'Exception':'Excepción', 'th-pri': lang==='en'?'Priority':'Prioridad', 'th-st': lang==='en'?'Status':'Estado', 'th-extra': lang==='en'?'Period':'Periodo', 'th-created': lang==='en'?'Owner':'Responsable' };
+  const map = { 'th-exc': t('exc.table.exception'), 'th-pri': t('exc.table.priority'), 'th-st': t('exc.table.status'), 'th-extra': t('exc.table.period'), 'th-created': t('exc.table.owner') };
   Object.entries(map).forEach(([id, lab]) => { const el = document.getElementById(id); if (el) el.textContent = lab; });
   const all = liveExceptions;
   const filtered = currentExcFilter === 'all' ? all
@@ -383,12 +404,12 @@ function renderLiveTable() {
     : all.filter(x => x.status === currentExcFilter);
   const tbody = document.getElementById('exc-tbody');
   tbody.innerHTML = filtered.length === 0
-    ? `<tr><td colspan="6" style="text-align:center;color:var(--warm-gray);padding:24px;">${lang==='en'?'Nothing in this filter.':'Sin items en este filtro.'}</td></tr>`
+    ? `<tr><td colspan="6" style="text-align:center;color:var(--warm-gray);padding:24px;">${t('exc.nothing_in_filter')}</td></tr>`
     : filtered.map(x => {
-        const periodLbl = x.bucket === 'live' ? (lang==='en' ? 'July (live)' : 'Julio (vivo)') : (lang==='en' ? 'Baseline' : 'Línea base');
+        const periodLbl = x.bucket === 'live' ? t('exc.period_live') : t('exc.period_baseline');
         const pri = (typeof priorityLabelI18n === 'function') ? priorityLabelI18n(x.priority) : x.priority.toUpperCase();
         const owner = (x._raw && x._raw.owner) || '—';
-        const ruleTag = x.handled_by_rule ? ` · ${lang==='en'?'rule':'regla'}` : '';
+        const ruleTag = x.handled_by_rule ? ` · ${t('exc.rule_tag')}` : '';
         return `<tr onclick="openLiveExcDetail('${x.id}')">
         <td><span class="priority-dot ${x.priority}"></span></td>
         <td class="title-cell"><div class="t">${x.title}</div><div class="sub">${x.id}${ruleTag}</div></td>
@@ -424,14 +445,14 @@ function openLiveExcDetail(id) {
 async function decideLiveExc(excId, status) {
   let note = null;
   if (status === 'rejected') {
-    note = prompt('Nota de rechazo (opcional):') || null;
+    note = prompt(t('exc.prompt_rejection_note')) || null;
   }
   try {
     await patchLiveException(liveEntityId, excId, status, note);
     closeExcPanel();
     await initLivePage(liveEntityId);
   } catch (err) {
-    alert(`No se pudo guardar: ${err.message}`);
+    alert(t_fmt('exc.save_error', {msg: err.message}));
   }
 }
 </script>

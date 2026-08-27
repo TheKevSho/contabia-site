@@ -147,32 +147,32 @@
 
       <div class="page-head">
         <div class="title-block">
-          <h1>Reconciliación</h1>
+          <h1 data-i18n="rec.h1">Reconciliación</h1>
           <div class="meta" id="page-meta">…</div>
         </div>
         <div class="actions">
-          <button class="btn btn-secondary" onclick="location.reload()">↻ Actualizar</button>
+          <button class="btn btn-secondary" onclick="location.reload()"><span data-i18n="refresh">↻ Actualizar</span></button>
         </div>
       </div>
 
       <!-- 3-way reconciliation hero -->
-      <div class="section-label">Conciliación 3 vías · PMS · FE · Banco</div>
+      <div class="section-label" data-i18n="rec.section_3vias">Conciliación 3 vías · PMS · FE · Banco</div>
       <div id="three-way-hero"></div>
 
       <!-- Drill-down ledger -->
-      <div class="section-label">Detalle por reserva</div>
+      <div class="section-label" data-i18n="rec.section_ledger">Detalle por reserva</div>
       <div class="filter-chips" id="ledger-filters"></div>
       <div class="panel" style="padding:0;">
         <table class="data-table ledger-table">
           <thead>
             <tr>
-              <th>Reserva</th>
-              <th>Huésped</th>
-              <th>Canal</th>
-              <th class="text-right">PMS</th>
-              <th class="text-right">FE</th>
-              <th class="text-right">Banco</th>
-              <th>Estado</th>
+              <th data-i18n="rec.th_reserva">Reserva</th>
+              <th data-i18n="rec.th_huesped">Huésped</th>
+              <th data-i18n="rec.th_canal">Canal</th>
+              <th class="text-right"><span data-i18n="rec.th_pms">PMS</span></th>
+              <th class="text-right"><span data-i18n="rec.th_fe">FE</span></th>
+              <th class="text-right"><span data-i18n="rec.th_banco">Banco</span></th>
+              <th data-i18n="rec.th_estado">Estado</th>
             </tr>
           </thead>
           <tbody id="ledger-body"></tbody>
@@ -180,7 +180,7 @@
       </div>
 
       <!-- Bank reconciliation per account -->
-      <div class="section-label">Conciliación bancaria por cuenta</div>
+      <div class="section-label" data-i18n="rec.section_bank">Conciliación bancaria por cuenta</div>
       <div id="bank-recs"></div>
 
     </div>
@@ -201,6 +201,11 @@
 let currentLedgerFilter = 'all';
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Translate static data-i18n elements
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    el.textContent = t(key);
+  });
 
   if (typeof isLiveMode === 'function' && isLiveMode()) {
     const lang = (typeof currentLang === 'function' ? currentLang() : 'es');
@@ -212,8 +217,8 @@ document.addEventListener('DOMContentLoaded', () => {
       Array.from(slot.children).filter(el => el !== head).forEach(el => el.remove());
       const wrap = document.createElement('div');
       wrap.innerHTML = (typeof honestStubHtml === 'function')
-        ? honestStubHtml({ title: lang==='en' ? 'Not connected yet' : 'Aún no conectado' })
-        : '<div class="panel">Aún no conectado.</div>';
+        ? honestStubHtml({ title: t('not_wired') })
+        : '<div class="panel">' + t('not_wired') + '.</div>';
       slot.appendChild(wrap);
     }
     return;
@@ -250,8 +255,8 @@ function renderHero(e) {
     <div class="three-way-hero">
       <div class="hero-head">
         <div>
-          <h2>Cruce de julio</h2>
-          <div class="sub">Cada peso debe aparecer en las tres fuentes. Variances se resuelven antes de cerrar.</div>
+          <h2>${t_fmt('rec.hero_title', {period: 'julio'})}</h2>
+          <div class="sub">${t('rec.hero_sub')}</div>
         </div>
       </div>
       <div class="three-way">${parts.join('')}</div>
@@ -272,11 +277,11 @@ function renderFilters(e) {
     'bank-pending': ledger.filter(r => r.status === 'bank-pending').length,
   };
   const chips = [
-    { key: 'all',          label: 'Todas' },
-    { key: 'variance',     label: 'Variance' },
-    { key: 'fe-missing',   label: 'FE faltante' },
-    { key: 'bank-pending', label: 'Banco pendiente' },
-    { key: 'ok',           label: 'OK' },
+    { key: 'all',          label: t('rec.filter_all') },
+    { key: 'variance',     label: t('rec.filter_variance') },
+    { key: 'fe-missing',   label: t('rec.filter_fe_missing') },
+    { key: 'bank-pending', label: t('rec.filter_bank_pending') },
+    { key: 'ok',           label: t('rec.filter_ok') },
   ];
   document.getElementById('ledger-filters').innerHTML = chips.map(c => `
     <div class="filter-chip ${c.key === currentLedgerFilter ? 'active' : ''}"
@@ -296,13 +301,13 @@ function renderLedger(e) {
     ? ledger
     : ledger.filter(r => r.status === currentLedgerFilter);
   const labels = {
-    ok:             'OK',
-    variance:       'Variance',
-    'fe-missing':   'FE faltante',
-    'bank-pending': 'Banco pendiente',
+    ok:             t('rec.filter_ok'),
+    variance:       t('rec.filter_variance'),
+    'fe-missing':   t('rec.filter_fe_missing'),
+    'bank-pending': t('rec.filter_bank_pending'),
   };
   document.getElementById('ledger-body').innerHTML = filtered.length === 0
-    ? `<tr><td colspan="7" style="text-align:center;color:var(--warm-gray);padding:24px;">Sin items en este filtro.</td></tr>`
+    ? `<tr><td colspan="7" style="text-align:center;color:var(--warm-gray);padding:24px;">${t('rec.empty_filter')}</td></tr>`
     : filtered.map(r => `
       <tr>
         <td class="mono" style="font-weight:600;color:var(--charcoal);">${r.res}</td>
@@ -322,22 +327,22 @@ function renderBankRecs(e) {
   document.getElementById('bank-recs').innerHTML = e.bank_recs.map(b => {
     const variance = b.variance;
     const varianceCls = variance === 0 ? '' : 'variance';
-    const varianceLabel = variance === 0 ? 'Sin diferencia' : `Diferencia ${variance.toLocaleString('es-CO')}`;
+    const varianceLabel = variance === 0 ? t('rec.bank_no_diff') : `${t('rec.bank_label_diff')} ${variance.toLocaleString('es-CO')}`;
     return `
       <div class="bank-card">
         <div class="head">
           <div class="acct">${b.account}<span class="type">· ${b.type}</span></div>
           <span class="ledger-pill ${b.status === 'ok' ? 'ok' : 'variance'}">
-            ${b.status === 'ok' ? 'CRUCE OK' : 'POR RESOLVER'}
+            ${b.status === 'ok' ? t('rec.bank_ok') : t('rec.bank_resolve')}
           </span>
         </div>
         <div class="balances">
           <div class="bal">
-            <div class="label">Saldo banco</div>
+            <div class="label">${t('rec.bank_label_saldo')}</div>
             <div class="v">${b.bank_balance.toLocaleString('es-CO')}</div>
           </div>
           <div class="bal">
-            <div class="label">Saldo libros (GL)</div>
+            <div class="label">${t('rec.bank_label_libros')}</div>
             <div class="v">${b.gl_balance.toLocaleString('es-CO')}</div>
           </div>
           <div class="bal ${varianceCls}">
@@ -346,8 +351,8 @@ function renderBankRecs(e) {
           </div>
         </div>
         <div class="footer">
-          <span>${b.items} item${b.items===1?'':'s'} sin resolver</span>
-          ${b.items > 0 ? '<span class="resolve">Resolver →</span>' : '<span style="color:var(--success);font-weight:700;">✓ Reconciliado</span>'}
+          <span>${t_fmt('rec.footer_items', {n: b.items, plural: b.items===1?'':'s'})}</span>
+          ${b.items > 0 ? `<span class="resolve">${t('rec.footer_resolve')}</span>` : `<span style="color:var(--success);font-weight:700;">${t('rec.footer_reconciled')}</span>`}
         </div>
       </div>`;
   }).join('');

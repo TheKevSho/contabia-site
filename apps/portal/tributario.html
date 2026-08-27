@@ -80,18 +80,18 @@
 
       <div class="page-head">
         <div class="title-block">
-          <h1>Tributario</h1>
+          <h1 data-i18n="trib.h1">Tributario</h1>
           <div class="meta" id="page-meta">…</div>
         </div>
         <div class="actions">
-          <button class="btn btn-secondary" onclick="alert('Paquete ZIP listo para enviar al contador.')">↓ Paquete completo</button>
+          <button class="btn btn-secondary" onclick="alert('Paquete ZIP listo para enviar al contador.')"><span data-i18n="trib.btn_paquete">↓ Paquete completo</span></button>
         </div>
       </div>
 
       <div class="alert-banner">
         <div class="alert-text">
           <div class="icon">i</div>
-          <div class="copy">El motor prepara las declaraciones; <strong>su contador las presenta en MUISCA</strong>. Borradores listos para revisión y firma.</div>
+          <div class="copy">${t('trib.alert_banner')}</div>
         </div>
       </div>
 
@@ -113,6 +113,11 @@
 <script src="js/agent-widget.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+  // Translate static data-i18n elements
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    el.textContent = t(key);
+  });
 
   if (typeof isLiveMode === 'function' && isLiveMode()) {
     const lang = (typeof currentLang === 'function' ? currentLang() : 'es');
@@ -124,8 +129,8 @@ document.addEventListener('DOMContentLoaded', () => {
       Array.from(slot.children).filter(el => el !== head).forEach(el => el.remove());
       const wrap = document.createElement('div');
       wrap.innerHTML = (typeof honestStubHtml === 'function')
-        ? honestStubHtml({ title: lang==='en' ? 'Not connected yet' : 'Aún no conectado' })
-        : '<div class="panel">Aún no conectado.</div>';
+        ? honestStubHtml({ title: t('not_wired') })
+        : '<div class="panel">' + t('not_wired') + '.</div>';
       slot.appendChild(wrap);
     }
     return;
@@ -136,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const t = e.tributario;
 
   document.getElementById('page-meta').innerHTML =
-    `${meta.name} · ${meta.period.toLowerCase()} · ${t.filings.length} declaración${t.filings.length===1?'':'es'} en preparación`;
+    `${meta.name} · ${meta.period.toLowerCase()} · ${t_fmt('trib.declaraciones', {n: t.filings.length, plural: t.filings.length===1?'':'s'})}`;
 
   document.getElementById('filings').innerHTML = t.filings.map(f => renderFiling(f)).join('');
 });
@@ -147,7 +152,7 @@ function renderFiling(f) {
       <td>${l.row}</td>
       <td>${(l.amount < 0 ? '−' : '') + 'COP ' + Math.abs(l.amount).toLocaleString('es-CO')}</td>
     </tr>`).join('');
-  const statusLabel = ({draft:'Borrador', ready:'Listo para presentar', filed:'Presentada'})[f.status] || f.status;
+  const statusLabel = ({draft: t('trib.status_draft'), ready: t('trib.status_ready'), filed: t('trib.status_filed')})[f.status] || f.status;
   return `
     <div class="filing-card">
       <div class="head">
@@ -155,22 +160,22 @@ function renderFiling(f) {
           <span class="form-tag">${f.form}</span>
           <span class="filing-status ${f.status}">${statusLabel}</span>
           <div class="name">${f.name}</div>
-          <div class="meta">Periodo ${f.period}</div>
+          <div class="meta">${t('trib.due')} ${f.period}</div>
         </div>
         <div class="head-right">
           <div class="total-amt">COP ${f.total.toLocaleString('es-CO')}</div>
-          <div class="due">Vence <strong>${f.due}</strong></div>
+          <div class="due">${t('trib.due')} <strong>${f.due}</strong></div>
         </div>
       </div>
 
       <table class="lines"><tbody>${linesHtml}</tbody></table>
 
       <div class="actions">
-        <button class="btn btn-secondary" onclick="alert('Detalle abierto (mockup).')">Ver detalle por línea</button>
-        <button class="btn btn-secondary" onclick="alert('XML/PDF descargado (mockup).')">↓ Descargar borrador</button>
+        <button class="btn btn-secondary" onclick="alert('Detalle abierto (mockup).')">${t('trib.btn_detalle')}</button>
+        <button class="btn btn-secondary" onclick="alert('XML/PDF descargado (mockup).')">${t('trib.btn_descargar')}</button>
         ${f.status === 'ready'
-          ? `<button class="btn btn-primary" onclick="alert('Marcado como presentado (simulado). Contador confirma desde MUISCA.')">Marcar presentado</button>`
-          : `<button class="btn btn-primary" onclick="alert('Recálculo solicitado (simulado).')">Solicitar recálculo</button>`}
+          ? `<button class="btn btn-primary" onclick="alert('Marcado como presentado (simulado). Contador confirma desde MUISCA.')">${t('trib.btn_marcar')}</button>`
+          : `<button class="btn btn-primary" onclick="alert('Recálculo solicitado (simulado).')">${t('trib.btn_recalculo')}</button>`}
       </div>
     </div>`;
 }
