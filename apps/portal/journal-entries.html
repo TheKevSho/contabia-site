@@ -140,9 +140,8 @@
 
 <script src="js/help.js"></script>
 <script src="js/agent-widget.js"></script>
-<script>
-let currentJEFilter = 'all';
-let liveJEData = null;   // { items, open_judgment_calls, recurring_routines, accepted_no_action }
+<script>let currentJEFilter = 'all';
+let liveJEData = null;
 let liveEntityId = null;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -189,10 +188,10 @@ function renderFilters(e) {
     blocked:  items.filter(x => x.status === 'blocked').length,
   };
   const chips = [
-    { key: 'all',      label: 'Todos' },
-    { key: 'pending',  label: 'Pendientes' },
-    { key: 'approved', label: 'Aprobados' },
-    { key: 'blocked',  label: 'Bloqueados' },
+    { key: 'all',      label: t('je.filter.todos') },
+    { key: 'pending',  label: t('je.filter.pendientes') },
+    { key: 'approved', label: t('je.filter.aprobados') },
+    { key: 'blocked',  label: t('je.filter.bloqueados') },
   ];
   document.getElementById('je-filters').innerHTML = chips.map(c => `
     <div class="filter-chip ${c.key===currentJEFilter?'active':''}"
@@ -213,7 +212,7 @@ function renderList(e) {
     : e.journalEntries.filter(x => x.status === currentJEFilter);
 
   document.getElementById('je-list').innerHTML = items.length === 0
-    ? `<div class="panel" style="text-align:center;color:var(--warm-gray);">Sin comprobantes en este filtro.</div>`
+    ? `<div class="panel" style="text-align:center;color:var(--warm-gray);">${t('je.nothing_in_filter')}</div>`
     : items.map(je => renderJE(je)).join('');
 }
 
@@ -221,7 +220,7 @@ function renderJE(je) {
   const totalDr = je.lines.reduce((s,l) => s + (l.debit  || 0), 0);
   const totalCr = je.lines.reduce((s,l) => s + (l.credit || 0), 0);
   const lines = je.lines.length === 0
-    ? `<tr><td colspan="3" style="text-align:center;color:var(--warm-gray);padding:18px;">Sin líneas (bloqueado)</td></tr>`
+    ? `<tr><td colspan="3" style="text-align:center;color:var(--warm-gray);padding:18px;">${t('je.empty_lines')}</td></tr>`
     : je.lines.map(l => `
       <tr>
         <td><span class="acc">${l.account}</span> <span style="color:var(--charcoal);">${l.name}</span></td>
@@ -229,14 +228,14 @@ function renderJE(je) {
         <td class="amt cr">${l.credit ? l.credit.toLocaleString('es-CO') : ''}</td>
       </tr>`).join('');
   const blockedNote = je.blocked_by
-    ? `<div class="je-blocked-note"><strong>Bloqueado por ${je.blocked_by.toUpperCase()}.</strong> Resolver la excepción primero.</div>`
+    ? `<div class="je-blocked-note"><strong>${t_fmt('je.blocked_by', {blocker: je.blocked_by.toUpperCase()})}</strong></div>`
     : '';
   const actions = je.status === 'approved'
-    ? `<span style="color:var(--success);font-weight:700;">✓ Aprobado · listo para postear</span>`
+    ? `<span style="color:var(--success);font-weight:700;">${t('je.approved_ready')}</span>`
     : je.status === 'blocked'
-      ? `<span style="color:var(--warning);font-weight:700;">⚠ Bloqueado</span>`
-      : `<button class="btn-reject" onclick="alert('Rechazo simulado — la excepción se devuelve a Angel.')">Rechazar</button>
-         <button class="btn-approve" onclick="alert('Aprobación simulada — el motor postea a ${e_meta('accounting_system')}.')">Aprobar</button>`;
+      ? `<span style="color:var(--warning);font-weight:700;">${t('je.blocked_status')}</span>`
+      : `<button class="btn-reject" onclick="alert(t_fmt('je.demo.rejected_alert',{}))">${t('je.demo.reject_btn')}</button>
+         <button class="btn-approve" onclick="alert(t_fmt('je.demo.approved_alert',{system:e_meta('accounting_system')}))">${t('je.demo.approve_btn')}</button>`;
   return `
     <div class="je-card">
       <div class="head">
@@ -252,14 +251,14 @@ function renderJE(je) {
       </div>
       ${blockedNote}
       <table class="je-lines">
-        <thead><tr><th>Cuenta</th><th style="text-align:right;">Débito</th><th style="text-align:right;">Crédito</th></tr></thead>
+        <thead><tr><th>${t('je.table.cuenta')}</th><th style="text-align:right;">${t('je.table.debito')}</th><th style="text-align:right;">${t('je.table.credito')}</th></tr></thead>
         <tbody>${lines}</tbody>
-        ${je.lines.length > 0 ? `<tfoot><tr><td>Total</td><td class="amt dr">${totalDr.toLocaleString('es-CO')}</td><td class="amt cr">${totalCr.toLocaleString('es-CO')}</td></tr></tfoot>` : ''}
+        ${je.lines.length > 0 ? `<tfoot><tr><td>${t('je.table.total')}</td><td class="amt dr">${totalDr.toLocaleString('es-CO')}</td><td class="amt cr">${totalCr.toLocaleString('es-CO')}</td></tr></tfoot>` : ''}
       </table>
       <div class="je-actions">
         <div class="meta">
-          <span>Confianza ${Math.round(je.ai_confidence*100)}%</span>
-          <span>Creado ${fmtDate(je.created_at)}</span>
+          <span>${t('je.confidence')} ${Math.round(je.ai_confidence*100)}%</span>
+          <span>${t('je.created')} ${fmtDate(je.created_at)}</span>
         </div>
         <div class="buttons">${actions}</div>
       </div>
@@ -267,8 +266,9 @@ function renderJE(je) {
 }
 
 function statusLabel(s) {
-  return ({pending:'Pendiente',approved:'Aprobado',rejected:'Rechazado',
-           posted:'Registrado',blocked:'Bloqueado'})[s] || s;
+  const map = {pending:'je.status.pending',approved:'je.status.approved',rejected:'je.status.rejected',
+           posted:'je.status.posted',blocked:'je.status.blocked'};
+  return map[s] ? t(map[s]) : s;
 }
 function e_meta(k) { return currentEntityData().meta[k]; }
 
@@ -279,7 +279,7 @@ function e_meta(k) { return currentEntityData().meta[k]; }
    and needs a render change, not a pure re-point.
    ============================================================ */
 async function initLivePage(entityId) {
-  document.getElementById('page-meta').textContent = 'Cargando datos reales…';
+  document.getElementById('page-meta').textContent = t('je.loading');
   try {
     const [summary, jeData] = await Promise.all([
       fetchLiveSummary(entityId),
@@ -322,7 +322,8 @@ function liveJEStatusClass(s) {
   return ({pending_edwin_approval: 'pending', approved_by_edwin: 'approved', rejected: 'rejected', disclosure_only: 'needs_info'})[s] || s;
 }
 function liveJEStatusLabel(s) {
-  return ({pending_edwin_approval: 'Pendiente (Edwin)', approved_by_edwin: 'Aprobado por Edwin', rejected: 'Rechazado', disclosure_only: 'Solo revelar'})[s] || s;
+  const map = {pending_edwin_approval: 'je.status.pending_edwin', approved_by_edwin: 'je.status.approved_edwin', rejected: 'je.status.rejected', disclosure_only: 'je.status.disclosure_only'};
+  return map[s] ? t(map[s]) : s;
 }
 
 function renderLiveFilters() {
@@ -336,11 +337,11 @@ function renderLiveFilters() {
     approved_by_edwin: items.filter(x => x.status === 'approved_by_edwin').length,
   };
   const chips = [
-    { key: 'all', label: lang==='en' ? 'All' : 'Todos' },
-    { key: 'live', label: lang==='en' ? 'July (live)' : 'Julio (vivo)' },
-    { key: 'baseline', label: lang==='en' ? 'Jan baseline' : 'Línea base ene' },
-    { key: 'pending_edwin_approval', label: lang==='en' ? 'Pending Edwin' : 'Pendientes (Edwin)' },
-    { key: 'approved_by_edwin', label: lang==='en' ? 'Approved' : 'Aprobados' },
+    { key: 'all', label: t('je.filter.todos') },
+    { key: 'live', label: t('je.filter.julio_vivo') },
+    { key: 'baseline', label: t('je.filter.linea_base_ene') },
+    { key: 'pending_edwin_approval', label: t('je.filter.pendientes_edwin') },
+    { key: 'approved_by_edwin', label: t('je.filter.aprobados_edwin') },
   ];
   document.getElementById('je-filters').innerHTML = chips.map(c => `
     <div class="filter-chip ${c.key===currentJEFilter?'active':''}"
@@ -360,21 +361,21 @@ function renderLiveInfoPanels() {
   if (d.open_judgment_calls.length) {
     parts.push(`
       <div class="live-info-panel">
-        <h3>D · Decisiones pendientes de Edwin (sin asiento todavía)</h3>
+        <h3>${t('je.panel_judgment_calls')}</h3>
         <ul>${d.open_judgment_calls.map(o => `<li><strong>${o.ref}</strong> — ${o.title} <span class="amt">(COP ${o.amount_cop.toLocaleString('es-CO')})</span> — ${o.needed}</li>`).join('')}</ul>
       </div>`);
   }
   if (d.recurring_routines.length) {
     parts.push(`
       <div class="live-info-panel">
-        <h3>E · Rutinas recurrentes a activar una vez aprobadas</h3>
+        <h3>${t('je.panel_recurring')}</h3>
         <ul>${d.recurring_routines.map(r => `<li><strong>${r.id}</strong> — ${r.description} — ${r.status}</li>`).join('')}</ul>
       </div>`);
   }
   if (d.accepted_no_action.length) {
     parts.push(`
       <div class="live-info-panel">
-        <h3>Ya aceptado, sin acción</h3>
+        <h3>${t('je.info_accepted')}</h3>
         <ul>${d.accepted_no_action.map(a => `<li>${a}</li>`).join('')}</ul>
       </div>`);
   }
@@ -395,7 +396,7 @@ function renderLiveList() {
     html += `<div class="group-heading">${JE_GROUP_LABEL[g]}</div>`;
     html += groupItems.map(je => renderLiveJECard(je)).join('');
   });
-  if (!html) html = `<div class="panel" style="text-align:center;color:var(--warm-gray);">Sin comprobantes en este filtro.</div>`;
+  if (!html) html = `<div class="panel" style="text-align:center;color:var(--warm-gray);">${t('je.nothing_in_filter')}</div>`;
 
   html += renderLiveInfoPanels();
   document.getElementById('je-list').innerHTML = html;
@@ -405,7 +406,7 @@ function renderLiveJECard(je) {
   const totalDr = je.lines.reduce((s,l) => s + (l.debit  || 0), 0);
   const totalCr = je.lines.reduce((s,l) => s + (l.credit || 0), 0);
   const lines = je.lines.length === 0
-    ? `<tr><td colspan="3" style="text-align:center;color:var(--warm-gray);padding:18px;">Sin líneas — pendiente de estructurar</td></tr>`
+    ? `<tr><td colspan="3" style="text-align:center;color:var(--warm-gray);padding:18px;">${t('je.empty_lines_live')}</td></tr>`
     : je.lines.map(l => `
       <tr>
         <td><span class="acc">${l.account}</span></td>
@@ -414,19 +415,19 @@ function renderLiveJECard(je) {
       </tr>`).join('');
 
   const linkedNote = je.linked_exceptions.length
-    ? `<div class="je-blocked-note"><strong>Excepciones vinculadas:</strong> ${je.linked_exceptions.join(', ')}</div>`
+    ? `<div class="je-blocked-note"><strong>${t('je.linked_exceptions')}</strong> ${je.linked_exceptions.join(', ')}</div>`
     : '';
 
   let actions;
   if (je.group === 'C_disclosure_only') {
-    actions = `<span style="color:var(--warm-gray);font-weight:700;">ℹ Solo revelar — no requiere aprobación ni postea</span>`;
+    actions = `<span style="color:var(--warm-gray);font-weight:700;">${t('je.disclosure_only_tag')}</span>`;
   } else if (je.status === 'approved_by_edwin') {
-    actions = `<span style="color:var(--success);font-weight:700;">✓ Aprobado por Edwin · listo para postear</span>`;
+    actions = `<span style="color:var(--success);font-weight:700;">${t('je.approved_edwin_tag')}</span>`;
   } else if (je.status === 'rejected') {
-    actions = `<span style="color:var(--critical);font-weight:700;">✕ Rechazado${je.rejection_note ? ' — ' + je.rejection_note : ''}</span>`;
+    actions = `<span style="color:var(--critical);font-weight:700;">${t('je.rejected_tag')}${je.rejection_note ? ' — ' + je.rejection_note : ''}</span>`;
   } else {
-    actions = `<button class="btn-reject" onclick="decideLiveJE('${je.id}','rejected')">Rechazar</button>
-               <button class="btn-approve" onclick="decideLiveJE('${je.id}','approved_by_edwin')">Aprobar</button>`;
+    actions = `<button class="btn-reject" onclick="decideLiveJE('${je.id}','rejected')">${t('je.reject_btn')}</button>
+               <button class="btn-approve" onclick="decideLiveJE('${je.id}','approved_by_edwin')">${t('je.approve_btn')}</button>`;
   }
 
   return `
@@ -444,12 +445,12 @@ function renderLiveJECard(je) {
       </div>
       ${linkedNote}
       <table class="je-lines">
-        <thead><tr><th>Cuenta</th><th style="text-align:right;">Débito</th><th style="text-align:right;">Crédito</th></tr></thead>
+        <thead><tr><th>${t('je.table.cuenta')}</th><th style="text-align:right;">${t('je.table.debito')}</th><th style="text-align:right;">${t('je.table.credito')}</th></tr></thead>
         <tbody>${lines}</tbody>
-        ${je.lines.length > 0 ? `<tfoot><tr><td>Total</td><td class="amt dr">${totalDr.toLocaleString('es-CO')}</td><td class="amt cr">${totalCr.toLocaleString('es-CO')}</td></tr></tfoot>` : ''}
+        ${je.lines.length > 0 ? `<tfoot><tr><td>${t('je.table.total')}</td><td class="amt dr">${totalDr.toLocaleString('es-CO')}</td><td class="amt cr">${totalCr.toLocaleString('es-CO')}</td></tr></tfoot>` : ''}
       </table>
       <div class="je-actions">
-        <div class="meta"><span>${(je.bucket === 'live' || (je.period && je.period >= '2026-07')) ? 'Cierre julio 2026 (vivo)' : 'Línea base · registro RFR enero 2026'}</span></div>
+        <div class="meta"><span>${(je.bucket === 'live' || (je.period && je.period >= '2026-07')) ? t('je.bucket_live') : t('je.bucket_baseline')}</span></div>
         <div class="buttons">${actions}</div>
       </div>
     </div>`;
@@ -458,15 +459,22 @@ function renderLiveJECard(je) {
 async function decideLiveJE(jeId, status) {
   let note = null;
   if (status === 'rejected') {
-    note = prompt('Nota de rechazo (opcional):') || null;
+    note = prompt(t('je.reject_prompt')) || null;
   }
   try {
     await patchLiveJournalEntry(liveEntityId, jeId, status, note);
     await initLivePage(liveEntityId);
   } catch (err) {
-    alert(`No se pudo guardar: ${err.message}`);
+    alert(t_fmt('je.error_save', {msg: err.message}));
   }
 }
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  document.title = t('je.page_title');
+  var h1 = document.querySelector('h1');
+  if (h1) h1.textContent = t('je.page_title');
+});
 </script>
 </body>
 </html>

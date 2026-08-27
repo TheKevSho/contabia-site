@@ -72,23 +72,23 @@
 
       <div class="page-head">
         <div class="title-block">
-          <h1>Auditoría</h1>
+          <h1 data-i18n="aud.h1">Auditoría</h1>
           <div class="meta" id="page-meta">…</div>
         </div>
         <div class="actions">
-          <button class="btn btn-secondary" onclick="alert('Paquete completo exportado (mockup) — para auditor externo o DIAN.')">↓ Exportar paquete</button>
+          <button class="btn btn-secondary" onclick="alert('Paquete completo exportado (mockup) — para auditor externo o DIAN.')"><span data-i18n="audit.export">↓ Exportar paquete</span></button>
         </div>
       </div>
 
       <div class="alert-banner">
         <div class="alert-text">
           <div class="icon">i</div>
-          <div class="copy">Cada dato del cierre tiene <strong>fuente, timestamp y hash</strong>. Esta es la trazabilidad que respalda cada cifra.</div>
+          <div class="copy" data-i18n="aud.alert_banner">Cada dato del cierre tiene <strong>fuente, timestamp y hash</strong>. Esta es la trazabilidad que respalda cada cifra.</div>
         </div>
       </div>
 
       <div class="audit-controls">
-        <input type="text" class="search-box" id="audit-search" placeholder="Buscar por descripción, fuente o hash…">
+        <input type="text" class="search-box" id="audit-search" placeholder="" data-i18n="aud.search_placeholder">
       </div>
 
       <div class="filter-chips" id="audit-filters"></div>
@@ -97,11 +97,11 @@
         <table class="audit-table">
           <thead>
             <tr>
-              <th>Timestamp</th>
-              <th>Fuente · Tipo</th>
-              <th>Descripción</th>
-              <th>Hash</th>
-              <th>Por</th>
+              <th data-i18n="aud.th_timestamp">Timestamp</th>
+              <th data-i18n="aud.th_fuente">Fuente · Tipo</th>
+              <th data-i18n="aud.th_desc">Descripción</th>
+              <th data-i18n="aud.th_hash">Hash</th>
+              <th data-i18n="aud.th_por">Por</th>
             </tr>
           </thead>
           <tbody id="audit-body"></tbody>
@@ -127,6 +127,15 @@ let currentSourceFilter = 'all';
 let currentSearch = '';
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Translate static data-i18n elements
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (el.placeholder !== undefined) {
+      el.placeholder = t(key);
+    } else {
+      el.textContent = t(key);
+    }
+  });
 
   if (typeof isLiveMode === 'function' && isLiveMode()) {
     const lang = (typeof currentLang === 'function' ? currentLang() : 'es');
@@ -138,8 +147,8 @@ document.addEventListener('DOMContentLoaded', () => {
       Array.from(slot.children).filter(el => el !== head).forEach(el => el.remove());
       const wrap = document.createElement('div');
       wrap.innerHTML = (typeof honestStubHtml === 'function')
-        ? honestStubHtml({ title: lang==='en' ? 'Not connected yet' : 'Aún no conectado' })
-        : '<div class="panel">Aún no conectado.</div>';
+        ? honestStubHtml({ title: t('not_wired') })
+        : '<div class="panel">' + t('not_wired') + '.</div>';
       slot.appendChild(wrap);
     }
     return;
@@ -149,7 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const meta = e.meta;
 
   document.getElementById('page-meta').innerHTML =
-    `${meta.name} · ${meta.period.toLowerCase()} · ${e.audit_log.length} eventos registrados`;
+    `${meta.name} · ${meta.period.toLowerCase()} · ${t_fmt('aud.eventos', {n: e.audit_log.length, plural: e.audit_log.length===1?'':'s'})}`;
 
   document.getElementById('audit-search').addEventListener('input', ev => {
     currentSearch = ev.target.value.toLowerCase();
@@ -164,7 +173,7 @@ function renderFilters(e) {
   const sources = ['all', ...new Set(e.audit_log.map(x => x.source))];
   document.getElementById('audit-filters').innerHTML = sources.map(s => {
     const count = s === 'all' ? e.audit_log.length : e.audit_log.filter(x => x.source === s).length;
-    return `<div class="filter-chip ${s===currentSourceFilter?'active':''}" onclick="setSrcFilter('${s}')">${s === 'all' ? 'Todas' : s} (${count})</div>`;
+    return `<div class="filter-chip ${s===currentSourceFilter?'active':''}" onclick="setSrcFilter('${s}')">${s === 'all' ? t('all') : s} (${count})</div>`;
   }).join('');
 }
 
@@ -187,7 +196,7 @@ function renderAuditTable(e) {
   }
 
   document.getElementById('audit-body').innerHTML = rows.length === 0
-    ? `<tr><td colspan="5" style="text-align:center;color:var(--warm-gray);padding:24px;">Sin eventos con este filtro.</td></tr>`
+    ? `<tr><td colspan="5" style="text-align:center;color:var(--warm-gray);padding:24px;">${t('aud.empty_filter')}</td></tr>`
     : rows.map(r => `
       <tr>
         <td class="ts">${r.ts}</td>
@@ -200,6 +209,11 @@ function renderAuditTable(e) {
         <td class="user">${r.user}</td>
       </tr>`).join('');
 }
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  document.title = t('page.title_auditoria');
+});
 </script>
 </body>
 </html>

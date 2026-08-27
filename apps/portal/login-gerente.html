@@ -4,22 +4,24 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%231B2A4A%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27Georgia%27 font-size=%2718%27 fill=%27%23D4704A%27 text-anchor=%27middle%27 font-weight=%27bold%27%3EC%3C/text%3E%3C/svg%3E">
-  <title>ContabIA — Iniciar sesión · Gerente</title>
+  <title id="page-title">ContabIA — Iniciar sesión · Gerente</title>
   <link rel="stylesheet" href="css/portal.css">
+  <script src="js/theme.js"></script>
+  <script src="js/i18n.js"></script>
 </head>
 <body>
 <div class="login-page">
   <div class="login-card">
     <div class="login-logo">Contab<span>IA</span></div>
-    <div class="login-tagline">Su agente cierra sus libros.</div>
-    <div class="login-role-pill">Portal del <span class="accent">Gerente</span></div>
+    <div class="login-tagline" id="login-tagline">Su agente cierra sus libros.</div>
+    <div class="login-role-pill" id="login-pill">Portal del <span class="accent">Gerente</span></div>
 
     <div class="form-group">
-      <label class="form-label">Usuario o correo</label>
+      <label class="form-label" id="login-username-label">Usuario o correo</label>
       <input type="text" id="email" class="form-input" placeholder="demo" autocomplete="username">
     </div>
     <div class="form-group">
-      <label class="form-label">Contraseña</label>
+      <label class="form-label" id="login-password-label">Contraseña</label>
       <input type="password" id="password" class="form-input" placeholder="••••••••" autocomplete="current-password" autofocus>
     </div>
 
@@ -29,15 +31,15 @@
       Iniciar sesión
     </button>
 
-    <div class="login-divider">o</div>
+    <div class="login-divider"><span id="login-divider">o</span></div>
 
-    <button class="btn btn-ghost full-w" style="padding:10px 0; font-size:14px;" onclick="alert('Reenvíe documentos a su chat personal de Hermes en WhatsApp.')">
+    <button class="btn btn-ghost full-w" style="padding:10px 0; font-size:14px;" id="login-hermes-btn" onclick="alert(t('login.hermes_alert'))">
       Chat personal de Hermes
     </button>
 
-    <div class="login-switch">
-      Soy
-      <a href="login.html">Dueño</a>·<a href="login-contador.html">Contador</a>
+    <div class="login-switch" id="login-switch">
+      <span id="login-soy">Soy</span>
+      <a href="login.html"><span class="role-accent">Dueño</span></a>·<a href="login-contador.html"><span class="role-accent">Contador</span></a>
     </div>
   </div>
 </div>
@@ -52,6 +54,22 @@
       if (e.key === 'Enter') contabiaAttemptLogin({ role: ROLE, redirect: REDIRECT });
     });
   })();
+
+  document.addEventListener('DOMContentLoaded', function() {
+    document.title = t('page.login_title_manager');
+    document.getElementById('login-tagline').textContent = t('login.tagline');
+    document.getElementById('login-pill').innerHTML = t('login.pill_manager');
+    document.getElementById('login-username-label').textContent = t('login.username_label');
+    document.getElementById('login-password-label').textContent = t('login.password_label');
+    document.getElementById('signin').textContent = t('login.signin');
+    document.getElementById('login-divider').textContent = t('login.divider');
+    document.getElementById('login-hermes-btn').textContent = t('login.hermes_chat');
+    document.getElementById('login-soy').textContent = t('login.soy');
+    var rl0 = document.querySelector('#login-switch a:nth-child(2) span');
+    var rl1 = document.querySelector('#login-switch a:nth-child(3) span');
+    if (rl0) rl0.textContent = t('login.owner');
+    if (rl1) rl1.textContent = t('login.accountant');
+  });
 </script>
 </body>
 </html>

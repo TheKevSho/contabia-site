@@ -276,8 +276,8 @@ function renderDemoBanner() {
   if (!isDemo) return '';
   return `
     <div class="demo-banner" style="background:var(--terracotta); color:var(--on-dark); font-size:13px; font-weight:600; text-align:center; padding:7px 12px; display:flex; align-items:center; justify-content:center; gap:10px;">
-      <span>Modo demostración — datos ficticios, no es una cuenta real</span>
-      <a href="#" style="color:var(--on-dark); text-decoration:underline;" onclick="exitDemo(event)">Salir de la demo</a>
+      <span>${typeof t === 'function' ? t('demo.banner') : 'Modo demostración — datos ficticios, no es una cuenta real'}</span>
+      <a href="#" style="color:var(--on-dark); text-decoration:underline;" onclick="exitDemo(event)">${typeof t === 'function' ? t('link.salir_demo') : 'Salir de la demo'}</a>
     </div>`;
 }
 function exitDemo(ev) {

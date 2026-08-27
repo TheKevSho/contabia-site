@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%231B2A4A%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27Georgia%27 font-size=%2718%27 fill=%27%23D4704A%27 text-anchor=%27middle%27 font-weight=%27bold%27%3EC%3C/text%3E%3C/svg%3E">
-  <title>ContabIA — Resumen</title>
+  <title id="page-title">ContabIA — Resumen</title>
   <link rel="stylesheet" href="css/portal.css">
   <script src="js/theme.js"></script>
 </head>
@@ -24,7 +24,7 @@
           <div class="meta" id="page-meta">…</div>
         </div>
         <div class="actions">
-          <button class="btn btn-secondary" onclick="location.reload()">↻ Actualizar</button>
+          <button class="btn btn-secondary" onclick="location.reload()" id="refresh-btn">↻ Actualizar</button>
         </div>
       </div>
 
@@ -35,7 +35,6 @@
   </main>
 </div>
 
-  
   
 
 <script src="js/data.js"></script>
@@ -60,6 +59,8 @@ document.addEventListener('DOMContentLoaded', () => {
     : (hour < 12 ? 'Buenos días' : hour < 19 ? 'Buenas tardes' : 'Buenas noches');
   const firstName = (user.name || '').split(' ')[0];
   document.getElementById('greeting').textContent = `${saludo}, ${firstName}`;
+  document.title = t('page.title_resumen');
+  document.getElementById('refresh-btn').textContent = t('refresh');
   if (typeof isLiveMode === 'function' && isLiveMode()) {
     renderLiveResumen();
   } else {
@@ -72,7 +73,7 @@ function renderDemoResumen() {
   const role = currentRole();
   const meta = e.meta;
   document.getElementById('page-meta').innerHTML =
-    `${meta.name} · ${meta.period.toLowerCase()} · procesado <strong>${meta.processed_at}</strong>`;
+    `${meta.name} · ${meta.period.toLowerCase()} · ${t_fmt('meta.procesado', { ago: `<strong>${meta.processed_at}</strong>` })}`;
   const sections = {
     alert:    sectionAlert(e),
     queue:    sectionActionQueue(e, role),
@@ -105,26 +106,23 @@ async function renderLiveResumen() {
     const openLive = (live.open_high || 0) + (live.open_medium || 0) + (live.open_low || 0);
     const jesPending = (s.nav_badges && s.nav_badges.jes) || 0;
     document.getElementById('page-meta').innerHTML =
-      `Tayrona Sailing · julio 2026 · <strong>EN CURSO</strong> · ` +
-      `<span class="live-pill" style="display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--critical);"><span class="dot" style="width:8px;height:8px;border-radius:50%;background:var(--critical);"></span>${lang==='en'?'Live data':'Datos reales'}</span>`;
+      `Tayrona Sailing · julio 2026 · <strong>${t('period_in_progress')}</strong> · ` +
+      `<span class="live-pill" style="display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--critical);"><span class="dot" style="width:8px;height:8px;border-radius:50%;background:var(--critical);"></span>${t('live_data')}</span>`;
     const alert = (openLive || jesPending) ? `
       <div class="alert-banner"><div class="alert-text"><div class="icon">!</div>
-        <div class="copy"><strong>${lang==='en' ? 'July 2026 close in progress.' : 'Cierre de julio 2026 en curso.'}</strong>
-        ${lang==='en'
-          ? `${openLive} open July exceptions · ${jesPending} July journal entries waiting on Edwin. Nothing posted (DRY_RUN).`
-          : `${openLive} excepciones de julio abiertas · ${jesPending} comprobantes de julio esperan a Edwin. Nada posteado (DRY_RUN).`}
-        <a href="exceptions.html">${lang==='en'?'See exceptions →':'Ver pendientes →'}</a></div></div></div>` : '';
+        <div class="copy"><strong>${t_fmt('alert.close_in_progress', { period: 'julio 2026', crit: openLive, plural: openLive === 1 ? '' : 'es', plural2: openLive === 1 ? '' : 's', jes: jesPending, s_jes: jesPending === 1 ? '' : 's' })}</strong>
+        <a href="exceptions.html">${t('link.ver_pendientes')}</a></div></div></div>` : '';
     const buckets = ing.sales_by_bucket || {};
     const bank = ing.bank_bancolombia_001780 || {};
     const cifras = `
-      <div class="section-label">${lang==='en' ? 'July figures (live Alegra / bank)' : 'Cifras de julio (Alegra / banco en vivo)'}</div>
+      <div class="section-label">${lang === 'en' ? 'July figures (live Alegra / bank)' : 'Cifras de julio (Alegra / banco en vivo)'}</div>
       <div class="cifras-grid">
         <div class="number-tile feature hero-money">
-          <div class="tile-label">${lang==='en' ? 'July sales (Alegra)' : 'Ventas de julio (Alegra)'}</div>
+          <div class="tile-label">${lang === 'en' ? 'July sales (Alegra)' : 'Ventas de julio (Alegra)'}</div>
           <div class="tile-value"><span class="currency">COP</span>${Number(ing.sales_total_cop||0).toLocaleString('es-CO')}</div>
-          <div class="hero-sub">${ing.invoices_count||0} ${lang==='en'?'invoices':'facturas'} · AR ${fmtCopSafe(ing.open_ar_cop)}</div>
+          <div class="hero-sub">${ing.invoices_count||0} ${lang === 'en' ? 'invoices' : 'facturas'} · AR ${fmtCopSafe(ing.open_ar_cop)}</div>
           <div class="tile-breakdown">
-            <div class="row"><span>${lang==='en'?'Named clients':'Clientes con nombre'}</span><span class="v">${fmtCopSafe(buckets.named_clients)}</span></div>
+            <div class="row"><span>${lang === 'en' ? 'Named clients' : 'Clientes con nombre'}</span><span class="v">${fmtCopSafe(buckets.named_clients)}</span></div>
             <div class="row"><span>Consumidor final</span><span class="v">${fmtCopSafe(buckets.consumidor_final)}</span></div>
             <div class="row"><span>GetYourGuide</span><span class="v">${fmtCopSafe(buckets.gyg)}</span></div>
             <div class="row"><span>Viator</span><span class="v">${fmtCopSafe(buckets.viator)}</span></div>
@@ -132,46 +130,46 @@ async function renderLiveResumen() {
         </div>
         <div class="cifras-stack">
           <div class="number-tile sec-tile">
-            <div class="tile-label">${lang==='en' ? 'Open July exceptions' : 'Excepciones de julio abiertas'}</div>
+            <div class="tile-label">${lang === 'en' ? 'Open July exceptions' : 'Excepciones de julio abiertas'}</div>
             <div class="tile-value">${openLive}</div>
-            <div class="sec-sub">${live.open_high||0} ${lang==='en'?'high':'altas'} · ${live.closed||0} ${lang==='en'?'closed':'cerradas'}</div>
-            <div class="footer-link" onclick="location.href='exceptions.html'">${lang==='en'?'Open queue →':'Abrir cola →'}</div>
+            <div class="sec-sub">${live.open_high||0} ${lang === 'en' ? 'high' : 'altas'} · ${live.closed||0} ${lang === 'en' ? 'closed' : 'cerradas'}</div>
+            <div class="footer-link" onclick="location.href='exceptions.html'">${lang === 'en' ? 'Open queue →' : 'Abrir cola →'}</div>
           </div>
           <div class="number-tile sec-tile">
             <div class="tile-label">Bancolombia #001780</div>
             <div class="tile-value" style="font-size:22px;">${fmtCopSafe(bank.closing)}</div>
-            <div class="sec-sub">${lang==='en'?'Closing July':'Cierre julio'}</div>
-            <div class="footer-link">${lang==='en'?'AP open':'CxP abiertas'} ${fmtCopSafe(ing.open_ap_cop)}</div>
+            <div class="sec-sub">${lang === 'en' ? 'Closing July' : 'Cierre julio'}</div>
+            <div class="footer-link">${lang === 'en' ? 'AP open' : 'CxP abiertas'} ${fmtCopSafe(ing.open_ap_cop)}</div>
           </div>
         </div>
       </div>`;
     const queue = `
-      <div class="section-label">${lang==='en' ? 'Do now' : 'Hacer ahora'}</div>
+      <div class="section-label">${lang === 'en' ? 'Do now' : 'Hacer ahora'}</div>
       <div class="action-grid">
         <div class="action-card urgent" onclick="location.href='exceptions.html'">
-          <div class="label urgent">${lang==='en'?'Queue':'En cola'}</div>
-          <div class="title">${lang==='en' ? `Review ${openLive} July exceptions` : `Revisar ${openLive} excepciones de julio`}</div>
-          <div class="cta">${lang==='en'?'Open →':'Abrir →'}</div>
+          <div class="label urgent">${lang === 'en' ? 'Queue' : 'En cola'}</div>
+          <div class="title">${lang === 'en' ? `Review ${openLive} July exceptions` : `Revisar ${openLive} excepciones de julio`}</div>
+          <div class="cta">${t('cta.abrir_cola')}</div>
         </div>
         <div class="action-card" onclick="location.href='journal-entries.html'">
-          <div class="label">${lang==='en'?'Approve':'Por aprobar'}</div>
-          <div class="title">${lang==='en' ? `${jesPending} July JEs waiting on Edwin` : `${jesPending} JEs de julio esperan a Edwin`}</div>
+          <div class="label">${t('queue.por_aprobar')}</div>
+          <div class="title">${lang === 'en' ? `${jesPending} July JEs waiting on Edwin` : `${jesPending} JEs de julio esperan a Edwin`}</div>
           <div class="meta">R-11-JUL · R-11-CATCHUP · R-14-JUL · AJ-J07-01 · AJ-J06-REVERSE</div>
-          <div class="cta">${lang==='en'?'Review JEs →':'Revisar JEs →'}</div>
+          <div class="cta">${t('cta.revisar_jes')}</div>
         </div>
         <div class="action-card routine" onclick="location.href='chat.html'">
-          <div class="label">${lang==='en'?'Agent':'Agente'}</div>
-          <div class="title">${lang==='en' ? 'Talk to Hermes (Tayrona)' : 'Hablar con Hermes (Tayrona)'}</div>
-          <div class="meta">${lang==='en' ? 'Forward files on personal WhatsApp self-chat.' : 'Reenvíe archivos por WhatsApp personal (self-chat).'}</div>
-          <div class="cta">${lang==='en'?'Open chat →':'Abrir chat →'}</div>
+          <div class="label">${lang === 'en' ? 'Agent' : 'Agente'}</div>
+          <div class="title">${lang === 'en' ? 'Talk to Hermes (Tayrona)' : 'Hablar con Hermes (Tayrona)'}</div>
+          <div class="meta">${lang === 'en' ? 'Forward files on personal WhatsApp self-chat.' : 'Reenvíe archivos por WhatsApp personal (self-chat).'}</div>
+          <div class="cta">${lang === 'en' ? 'Open chat →' : 'Abrir chat →'}</div>
         </div>
       </div>`;
-    const note = `<div class="panel" style="padding:16px 18px;font-size:13.5px;line-height:1.6;color:var(--charcoal);">${lang==='en'
+    const note = `<div class="panel" style="padding:16px 18px;font-size:13.5px;line-height:1.6;color:var(--charcoal);">${lang === 'en'
       ? `FH vs Alegra 82% gap was retracted (EX-J07-14 closed). Cantamar is not on this account. Baseline Jan–Jun: ${base.total||0} historical rows.`
       : `La brecha FH–Alegra del 82% fue retractada (EX-J07-14 cerrada). Cantamar no está en esta cuenta. Línea base ene–jun: ${base.total||0} filas históricas.`}</div>`;
     document.getElementById('resumen-sections').innerHTML = alert + cifras + queue + note;
   } catch (err) {
-    document.getElementById('resumen-sections').innerHTML = `<div class="alert-banner crit"><div class="alert-text"><div class="icon">!</div><div class="copy"><strong>${lang==='en'?'Could not load live summary.':'No se pudo cargar el resumen en vivo.'}</strong> ${err.message}</div></div></div>`;
+    document.getElementById('resumen-sections').innerHTML = `<div class="alert-banner crit"><div class="alert-text"><div class="icon">!</div><div class="copy"><strong>${lang === 'en' ? 'Could not load live summary.' : 'No se pudo cargar el resumen en vivo.'}</strong> ${err.message}</div></div></div>`;
   }
 }
 
@@ -187,26 +185,31 @@ function sectionAlert(e) {
       <div class="alert-text">
         <div class="icon">!</div>
         <div class="copy">
-          <strong>Cierre de ${e.meta.period.toLowerCase()} en curso.</strong>
-          ${cs.open_critical} excepción${cs.open_critical===1?'':'es'} crítica${cs.open_critical===1?'':'s'}
-          y ${cs.jes_pending} comprobante${cs.jes_pending===1?'':'s'} esperan aprobación antes de cerrar el mes.
-          <a href="exceptions.html">Ver pendientes →</a>
+          <strong>${t_fmt('alert.close_in_progress', {
+            period: e.meta.period.toLowerCase(),
+            crit: cs.open_critical,
+            plural: cs.open_critical === 1 ? '' : 'es',
+            plural2: cs.open_critical === 1 ? '' : 's',
+            jes: cs.jes_pending,
+            s_jes: cs.jes_pending === 1 ? '' : 's'
+          })}</strong>
+          <a href="exceptions.html">${t('link.ver_pendientes')}</a>
         </div>
       </div>
-      <a class="snooze" onclick="snoozeBanner(this)">recordar mañana</a>
+      <a class="snooze" onclick="snoozeBanner(this)">${t('link.recordar_manana')}</a>
     </div>`;
 }
 
 function sectionActionQueue(e, role) {
   const queue = actionQueue();
-  const label = role === 'accountant' ? 'Tu cola' : 'Hacer ahora';
+  const label = role === 'accountant' ? t('section.tu_cola') : t('section.hacer_ahora');
   const cards = queue.map(a => `
     <div class="action-card ${a.accent}" onclick="location.href='${a.href}'">
-      <div class="label ${a.label_class}">${a.label}</div>
-      <div class="title">${a.title}</div>
+      <div class="label ${a.label_class}">${a.t_label ? t(a.t_label) : a.label}</div>
+      <div class="title">${a.t_title ? t(a.t_title) : a.title}</div>
       ${a.amount ? `<div class="amount">${a.amount}</div>` : ''}
-      <div class="meta">${a.meta}</div>
-      <div class="cta">${a.cta}</div>
+      <div class="meta">${a.t_meta ? t(a.t_meta) : a.meta}</div>
+      <div class="cta">${a.t_cta ? t(a.t_cta) : a.cta}</div>
     </div>`).join('');
   return `
     <div class="section-label">${label}</div>
@@ -220,19 +223,19 @@ function sectionEstadoCierre(e) {
     return `
       <div class="step">
         <div class="icon ${s.status}">${icon}</div>
-        <div class="name">${s.name}</div>
+        <div class="name">${t('closeSteps.' + s.name)}</div>
         <div class="sub">${s.sub}</div>
       </div>`;
   }).join('');
   return `
-    <div class="section-label">Estado del cierre</div>
+    <div class="section-label">${t('section.estado_cierre')}</div>
     <div class="close-strip">
       <div class="header">
         <div class="title-row">
           <div class="month">${e.meta.period}</div>
-          <div class="pct">${cs.pct}% completo</div>
+          <div class="pct">${t_fmt('close_status.completo', { pct: cs.pct })}</div>
         </div>
-        <div class="eta">Listo para entregar el <strong>${cs.eta}</strong></div>
+        <div class="eta">${t('close_status.eta')} <strong>${cs.eta}</strong></div>
       </div>
       <div class="progress-track">
         <div class="progress-fill" style="width:${cs.pct}%"></div>
@@ -246,40 +249,47 @@ function sectionCifras(e) {
   const plata = c.plata_en_riesgo;
   const plataHtml = `
     <div class="number-tile feature hero-money">
-      <div class="tile-label">Plata en riesgo este mes</div>
+      <div class="tile-label">${t('cifras.plata_riesgo')}</div>
       <div class="tile-value"><span class="currency">COP</span>${plata.total.toLocaleString('es-CO')}</div>
-      <div class="hero-sub">Lo que cuesta no actuar antes de cerrar marzo</div>
+      <div class="hero-sub">${t('cifras.plata_riesgo_sub')}</div>
       <div class="tile-breakdown">
-        ${plata.breakdown.map(b => `
-          <div class="row"><span>${b.label}</span><span class="v">${b.value.toLocaleString('es-CO')}</span></div>
-        `).join('')}
+        ${plata.breakdown.map(b => {
+          const tKey = b.t_key || '';
+          const label = tKey ? t_fmt(tKey, { n: b.n || '' }) : b.label;
+          return `<div class="row"><span>${label}</span><span class="v">${b.value.toLocaleString('es-CO')}</span></div>`;
+        }).join('')}
       </div>
-      <div class="hero-cta" onclick="location.href='exceptions.html'">Resolver las brechas <span class="mono">→</span></div>
-      <div class="hero-caption">Toque cualquier cifra para ver el cálculo y el documento que la respalda.</div>
+      <div class="hero-cta" onclick="location.href='exceptions.html'">${t('link.resolver_brechas')} <span class="mono">→</span></div>
+      <div class="hero-caption">${t('cifras.toque_cifra')}</div>
     </div>`;
   const recu = c.recuperacion;
-  const recuLabelsJoined = recu.breakdown.map(b => b.label).join(' + ');
+  const recuLabelsJoined = recu.breakdown.map(b => {
+    const tKey = b.t_key || '';
+    return tKey ? t(tKey) : b.label;
+  }).join(' + ');
   const recuHtml = `
     <div class="number-tile sec-tile">
-      <div class="tile-label">Recuperación tributaria</div>
+      <div class="tile-label">${t('cifras.recuperacion')}</div>
       <div class="tile-value accent">+COP ${recu.total.toLocaleString('es-CO')}</div>
       <div class="sec-sub">${recuLabelsJoined}</div>
-      <div class="footer-link" onclick="location.href='tributario.html'">Ver detalle →</div>
+      <div class="footer-link" onclick="location.href='tributario.html'">${t('link.ver_detalle')}</div>
     </div>`;
   const k = c.kpi_usali;
   const kpiHtml = `
     <div class="number-tile sec-tile">
-      <div class="tile-label">${k.primary_label}</div>
+      <div class="tile-label">${t('cifras.operacion_gop')}</div>
       <div class="tile-value">${k.primary_value}<span class="currency" style="font-size:24px;margin-left:2px">${k.primary_unit}</span></div>
       <div class="kpi-inline">
-        ${k.breakdown.map(b => `
-          <div class="kpi-chip"><div class="k">${b.label}</div><div class="v">${b.value}</div></div>
-        `).join('')}
+        ${k.breakdown.map(b => {
+          const tKey = b.t_key || '';
+          const label = tKey ? t(tKey) : b.label;
+          return `<div class="kpi-chip"><div class="k">${label}</div><div class="v">${b.value}</div></div>`;
+        }).join('')}
       </div>
-      <div class="footer-link">Ver KPIs operativos →</div>
+      <div class="footer-link">${t('link.ver_kpis')}</div>
     </div>`;
   return `
-    <div class="section-label">Cifras del mes</div>
+    <div class="section-label">${t('section.cifras_mes')}</div>
     <div class="cifras-grid">
       ${plataHtml}
       <div class="cifras-stack">${recuHtml}${kpiHtml}</div>
@@ -294,13 +304,13 @@ function sectionDetalle(e) {
         <div class="desc">${t.desc}</div>
       </div>
       <div class="amount ${t.amount_class}">${t.amount}</div>
-      <div class="status ${t.status}">${t.status_label}</div>
+      <div class="status ${t.status}">${t.t_status ? t('tax_status.' + t.t_status) : t.status_label}</div>
     </div>`).join('');
   const taxPanel = `
     <div class="panel">
       <div class="panel-header">
-        <h3>Resumen tributario</h3>
-        <a class="more" onclick="location.href='tributario.html'">Ver Tributario →</a>
+        <h3>${t('panel.resumen_tributario')}</h3>
+        <a class="more" onclick="location.href='tributario.html'">${t('link.ver_tributario')}</a>
       </div>
       <div class="tax-table">${taxRows}</div>
     </div>`;
@@ -314,41 +324,41 @@ function sectionDetalle(e) {
   const otaPanel = `
     <div class="panel">
       <div class="panel-header">
-        <h3>OTAs del mes</h3>
-        <a class="more" onclick="location.href='reconciliacion.html'">Ver Reconciliación →</a>
+        <h3>${t('panel.otas_mes')}</h3>
+        <a class="more" onclick="location.href='reconciliacion.html'">${t('link.ver_reconciliacion')}</a>
       </div>
       <div class="ota-list">${otaRows}</div>
     </div>`;
   return `
-    <div class="section-label">Detalle del mes</div>
+    <div class="section-label">${t('section.detalle_mes')}</div>
     <div class="two-col" style="margin-bottom:14px;">${taxPanel}${otaPanel}</div>`;
 }
 
 function sectionRecAndRisk(e) {
-  const t = e.three_way_rec;
+  const t_way = e.three_way_rec;
   const parts = [];
-  t.legs.forEach((l, i) => {
+  t_way.legs.forEach((l, i) => {
     parts.push(`
       <div class="three-way-leg">
         <div class="leg-label">${l.label}</div>
         <div class="leg-value">${l.value.toLocaleString('es-CO')}</div>
         <div class="leg-source">${l.source}</div>
       </div>`);
-    if (i < t.legs.length - 1) {
-      const a = t.arrows[i] || 'ok';
+    if (i < t_way.legs.length - 1) {
+      const a = t_way.arrows[i] || 'ok';
       parts.push(`<div class="three-way-arrow ${a==='ok'?'':a}">→</div>`);
     }
   });
   const recPanel = `
     <div class="panel">
       <div class="panel-header">
-        <h3>Conciliación 3 vías</h3>
-        <a class="more" onclick="location.href='reconciliacion.html'">Ver Reconciliación →</a>
+        <h3>${t('panel.conciliacion_3vias')}</h3>
+        <a class="more" onclick="location.href='reconciliacion.html'">${t('link.ver_reconciliacion')}</a>
       </div>
       <div class="three-way">${parts.join('')}</div>
-      <div class="three-way-status ${t.status}">
-        <span>${t.message}</span>
-        <span style="font-weight:700;cursor:pointer" onclick="location.href='reconciliacion.html'">${t.cta}</span>
+      <div class="three-way-status ${t_way.status}">
+        <span>${t_way.message}</span>
+        <span style="font-weight:700;cursor:pointer" onclick="location.href='reconciliacion.html'">${t_way.cta}</span>
       </div>
     </div>`;
   const riskRows = e.plata_en_riesgo_detalle.map(r => `
@@ -359,14 +369,14 @@ function sectionRecAndRisk(e) {
       </div>
       <div class="right">
         <div class="amt">${typeof r.amt === 'number' ? 'COP ' + r.amt.toLocaleString('es-CO') : r.amt}</div>
-        <div class="ct">${r.ct}</div>
+        <div class="ct">${r.t_ct ? t(r.t_ct) : r.ct}</div>
       </div>
     </div>`).join('');
   const riskPanel = `
     <div class="panel">
       <div class="panel-header">
-        <h3>Plata en riesgo · detalle</h3>
-        <a class="more" onclick="location.href='exceptions.html'">Resolver todo →</a>
+        <h3>${t('panel.plata_riesgo_detalle')}</h3>
+        <a class="more" onclick="location.href='exceptions.html'">${t('link.resolver_todo')}</a>
       </div>
       <div class="risk-list">${riskRows}</div>
     </div>`;
@@ -378,10 +388,10 @@ function sectionActivity(e) {
     <div class="activity-row">
       <div class="time">${a.time}</div>
       <div class="desc">${a.desc}</div>
-      <div class="pill ${a.pill}">${a.pill_label}</div>
+      <div class="pill ${a.pill}">${a.t_pill ? t('activity.' + a.t_pill) : a.pill_label}</div>
     </div>`).join('');
   return `
-    <div class="section-label">Actividad reciente del agente</div>
+    <div class="section-label">${t('section.actividad_reciente')}</div>
     <div class="activity">${rows}</div>`;
 }
 
