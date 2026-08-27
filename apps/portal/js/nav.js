@@ -29,13 +29,23 @@ const ENTITY_LOGOS = {
    labelled as such so "JUNIO 2026" can't be misread as "already closed".
    Source of truth: DATA.entities_meta[].close_status. */
 function openPeriodLabel(meta) {
-  const row = (typeof DATA !== 'undefined' && DATA.entities_meta || [])
-    .find(e => e.id === meta.id);
-  const status = (row && row.close_status) || 'in_progress';
-  const suffix = status === 'closed' ? 'CERRADO'
-               : status === 'in_review' ? 'EN REVISIÓN'
-               : 'EN CURSO';
-  return `${meta.period.toUpperCase()} · ${suffix}`;
+  const live = (typeof isLiveMode === 'function' && isLiveMode() && window.__liveSummary);
+  const status = (live && live.meta && live.meta.close_status)
+    || meta.close_status
+    || ((typeof DATA !== 'undefined' && DATA.entities_meta || []).find(e => e.id === meta.id) || {}).close_status
+    || 'in_progress';
+  const suffix = status === 'closed'
+    ? (typeof t === 'function' ? t('period_closed') : 'CERRADO')
+    : status === 'in_review'
+      ? (typeof t === 'function' ? t('period_review') : 'EN REVISIÓN')
+      : (typeof t === 'function' ? t('period_in_progress') : 'EN CURSO');
+  const period = (live && live.closeSummary && live.closeSummary.period)
+    ? String(live.closeSummary.period)
+    : (meta.period || '');
+  const pretty = period.length === 7
+    ? ({ '2026-07': 'JULIO 2026', '2026-06': 'JUNIO 2026' }[period] || period.toUpperCase())
+    : period.toUpperCase();
+  return `${pretty} · ${suffix}`;
 }
 
 function entityLogoHtml(meta, sizeClass) {
@@ -117,7 +127,8 @@ function renderSidebar(activeHref) {
      from under in-flight clicks). See onSidebarMouseEnter/Leave. */
 
   /* nav sections, role-filtered */
-  const navHtml = NAV_MODEL.map(sec => {
+  const model = (typeof liveNavFilter === 'function') ? liveNavFilter(NAV_MODEL) : NAV_MODEL;
+  const navHtml = model.map(sec => {
     const items = sec.items.filter(i => i.roles.includes(role));
     if (items.length === 0) return '';
     const itemsHtml = items.map(i => {
@@ -127,9 +138,11 @@ function renderSidebar(activeHref) {
         const cls = i.badgeClass ? ` ${i.badgeClass}` : '';
         badge = `<span class="nav-badge${cls}">${badges[i.badge]}</span>`;
       }
-      return `<a href="${i.href}" class="nav-item${active}" title="${i.label}"><span class="item-main"><span class="glyph">${i.glyph || '·'}</span><span class="label">${i.label}</span></span>${badge}</a>`;
+      const label = (typeof navLabel === 'function') ? navLabel(i.id, i.label) : i.label;
+      return `<a href="${i.href}" class="nav-item${active}" title="${label}"><span class="item-main"><span class="glyph">${i.glyph || '·'}</span><span class="label">${label}</span></span>${badge}</a>`;
     }).join('');
-    return `<div class="nav-section-label">${sec.section}</div>${itemsHtml}`;
+    const sectionLabel = (typeof navLabel === 'function') ? navLabel(sec.section, sec.section) : sec.section;
+    return `<div class="nav-section-label">${sectionLabel}</div>${itemsHtml}`;
   }).join('');
 
   /* entity dropdown (expanded only) */
@@ -156,7 +169,7 @@ function renderSidebar(activeHref) {
         <div class="es-row" onclick="toggleEntityDropdown(event)">
           <div class="es-logo-wrap">${entityLogoHtml(meta, 'es-logo')}</div>
           <div class="es-text">
-            <div class="label">Entidad activa</div>
+            <div class="label">${typeof t === 'function' ? t('entity_active') : 'Entidad activa'}</div>
             <div class="name"><span class="name-text" title="${meta.name}">${meta.name}</span></div>
           </div>
           <span class="chevron">▾</span>
@@ -170,8 +183,8 @@ function renderSidebar(activeHref) {
   const footerMeta = `
     <div class="meta">
       <div class="name">${user.name}</div>
-      <div class="role">${ROLE_LABELS[role]} · ${meta.name.split(' ')[0]}</div>
-      <a href="login.html" class="signout" onclick="signOut(event)">Cerrar sesión</a>
+      <div class="role">${(typeof t === 'function' ? ((t('role') || {})[role] || ROLE_LABELS[role]) : ROLE_LABELS[role])} · ${meta.name.split(' ')[0]}</div>
+      <a href="login.html" class="signout" onclick="signOut(event)">${typeof t === 'function' ? t('signout') : 'Cerrar sesión'}</a>
     </div>`;
 
   return `
@@ -218,7 +231,11 @@ function renderTopbar() {
   const issues = e.connectors.filter(c => c.status !== 'ok').length;
   const pillDot   = worst === 'fail' ? 'var(--critical)' : worst === 'warn' ? 'var(--warning)' : 'var(--success)';
   const pillHalo  = worst === 'fail' ? 'rgba(196,74,58,.22)' : worst === 'warn' ? 'rgba(212,160,74,.25)' : 'rgba(74,139,111,.22)';
-  const pillLabel = issues ? (issues + (issues === 1 ? ' conector con aviso' : ' conectores con aviso')) : 'Todo conectado';
+  const pillLabel = issues
+    ? (issues + (issues === 1
+        ? (typeof t === 'function' ? t('connectors_warn_one') : ' conector con aviso')
+        : (typeof t === 'function' ? t('connectors_warn_many') : ' conectores con aviso')))
+    : (typeof t === 'function' ? t('connectors_ok') : 'Todo conectado');
 
   const connRows = e.connectors.map(c => {
     const dot = c.status === 'ok' ? 'var(--success)' : c.status === 'warn' ? 'var(--warning)' : 'var(--critical)';
@@ -378,15 +395,13 @@ function toggleLang() {
   const cur = currentLang();
   const next = cur === 'es' ? 'en' : 'es';
   sessionStorage.setItem('contabia_lang', next);
-  /* EN is UI-only; data stays Spanish. v1: visual feedback only. */
-  const topbarMount = document.getElementById('topbar-mount');
-  if (topbarMount) topbarMount.innerHTML = renderDemoBanner() + renderTopbar();
+  location.reload();
 }
 function signOut(ev) {
   ev.preventDefault();
-  sessionStorage.removeItem('contabia_auth');
-  sessionStorage.removeItem('contabia_role');
-  sessionStorage.removeItem('contabia_entity');
+  ['contabia_auth','contabia_role','contabia_entity','contabia_demo',
+   'contabia_live','contabia_api_token','contabia_user','contabia_chat_session']
+    .forEach(k => sessionStorage.removeItem(k));
   location.href = 'login.html';
 }
 
@@ -394,6 +409,15 @@ function signOut(ev) {
    Auto-inject + mobile hamburger
    ------------------------------------------------------------ */
 document.addEventListener('DOMContentLoaded', () => {
+  const go = () => mountShell();
+  if (typeof isLiveMode === 'function' && isLiveMode() && typeof fetchAndCacheLiveSummary === 'function') {
+    fetchAndCacheLiveSummary().then(go).catch(go);
+  } else {
+    go();
+  }
+});
+
+function mountShell() {
   const sidebarMount = document.getElementById('sidebar-mount');
   const topbarMount  = document.getElementById('topbar-mount');
   if (!sidebarMount) return;
@@ -457,5 +481,4 @@ document.addEventListener('DOMContentLoaded', () => {
       closeAppearancePopover();
     }
   });
-
-});
+}

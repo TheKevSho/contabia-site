@@ -31,6 +31,8 @@ JOURNAL_ENTRIES = [
         ),
         "linked_exceptions": ["EX-9.2"],
         "status": "pending_edwin_approval",
+        "period": "2026-01",
+        "bucket": "baseline",
     },
     {
         "id": "AJ-06",
@@ -48,6 +50,8 @@ JOURNAL_ENTRIES = [
         ),
         "linked_exceptions": ["EX-6.3", "EX-8.2"],
         "status": "pending_edwin_approval",
+        "period": "2026-01",
+        "bucket": "baseline",
     },
     {
         "id": "RECLASS-FAREHARBOR",
@@ -60,6 +64,8 @@ JOURNAL_ENTRIES = [
         "basis": "FareHarbor's contra-entry landed in Efectivo POS Cortesia by mistake.",
         "linked_exceptions": ["EX-8.4"],
         "status": "pending_edwin_approval",
+        "period": "2026-01",
+        "bucket": "baseline",
     },
     {
         "id": "RECLASS-1305",
@@ -75,6 +81,8 @@ JOURNAL_ENTRIES = [
         ),
         "linked_exceptions": ["EX-4.6"],
         "status": "pending_edwin_approval",
+        "period": "2026-01",
+        "bucket": "baseline",
     },
     {
         "id": "AJ-N3",
@@ -91,6 +99,8 @@ JOURNAL_ENTRIES = [
         ),
         "linked_exceptions": ["EX-9.6"],
         "status": "pending_edwin_approval",
+        "period": "2026-01",
+        "bucket": "baseline",
     },
     {
         "id": "AJ-03-AJV1",
@@ -105,6 +115,8 @@ JOURNAL_ENTRIES = [
         ),
         "linked_exceptions": ["EX-5.6", "EX-12.6"],
         "status": "pending_edwin_approval",
+        "period": "2026-01",
+        "bucket": "baseline",
     },
     {
         "id": "AJ-01-02",
@@ -118,6 +130,8 @@ JOURNAL_ENTRIES = [
         ),
         "linked_exceptions": ["EX-5.1", "EX-5.2", "EX-10.1"],
         "status": "pending_edwin_approval",
+        "period": "2026-01",
+        "bucket": "baseline",
     },
     {
         "id": "AJ-07-R11",
@@ -132,6 +146,8 @@ JOURNAL_ENTRIES = [
         ),
         "linked_exceptions": ["EX-12.2", "EX-14.1"],
         "status": "pending_edwin_approval",
+        "period": "2026-01",
+        "bucket": "baseline",
     },
     {
         "id": "CONTINGENCY-BONUSES",
@@ -147,6 +163,8 @@ JOURNAL_ENTRIES = [
         ),
         "linked_exceptions": ["EX-9.4", "EX-11.1"],
         "status": "disclosure_only",
+        "period": "2026-01",
+        "bucket": "baseline",
     },
     {
         "id": "CONTINGENCY-ART35",
@@ -160,6 +178,8 @@ JOURNAL_ENTRIES = [
         ),
         "linked_exceptions": ["EX-12.3"],
         "status": "disclosure_only",
+        "period": "2026-01",
+        "bucket": "baseline",
     },
 ]
 
@@ -218,6 +238,8 @@ JOURNAL_ENTRIES += [
         "basis": "Asset register monthly = COP 1,038,987. Edwin posted this exact amount Feb–May; skipped Jan+Jun (catch-up is R-11-CATCHUP) and has not posted July.",
         "linked_exceptions": ["EX-J07-10"],
         "status": "pending_edwin_approval",
+        "period": "2026-07",
+        "bucket": "live",
     },
     {
         "id": "R-11-CATCHUP",
@@ -231,6 +253,8 @@ JOURNAL_ENTRIES += [
         "basis": "Edwin skipped Jan+Jun on the 43-asset register. Anna Leeza (COP 60M, 5% SL = 250k/mo) has never been depreciated; 30 months Jan 2024–Jun 2026 = 7.5M. Going forward add 250k to monthly R-11.",
         "linked_exceptions": ["EX-J07-10", "EX-J07-13"],
         "status": "pending_edwin_approval",
+        "period": "2026-07",
+        "bucket": "live",
     },
     {
         "id": "R-14-JUL",
@@ -243,6 +267,8 @@ JOURNAL_ENTRIES += [
         "basis": "Bancolombia 7810099111 interest 1,335,748 + BBVA 9638124968 interest 2,213,541. Edwin has not posted July interest.",
         "linked_exceptions": ["EX-J07-10"],
         "status": "pending_edwin_approval",
+        "period": "2026-07",
+        "bucket": "live",
     },
     {
         "id": "AJ-J07-01",
@@ -255,6 +281,8 @@ JOURNAL_ENTRIES += [
         "basis": "Pablo Alonso 4,250,000 (Sonata 11 Aug + DragonLady 14 Aug 50%) + Camilo Mendoza 1,350,000 (16 Aug Anna Leeza 50%). Datáfono POS 3,541,500 stays in July revenue.",
         "linked_exceptions": ["EX-J07-12"],
         "status": "pending_edwin_approval",
+        "period": "2026-07",
+        "bucket": "live",
     },
     {
         "id": "AJ-J06-REVERSE",
@@ -267,6 +295,8 @@ JOURNAL_ENTRIES += [
         "basis": "Standing motor rule: every channel, bidirectional. Five June link-pago items totaling COP 3,641,000 whose voyages rendered in July.",
         "linked_exceptions": ["EX-J07-12"],
         "status": "pending_edwin_approval",
+        "period": "2026-07",
+        "bucket": "live",
     },
 ]
 

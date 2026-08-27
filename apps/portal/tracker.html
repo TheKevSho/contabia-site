@@ -122,13 +122,22 @@
   </main>
 </div>
 
+  
+
 <script src="js/data.js"></script>
-  <script src="js/nav.js"></script>
+<script src="js/sonata-live.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/live-shell.js"></script>
+<script src="js/nav.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/help.js"></script>
 <script src="js/agent-widget.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+  if (typeof isLiveMode === 'function' && isLiveMode()) {
+    renderLiveTracker();
+    return;
+  }
   const e = currentEntityData();
   const meta = e.meta;
 
@@ -290,6 +299,58 @@ function renderYearTable(e) {
       <td class="text-right mono" style="color:var(--success);">+COP ${totalRecovery.toLocaleString('es-CO')}</td>
       <td></td>
     </tr>`;
+}
+
+async function renderLiveTracker() {
+  const lang = (typeof currentLang === 'function' ? currentLang() : 'es');
+  document.getElementById('page-meta').textContent = lang === 'en'
+    ? 'Tayrona Sailing · July 2026 IN PROGRESS'
+    : 'Tayrona Sailing · julio 2026 EN CURSO';
+  const s = window.__liveSummary || (typeof fetchLiveSummary === 'function' ? await fetchLiveSummary('sonata-001').catch(() => null) : null);
+  window.__liveSummary = s || window.__liveSummary;
+  const live = (s && s.cifras && s.cifras.live_period) || {};
+  const base = (s && s.cifras && s.cifras.baseline) || {};
+  const badges = (s && s.nav_badges) || {};
+  const openLive = (live.open_high || 0) + (live.open_medium || 0) + (live.open_low || 0);
+
+  document.getElementById('month-grid').innerHTML = `
+    <div class="month-card">
+      <div class="head"><div class="month-name">Ene–Jun 2026</div><span class="badge badge-approved">Cerrado · línea base</span></div>
+      <div class="modules">
+        <div class="module-row"><div class="icon ok">✓</div><div class="label">Registro RFR</div><div class="note">${base.total || 0} excepciones históricas</div></div>
+      </div>
+    </div>
+    <div class="month-card current">
+      <div class="head"><div class="month-name">Julio 2026</div><span class="badge badge-pending">EN CURSO</span></div>
+      <div class="modules">
+        <div class="module-row"><div class="icon ${openLive ? 'warn' : 'ok'}">${openLive ? '!' : '✓'}</div><div class="label">Excepciones julio</div><div class="note ${openLive ? 'warn' : ''}">${openLive} abiertas</div></div>
+        <div class="module-row"><div class="icon ${(badges.jes||0) ? 'warn' : 'ok'}">${(badges.jes||0) ? '!' : '✓'}</div><div class="label">Comprobantes julio</div><div class="note">${badges.jes||0} pendientes Edwin</div></div>
+        <div class="module-row"><div class="icon pending">…</div><div class="label">Posteo Alegra</div><div class="note">DRY_RUN</div></div>
+      </div>
+      <div class="actions">
+        <a class="btn btn-primary" href="exceptions.html">Excepciones</a>
+        <a class="btn btn-secondary" href="journal-entries.html">Comprobantes</a>
+      </div>
+    </div>`;
+
+  document.getElementById('year-body').innerHTML = `
+    <tr>
+      <td>Ene–Jun</td>
+      <td><span class="badge badge-approved">Cerrado</span></td>
+      <td class="text-right mono">${base.total || '—'}</td>
+      <td class="text-right mono">—</td>
+      <td class="text-right mono">—</td>
+      <td><span class="text-xs text-muted">Línea base RFR</span></td>
+    </tr>
+    <tr>
+      <td>Julio</td>
+      <td><span class="badge badge-pending">En curso</span></td>
+      <td class="text-right mono">${openLive}</td>
+      <td class="text-right mono">${badges.jes || 0}</td>
+      <td class="text-right mono">—</td>
+      <td><span class="text-xs text-muted">Nada posteado (DRY_RUN)</span></td>
+    </tr>`;
+  document.getElementById('year-foot').innerHTML = '';
 }
 </script>
 </body>

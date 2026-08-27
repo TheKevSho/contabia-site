@@ -86,6 +86,38 @@ async function fetchLiveJournalEntries(entityId) {
   return adaptLiveJournalEntries(raw);
 }
 
+async function fetchLiveBoveda(entityId) {
+  return _liveFetch(entityId, '/boveda');
+}
+
+async function uploadLiveBoveda(entityId, file, folder) {
+  const cfg = LIVE_CONFIG[entityId];
+  const token = sessionStorage.getItem('contabia_api_token');
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('folder', folder || 'General');
+  fd.append('uploaded_by', (JSON.parse(sessionStorage.getItem('contabia_user') || '{}').username) || 'portal');
+  const res = await fetch(`${cfg.api_base}/entities/${entityId}/boveda/upload`, {
+    method: 'POST',
+    headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+    body: fd,
+  });
+  if (!res.ok) throw new Error(`Live API ${res.status} on /boveda/upload`);
+  return res.json();
+}
+
+async function postLiveChat(entityId, message, lang, sessionId) {
+  return _liveFetch(entityId, '/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message, lang: lang || 'es', session_id: sessionId || null }),
+  });
+}
+
+async function fetchLiveChatStatus(entityId) {
+  return _liveFetch(entityId, '/chat/status');
+}
+
 async function patchLiveJournalEntry(entityId, jeId, status, rejectionNote) {
   return _liveFetch(entityId, `/journal-entries/${jeId}`, {
     method: 'PATCH',
@@ -141,18 +173,23 @@ function adaptLiveException(e) {
   if (e.amount_cop != null) descParts.push(`Monto: COP ${e.amount_cop.toLocaleString('es-CO')}`);
   if (e.owner) descParts.push(`Responsable: ${e.owner}`);
   if (e.proposed_je_ref) descParts.push(`JE propuesto: ${e.proposed_je_ref}`);
-  const periodTag = e.period ? (e.period >= '2026-07' ? ` · ${e.period} (vivo)` : ` · ${e.period} (línea base)`) : '';
-  const gateTag = e.gate_b === 'disclose_forward' ? ' · Gate B: revelar, no postear' : '';
+  const isLive = e.period && e.period >= '2026-07';
+  const periodTag = e.period ? ` · ${e.period}` : '';
+  const gateTag = e.gate_b === 'disclose_forward' ? ' · Gate B' : '';
+  const handled = (window.RULE_HANDLED_IDS || new Set()).has(e.id);
   return {
     id: e.id,
-    subtype: `Fase ${e.phase}${periodTag}${gateTag}${e.accepted_risk_tag ? ' · ' + e.accepted_risk_tag : ''}`,
-    status: e.status,                                   // open | closed | approved | rejected
+    subtype: `${e.phase || ''}${periodTag}${gateTag}${e.accepted_risk_tag ? ' · ' + e.accepted_risk_tag : ''}${handled ? ' · rule' : ''}`,
+    status: e.status,
     priority: SEVERITY_TO_PRIORITY[e.severity] || 'medium',
     title: e.title,
-    description: descParts.join(' — ') || '(sin detalle adicional)',
-    ai_recommendation: e.disposition || 'Sin disposición registrada.',
-    ai_confidence: 1,          // real register, accountant-prepared — not an AI guess
-    created_at: null,          // register has no per-row date; period is 2026-01
+    description: descParts.join(' — ') || '',
+    ai_recommendation: e.disposition || '',
+    ai_confidence: null,
+    created_at: null,
+    period: e.period || null,
+    bucket: isLive ? 'live' : 'baseline',
+    handled_by_rule: handled,
     rejection_note: e.rejection_note || null,
     _live: true,
     _raw: e,
@@ -171,16 +208,20 @@ const JE_GROUP_PRIORITY = {
 };
 
 function adaptLiveJE(je, group) {
+  const period = je.period || '2026-01';
+  const bucket = je.bucket || (period >= '2026-07' ? 'live' : 'baseline');
   return {
     id: je.id,
     group,
     subtype: JE_GROUP_LABEL[group] || group,
-    status: je.status,        // pending_edwin_approval | approved_by_edwin | rejected | disclosure_only
+    status: je.status,
     priority: JE_GROUP_PRIORITY[group] || 'medium',
     title: je.description,
     description: je.basis || '',
-    ai_confidence: 1,
+    ai_confidence: null,
     created_at: null,
+    period,
+    bucket,
     lines: (je.lines || []).map(l => ({ account: l.account, name: '', debit: l.debit || null, credit: l.credit || null })),
     linked_exceptions: je.linked_exceptions || [],
     rejection_note: je.rejection_note || null,

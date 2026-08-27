@@ -131,8 +131,13 @@
 <script src="js/portal.js"></script>
 <script src="js/data.js"></script>
 <script src="js/sonata-live.js"></script>
-  <script src="js/nav.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/live-shell.js"></script>
+<script src="js/nav.js"></script>
 <script src="js/auth.js"></script>
+
+  
+
 <script src="js/help.js"></script>
 <script src="js/agent-widget.js"></script>
 <script>
@@ -321,22 +326,21 @@ function liveJEStatusLabel(s) {
 }
 
 function renderLiveFilters() {
+  const lang = (typeof currentLang === 'function' ? currentLang() : 'es');
   const items = liveJEData.items;
   const counts = {
     all: items.length,
-    A_ready_to_post:   items.filter(x => x.group === 'A_ready_to_post').length,
-    B_estimated:       items.filter(x => x.group === 'B_estimated').length,
-    C_disclosure_only: items.filter(x => x.group === 'C_disclosure_only').length,
+    live: items.filter(x => x.bucket === 'live' || (x.period && x.period >= '2026-07')).length,
+    baseline: items.filter(x => x.bucket === 'baseline' || !(x.period && x.period >= '2026-07')).length,
     pending_edwin_approval: items.filter(x => x.status === 'pending_edwin_approval').length,
-    approved_by_edwin:      items.filter(x => x.status === 'approved_by_edwin').length,
+    approved_by_edwin: items.filter(x => x.status === 'approved_by_edwin').length,
   };
   const chips = [
-    { key: 'all',                    label: 'Todos' },
-    { key: 'A_ready_to_post',        label: 'A · Listos' },
-    { key: 'B_estimated',            label: 'B · Estimados' },
-    { key: 'C_disclosure_only',      label: 'C · Solo revelar' },
-    { key: 'pending_edwin_approval', label: 'Pendientes (Edwin)' },
-    { key: 'approved_by_edwin',      label: 'Aprobados' },
+    { key: 'all', label: lang==='en' ? 'All' : 'Todos' },
+    { key: 'live', label: lang==='en' ? 'July (live)' : 'Julio (vivo)' },
+    { key: 'baseline', label: lang==='en' ? 'Jan baseline' : 'Línea base ene' },
+    { key: 'pending_edwin_approval', label: lang==='en' ? 'Pending Edwin' : 'Pendientes (Edwin)' },
+    { key: 'approved_by_edwin', label: lang==='en' ? 'Approved' : 'Aprobados' },
   ];
   document.getElementById('je-filters').innerHTML = chips.map(c => `
     <div class="filter-chip ${c.key===currentJEFilter?'active':''}"
@@ -378,11 +382,10 @@ function renderLiveInfoPanels() {
 }
 
 function renderLiveList() {
-  const items = currentJEFilter === 'all'
-    ? liveJEData.items
-    : ['A_ready_to_post','B_estimated','C_disclosure_only'].includes(currentJEFilter)
-      ? liveJEData.items.filter(x => x.group === currentJEFilter)
-      : liveJEData.items.filter(x => x.status === currentJEFilter);
+  const items = currentJEFilter === 'all' ? liveJEData.items
+    : currentJEFilter === 'live' ? liveJEData.items.filter(x => x.bucket === 'live' || (x.period && x.period >= '2026-07'))
+    : currentJEFilter === 'baseline' ? liveJEData.items.filter(x => x.bucket === 'baseline' || !(x.period && x.period >= '2026-07'))
+    : liveJEData.items.filter(x => x.status === currentJEFilter);
 
   const groupOrder = ['A_ready_to_post', 'B_estimated', 'C_disclosure_only'];
   let html = '';
@@ -446,7 +449,7 @@ function renderLiveJECard(je) {
         ${je.lines.length > 0 ? `<tfoot><tr><td>Total</td><td class="amt dr">${totalDr.toLocaleString('es-CO')}</td><td class="amt cr">${totalCr.toLocaleString('es-CO')}</td></tr></tfoot>` : ''}
       </table>
       <div class="je-actions">
-        <div class="meta"><span>Fuente: registro RFR enero 2026</span></div>
+        <div class="meta"><span>${(je.bucket === 'live' || (je.period && je.period >= '2026-07')) ? 'Cierre julio 2026 (vivo)' : 'Línea base · registro RFR enero 2026'}</span></div>
         <div class="buttons">${actions}</div>
       </div>
     </div>`;

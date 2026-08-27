@@ -95,11 +95,11 @@
           <thead>
             <tr>
               <th style="width:8px;"></th>
-              <th>Excepción</th>
-              <th>Prioridad</th>
-              <th>Estado</th>
-              <th>Confianza IA</th>
-              <th class="text-right">Creada</th>
+              <th id="th-exc">Excepción</th>
+              <th id="th-pri">Prioridad</th>
+              <th id="th-st">Estado</th>
+              <th id="th-extra">Periodo</th>
+              <th class="text-right" id="th-created">Creada</th>
             </tr>
           </thead>
           <tbody id="exc-tbody"></tbody>
@@ -145,8 +145,13 @@
 <script src="js/portal.js"></script>
 <script src="js/data.js"></script>
 <script src="js/sonata-live.js"></script>
-  <script src="js/nav.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/live-shell.js"></script>
+<script src="js/nav.js"></script>
 <script src="js/auth.js"></script>
+
+  
+
 <script src="js/help.js"></script>
 <script src="js/agent-widget.js"></script>
 <script>
@@ -290,6 +295,7 @@ async function initLivePage(entityId) {
       fetchLiveExceptions(entityId),
     ]);
     liveExceptions = exceptions;
+    currentExcFilter = 'live';
     const cfg = LIVE_CONFIG[entityId];
     const cifras = summary.cifras;
 
@@ -326,26 +332,30 @@ function liveStatusClass(s) {
   return ({open: 'pending', closed: 'approved', approved: 'approved', rejected: 'rejected'})[s] || s;
 }
 function liveStatusLabel(s) {
-  return ({open: 'Abierta', closed: 'Cerrada', approved: 'Aprobada', rejected: 'Rechazada'})[s] || s;
+  return (typeof statusLabelI18n === 'function') ? statusLabelI18n(s)
+    : ({open: 'Abierta', closed: 'Cerrada', approved: 'Aprobada', rejected: 'Rechazada'})[s] || s;
 }
 
 function renderLiveFilters() {
+  const lang = (typeof currentLang === 'function' ? currentLang() : 'es');
   const items = liveExceptions;
   const counts = {
-    all:    items.length,
-    high:   items.filter(x => x.priority === 'high').length,
-    medium: items.filter(x => x.priority === 'medium').length,
-    low:    items.filter(x => x.priority === 'low').length,
-    open:   items.filter(x => x.status === 'open').length,
-    closed: items.filter(x => x.status === 'closed').length,
+    all: items.length,
+    live: items.filter(x => x.bucket === 'live').length,
+    baseline: items.filter(x => x.bucket === 'baseline').length,
+    high: items.filter(x => x.priority === 'high').length,
+    open: items.filter(x => x.status === 'open').length,
+    closed: items.filter(x => x.status === 'closed' || x.status === 'approved').length,
+    rule: items.filter(x => x.handled_by_rule).length,
   };
   const chips = [
-    { key: 'all',    label: 'Todas' },
-    { key: 'high',   label: 'Altas' },
-    { key: 'medium', label: 'Medias' },
-    { key: 'low',    label: 'Bajas' },
-    { key: 'open',   label: 'Abiertas' },
-    { key: 'closed', label: 'Cerradas' },
+    { key: 'all', label: lang==='en' ? 'All' : 'Todas' },
+    { key: 'live', label: lang==='en' ? 'July (live)' : 'Julio (vivo)' },
+    { key: 'baseline', label: lang==='en' ? 'Baseline' : 'Línea base' },
+    { key: 'high', label: lang==='en' ? 'High' : 'Altas' },
+    { key: 'open', label: lang==='en' ? 'Open' : 'Abiertas' },
+    { key: 'closed', label: lang==='en' ? 'Closed' : 'Cerradas' },
+    { key: 'rule', label: lang==='en' ? 'Covered by rule' : 'Cubierta por regla' },
   ];
   document.getElementById('exc-filters').innerHTML = chips.map(c => `
     <div class="filter-chip ${c.key===currentExcFilter?'active':''}"
@@ -360,28 +370,34 @@ function setLiveExcFilter(key) {
 }
 
 function renderLiveTable() {
+  const lang = (typeof currentLang === 'function' ? currentLang() : 'es');
+  const map = { 'th-exc': lang==='en'?'Exception':'Excepción', 'th-pri': lang==='en'?'Priority':'Prioridad', 'th-st': lang==='en'?'Status':'Estado', 'th-extra': lang==='en'?'Period':'Periodo', 'th-created': lang==='en'?'Owner':'Responsable' };
+  Object.entries(map).forEach(([id, lab]) => { const el = document.getElementById(id); if (el) el.textContent = lab; });
   const all = liveExceptions;
-  const filtered = currentExcFilter === 'all'
-    ? all
-    : ['high','medium','low'].includes(currentExcFilter)
-      ? all.filter(x => x.priority === currentExcFilter)
-      : all.filter(x => x.status === currentExcFilter);
-
+  const filtered = currentExcFilter === 'all' ? all
+    : currentExcFilter === 'live' ? all.filter(x => x.bucket === 'live')
+    : currentExcFilter === 'baseline' ? all.filter(x => x.bucket === 'baseline')
+    : currentExcFilter === 'rule' ? all.filter(x => x.handled_by_rule)
+    : ['high','medium','low'].includes(currentExcFilter) ? all.filter(x => x.priority === currentExcFilter)
+    : currentExcFilter === 'closed' ? all.filter(x => x.status === 'closed' || x.status === 'approved')
+    : all.filter(x => x.status === currentExcFilter);
   const tbody = document.getElementById('exc-tbody');
   tbody.innerHTML = filtered.length === 0
-    ? `<tr><td colspan="6" style="text-align:center;color:var(--warm-gray);padding:24px;">Sin items en este filtro.</td></tr>`
-    : filtered.map(x => `
-      <tr onclick="openLiveExcDetail('${x.id}')">
+    ? `<tr><td colspan="6" style="text-align:center;color:var(--warm-gray);padding:24px;">${lang==='en'?'Nothing in this filter.':'Sin items en este filtro.'}</td></tr>`
+    : filtered.map(x => {
+        const periodLbl = x.bucket === 'live' ? (lang==='en' ? 'July (live)' : 'Julio (vivo)') : (lang==='en' ? 'Baseline' : 'Línea base');
+        const pri = (typeof priorityLabelI18n === 'function') ? priorityLabelI18n(x.priority) : x.priority.toUpperCase();
+        const owner = (x._raw && x._raw.owner) || '—';
+        const ruleTag = x.handled_by_rule ? ` · ${lang==='en'?'rule':'regla'}` : '';
+        return `<tr onclick="openLiveExcDetail('${x.id}')">
         <td><span class="priority-dot ${x.priority}"></span></td>
-        <td class="title-cell">
-          <div class="t">${x.title}</div>
-          <div class="sub">${x.subtype}</div>
-        </td>
-        <td><span class="priority-badge badge-${x.priority}">${x.priority.toUpperCase()}</span></td>
+        <td class="title-cell"><div class="t">${x.title}</div><div class="sub">${x.id}${ruleTag}</div></td>
+        <td><span class="priority-badge badge-${x.priority}">${pri}</span></td>
         <td><span class="badge badge-${liveStatusClass(x.status)}">${liveStatusLabel(x.status)}</span></td>
-        <td>${confidenceBar(x.ai_confidence)}</td>
-        <td class="text-right" style="color:var(--warm-gray);font-size:12.5px;">${fmtDate(x.created_at)}</td>
-      </tr>`).join('');
+        <td>${periodLbl}</td>
+        <td class="text-right" style="color:var(--warm-gray);font-size:12.5px;">${owner}</td>
+      </tr>`;
+      }).join('');
 }
 
 function openLiveExcDetail(id) {
