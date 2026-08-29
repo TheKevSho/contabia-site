@@ -1,0 +1,8 @@
+# ── Docker ignore ──────────────────────────────────────────────────────
+# Config secrets should never end up in the image layer (handled via Railway secrets)
+.git
+*.md
+node_modules
+__pycache__
+*.pyc
+.env

@@ -1,0 +1,33 @@
+# ── Tayrona Profile Config (Railway Gateway) ───────────────────────────
+model:
+  default: deepseek/deepseek-v4-flash
+  provider: openrouter
+  base_url: https://openrouter.ai/api/v1
+  context_length: 64000
+  api_mode: chat_completions
+
+database:
+  journal_mode: wal
+
+agent:
+  max_turns: 100
+  verbose: false
+  reasoning_effort: low
+
+memory:
+  memory_enabled: true
+  user_profile_enabled: true
+  memory_char_limit: 2200
+  user_char_limit: 1375
+
+skills:
+  creation_nudge_interval: 15
+
+group_sessions_per_user: true
+
+session_reset:
+  mode: none
+  idle_minutes: 1440
+  at_hour: 4
+
+_config_version: 34

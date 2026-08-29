@@ -1,0 +1,106 @@
+# ── Hermes Main Config (Railway Gateway) ───────────────────────────────
+# Minimal config for the OpenAI-compatible API server.
+# No terminal, browser, display, TTS/STT — container has none.
+
+model:
+  default: deepseek/deepseek-v4-flash
+  provider: openrouter
+  api_mode: chat_completions
+
+database:
+  journal_mode: wal
+
+agent:
+  max_turns: 150
+  verbose: false
+  reasoning_effort: medium
+
+terminal:
+  # No terminal backend in container — tool calls that need it will fail gracefully
+  backend: none
+  timeout: 30
+
+web:
+  backend: ddgs
+  use_gateway: false
+
+browser:
+  # No browser in container
+  use_gateway: false
+  cloud_provider: local
+
+tool_loop_guardrails:
+  warnings_enabled: true
+  hard_stop_enabled: false
+  warn_after:
+    exact_failure: 2
+    same_tool_failure: 3
+    idempotent_no_progress: 2
+  hard_stop_after:
+    exact_failure: 5
+    same_tool_failure: 8
+    idempotent_no_progress: 5
+
+compression:
+  enabled: true
+  threshold: 0.5
+  target_ratio: 0.2
+  protect_last_n: 20
+  protect_first_n: 3
+  min_tail_user_messages: 1
+  max_attempts: 3
+  proactive_prune_tokens: 0
+  proactive_prune_min_result_chars: 8000
+  proactive_prune_min_reclaim_tokens: 4096
+
+prompt_caching:
+  cache_ttl: 5m
+
+display:
+  # No TUI in container
+  compact: true
+
+tts:
+  provider: none
+
+stt:
+  enabled: false
+
+memory:
+  memory_enabled: true
+  user_profile_enabled: true
+  memory_char_limit: 2200
+  user_char_limit: 1375
+  nudge_interval: 10
+  flush_min_turns: 6
+
+delegation:
+  max_iterations: 50
+
+skills:
+  creation_nudge_interval: 15
+
+platforms:
+  whatsapp:
+    enabled: false
+
+gateway:
+  multiplex_profiles: true
+  multiplex_profile_allowlist:
+    - business
+    - tayrona
+
+image_gen:
+  use_gateway: false
+
+updates:
+  pre_update_backup: false
+
+session_reset:
+  mode: none
+  idle_minutes: 1440
+  at_hour: 4
+
+group_sessions_per_user: true
+
+_config_version: 34
