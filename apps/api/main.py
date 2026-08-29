@@ -630,14 +630,14 @@ def mark_boveda_file_processed(entity_id: str, file_id: str, linked_to: Optional
 
 
 # ---------------------------------------------------------------------------
-# Portal chat → Hermes (business profile, Tayrona source).
+# Portal chat → Tayrona Hermes profile (direct).
 # Hermes API server stays on loopback; this proxy is the only public hop.
 # WhatsApp self-chat on Kevin's personal number remains the document-forward
 # rail — the portal never invents cifras.
 # ---------------------------------------------------------------------------
-HERMES_CHAT_URL = os.environ.get("HERMES_CHAT_URL", "http://127.0.0.1:8642/p/business/v1/chat/completions")
+HERMES_CHAT_URL = os.environ.get("HERMES_CHAT_URL", "http://127.0.0.1:8642/p/tayrona/v1/chat/completions")
 HERMES_CHAT_KEY = os.environ.get("HERMES_CHAT_KEY", "")
-HERMES_CHAT_FALLBACK_URL = os.environ.get("HERMES_CHAT_FALLBACK_URL", "http://127.0.0.1:8642/v1/chat/completions")
+HERMES_CHAT_FALLBACK_URL = os.environ.get("HERMES_CHAT_FALLBACK_URL", "http://127.0.0.1:8642/p/tayrona/v1/chat/completions")
 
 
 class ChatBody(BaseModel):
@@ -652,7 +652,7 @@ def chat_status(entity_id: str):
     configured = bool(HERMES_CHAT_KEY)
     return {
         "wired": configured,
-        "profile": "business",
+        "profile": "tayrona",
         "source": "tayrona",
         "whatsapp": {
             "mode": "self-chat",
@@ -678,7 +678,6 @@ def portal_chat(entity_id: str, body: ChatBody, user: dict = Depends(require_aut
     system = (
         "You are the ContabIA agent for Tayrona Sailing (Sonata Mas SAS, NIT 901528910, "
         "entity sonata-001). Period in progress: July 2026 (EN CURSO). "
-        "Work under Hermes profile `business` with --source tayrona. "
         "Never invent cifras. If you do not have a live number, say so and point to "
         "Excepciones / Comprobantes. Do not offer Cantamar as a live entity. "
         "WhatsApp document intake is Kevin's personal self-chat — tell the user to "
