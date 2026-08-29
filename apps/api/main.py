@@ -695,6 +695,8 @@ def portal_chat(entity_id: str, body: ChatBody, user: dict = Depends(require_aut
     headers = {
         "Authorization": f"Bearer {HERMES_CHAT_KEY}",
         "Content-Type": "application/json",
+        "User-Agent": "HermesAgent/contabia-portal",
+        "X-Hermes-Client": "contabia-portal/1",
         "X-Hermes-Session-Id": session_id,
         "X-Hermes-Session-Key": f"contabia:portal:{entity_id}:{user.get('username', 'user')}",
     }
