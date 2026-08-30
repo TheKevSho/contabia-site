@@ -20,6 +20,10 @@ memory:
   memory_char_limit: 2200
   user_char_limit: 1375
 
+platforms:
+  api_server:
+    enabled: false
+
 skills:
   creation_nudge_interval: 15
 

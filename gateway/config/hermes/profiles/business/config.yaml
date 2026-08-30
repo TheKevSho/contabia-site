@@ -52,12 +52,14 @@ memory:
 delegation:
   max_iterations: 50
 
-skills:
-  creation_nudge_interval: 15
-
 platforms:
+  api_server:
+    enabled: false
   whatsapp:
     enabled: false
+
+skills:
+  creation_nudge_interval: 15
 
 session_reset:
   mode: none
