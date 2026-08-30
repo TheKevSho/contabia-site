@@ -8,8 +8,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Install hermes-agent from PyPI (pre-built wheel avoids build block)
-RUN pip install --no-cache-dir hermes-agent==0.19.0
+# Install hermes-agent from PyPI (pre-built wheel avoids build block).
+# [messaging] pulls in aiohttp, which the OpenAI-compatible API server
+# adapter requires — without it the gateway logs "aiohttp not installed"
+# and never binds a port (Railway then 502s on the healthcheck).
+RUN pip install --no-cache-dir "hermes-agent[messaging]==0.19.0"
 
 # ── Runtime stage ──────────────────────────────────────────────────────
 FROM python:3.11-slim-bookworm
