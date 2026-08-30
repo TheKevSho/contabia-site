@@ -85,10 +85,8 @@ platforms:
     enabled: false
 
 gateway:
-  multiplex_profiles: true
-  multiplex_profile_allowlist:
-    - business
-    - tayrona
+  # Multiplexing disabled — profiles handled via default profile config
+  multiplex_profiles: false
 
 image_gen:
   use_gateway: false
