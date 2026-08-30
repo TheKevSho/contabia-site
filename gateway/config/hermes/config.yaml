@@ -81,6 +81,8 @@ skills:
   creation_nudge_interval: 15
 
 platforms:
+  api_server:
+    enabled: true
   whatsapp:
     enabled: false
 

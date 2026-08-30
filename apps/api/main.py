@@ -635,9 +635,9 @@ def mark_boveda_file_processed(entity_id: str, file_id: str, linked_to: Optional
 # WhatsApp self-chat on Kevin's personal number remains the document-forward
 # rail — the portal never invents cifras.
 # ---------------------------------------------------------------------------
-HERMES_CHAT_URL = os.environ.get("HERMES_CHAT_URL", "http://127.0.0.1:8642/p/tayrona/v1/chat/completions")
+HERMES_CHAT_URL = os.environ.get("HERMES_CHAT_URL", "http://127.0.0.1:8642/v1/chat/completions")
 HERMES_CHAT_KEY = os.environ.get("HERMES_CHAT_KEY", "")
-HERMES_CHAT_FALLBACK_URL = os.environ.get("HERMES_CHAT_FALLBACK_URL", "http://127.0.0.1:8642/p/tayrona/v1/chat/completions")
+HERMES_CHAT_FALLBACK_URL = os.environ.get("HERMES_CHAT_FALLBACK_URL", "http://127.0.0.1:8642/v1/chat/completions")
 
 
 class ChatBody(BaseModel):

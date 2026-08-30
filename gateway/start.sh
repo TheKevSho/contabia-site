@@ -52,7 +52,7 @@ export API_SERVER_HOST="${API_SERVER_HOST:-0.0.0.0}"
 
 echo "[start] Hermes gateway starting..."
 echo "[start] API_SERVER_HOST=${API_SERVER_HOST} API_SERVER_PORT=${API_SERVER_PORT:-8642}"
-echo "[start] Profiles: business, tayrona (multiplexed at /p/<profile>/)"
+echo "[start] Multiplexing disabled — single profile mode"
 
 # Start gateway in foreground
 exec hermes gateway run
