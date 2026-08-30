@@ -5,12 +5,11 @@
 FROM python:3.11-slim-bookworm AS builder
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    git \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Install hermes-agent from GitHub main branch (latest code)
-RUN pip install --no-cache-dir git+https://github.com/NousResearch/hermes-agent.git
+# Install hermes-agent from PyPI (pre-built wheel avoids build block)
+RUN pip install --no-cache-dir hermes-agent==0.19.0
 
 # ── Runtime stage ──────────────────────────────────────────────────────
 FROM python:3.11-slim-bookworm
