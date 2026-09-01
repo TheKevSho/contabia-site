@@ -157,16 +157,18 @@ let messages = [];
 document.addEventListener('DOMContentLoaded', () => {
   const e = currentEntityData();
   const meta = e.meta;
-  const user = currentUser();
   const live = typeof isLiveMode === 'function' && isLiveMode();
 
   document.getElementById('page-meta').innerHTML = live
     ? `${meta.name} · julio 2026 · agente en vivo`
     : `${meta.name} · agente respondiendo en español · contexto: ${meta.period.toLowerCase()}`;
 
-  messages = (typeof buildAgentIntroThread === 'function')
-    ? buildAgentIntroThread(e, user)
+  messages = (typeof getAgentThread === 'function')
+    ? getAgentThread()
     : [{ who: 'agent', text: 'Hola. Soy el agente ContabIA.' }];
+  if (typeof saveAgentThread === 'function' && !sessionStorage.getItem('contabia_agent_thread')) {
+    saveAgentThread(messages);
+  }
   renderThread();
   renderSuggestions();
 
@@ -174,14 +176,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (ev.key === 'Enter') sendMsg();
   });
 
-  try {
-    const pending = sessionStorage.getItem('contabia_pending_msg');
-    if (pending) {
-      sessionStorage.removeItem('contabia_pending_msg');
-      document.getElementById('chat-input').value = pending;
-      sendMsg();
-    }
-  } catch (e) {}
+  window.onAgentThreadChange = (msgs) => {
+    messages = msgs || [];
+    renderThread();
+  };
 });
 
 function renderThread() {
@@ -209,26 +207,15 @@ async function sendMsg() {
   const input = document.getElementById('chat-input');
   const text = input.value.trim();
   if (!text) return;
-  messages.push({ who: 'user', text });
   input.value = '';
-  renderThread();
-  if (typeof isLiveMode === 'function' && isLiveMode() && typeof postLiveChat === 'function') {
-    messages.push({ who: 'agent', text: '…' });
-    renderThread();
-    try {
-      const lang = (typeof currentLang === 'function' ? currentLang() : 'es');
-      const sessionId = sessionStorage.getItem('contabia_chat_session') || null;
-      const res = await postLiveChat('sonata-001', text, lang, sessionId);
-      if (res && res.session_id) sessionStorage.setItem('contabia_chat_session', res.session_id);
-      messages.pop();
-      messages.push({ who: 'agent', text: (res && (res.reply || res.message)) || 'Sin respuesta.' });
-    } catch (err) {
-      messages.pop();
-      messages.push({ who: 'agent', text: 'No pude contactar al agente: ' + err.message });
-    }
+  if (typeof dispatchAgentUserMessage === 'function') {
+    await dispatchAgentUserMessage(text);
+    messages = (typeof getAgentThread === 'function') ? getAgentThread() : messages;
     renderThread();
     return;
   }
+  messages.push({ who: 'user', text });
+  renderThread();
   setTimeout(() => {
     messages.push({ who: 'agent', text: agentReply(text) });
     renderThread();

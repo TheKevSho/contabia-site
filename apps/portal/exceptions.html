@@ -291,6 +291,7 @@ function openExcDetail(id) {
   document.getElementById('p-btn-approve').onclick = () => alert(t('exc.demo.approved_alert'));
   document.getElementById('exc-panel').classList.add('open');
   document.body.style.overflow = 'hidden';
+  if (typeof openAgentOnItem === 'function') openAgentOnItem('exc', x);
 }
 function closeExcPanel() {
   document.getElementById('exc-panel').classList.remove('open');
@@ -440,6 +441,7 @@ function openLiveExcDetail(id) {
 
   document.getElementById('exc-panel').classList.add('open');
   document.body.style.overflow = 'hidden';
+  if (typeof openAgentOnItem === 'function') openAgentOnItem('exc', x);
 }
 
 async function decideLiveExc(excId, status) {

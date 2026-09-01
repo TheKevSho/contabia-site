@@ -244,9 +244,11 @@ function renderTopbar() {
 
   const ctaHtml = cta ? `<button class="btn btn-primary" onclick="location.href='${cta.href}'">${cta.text}</button>` : '';
 
+  /* Button shows the language you can SWITCH TO, not the current one.
+     ES UI → EN flag; EN UI → Colombia flag. */
   const flagHtml = lang === 'es'
-    ? `<div class="co-flag"><span></span><span></span><span></span></div>`
-    : `<div class="en-flag">EN</div>`;
+    ? `<div class="en-flag">EN</div>`
+    : `<div class="co-flag"><span></span><span></span><span></span></div>`;
 
   return `
     <div class="topbar">
@@ -256,7 +258,7 @@ function renderTopbar() {
         <span class="chev">▾</span>
       </div>
       <div class="topbar-right">
-        <div class="lang-flag-btn" title="${lang === 'es' ? 'Español' : 'English'}" onclick="toggleLang()">${flagHtml}</div>
+        <div class="lang-flag-btn" title="${lang === 'es' ? 'English' : 'Español'}" onclick="toggleLang()">${flagHtml}</div>
         <div class="help-icon-btn" title="Centro de ayuda" onclick="toggleHelpPanel()">?</div>
         ${ctaHtml}
       </div>
@@ -400,7 +402,8 @@ function toggleLang() {
 function signOut(ev) {
   ev.preventDefault();
   ['contabia_auth','contabia_role','contabia_entity','contabia_demo',
-   'contabia_live','contabia_api_token','contabia_user','contabia_chat_session']
+   'contabia_live','contabia_api_token','contabia_user','contabia_chat_session',
+   'contabia_agent_thread','contabia_agent_context','contabia-agent-open','contabia-agent-pos']
     .forEach(k => sessionStorage.removeItem(k));
   location.href = 'login.html';
 }

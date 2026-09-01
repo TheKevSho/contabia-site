@@ -426,12 +426,12 @@ function renderLiveJECard(je) {
   } else if (je.status === 'rejected') {
     actions = `<span style="color:var(--critical);font-weight:700;">${t('je.rejected_tag')}${je.rejection_note ? ' — ' + je.rejection_note : ''}</span>`;
   } else {
-    actions = `<button class="btn-reject" onclick="decideLiveJE('${je.id}','rejected')">${t('je.reject_btn')}</button>
-               <button class="btn-approve" onclick="decideLiveJE('${je.id}','approved_by_edwin')">${t('je.approve_btn')}</button>`;
+    actions = `<button class="btn-reject" onclick="event.stopPropagation(); decideLiveJE('${je.id}','rejected')">${t('je.reject_btn')}</button>
+               <button class="btn-approve" onclick="event.stopPropagation(); decideLiveJE('${je.id}','approved_by_edwin')">${t('je.approve_btn')}</button>`;
   }
 
   return `
-    <div class="je-card">
+    <div class="je-card" onclick="if(typeof openAgentOnItem==='function') openAgentOnItem('je', liveJEData.items.find(j=>j.id==='${je.id}'))">
       <div class="head">
         <div>
           <div class="je-id">${je.id}</div>

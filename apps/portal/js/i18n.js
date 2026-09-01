@@ -1138,13 +1138,20 @@ const I18N = {
 };
 
 function _resolve(pack, key) {
-  const parts = key.split('.');
+  if (!pack || key == null) return null;
+  // Keys are stored as dotted literals ('exc.live_pill'), not nested objects.
+  // Exact match first — splitting on '.' was returning the raw key on every page.
+  if (Object.prototype.hasOwnProperty.call(pack, key)) {
+    const v = pack[key];
+    return typeof v === 'string' ? v : null;
+  }
+  const parts = String(key).split('.');
   let cur = pack;
   for (const p of parts) {
     if (cur && typeof cur === 'object' && p in cur) cur = cur[p];
     else return null;
   }
-  return cur;
+  return typeof cur === 'string' ? cur : null;
 }
 
 function t(key) {
