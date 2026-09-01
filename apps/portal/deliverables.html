@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%231B2A4A%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27Georgia%27 font-size=%2718%27 fill=%27%23D4704A%27 text-anchor=%27middle%27 font-weight=%27bold%27%3EC%3C/text%3E%3C/svg%3E">
   <title>ContabIA — Entregables</title>
-  <link rel="stylesheet" href="css/portal.css?v=20260901c">
-  <script src="js/theme.js?v=20260901c"></script>
+  <link rel="stylesheet" href="css/portal.css?v=20260901d">
+  <script src="js/theme.js?v=20260901d"></script>
   <style>
     .zone { margin-bottom: 32px; }
     .zone-head { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; padding-bottom:6px; border-bottom:1px solid var(--light-gray); }
@@ -25,6 +25,47 @@
     .file-row .fsize { font-family: var(--font-mono); font-size:12.5px; color: var(--warm-gray); }
     .empty-zone { background: var(--white); border: 1px dashed var(--light-gray); border-radius: var(--radius); padding: 18px 16px; color: var(--warm-gray); font-size: 13.5px; line-height: 1.55; }
     .stamp { font-size:10px; letter-spacing:1px; text-transform:uppercase; padding:3px 8px; border-radius:10px; font-weight:700; background:#FBE8C9; color:#876022; font-family: var(--font-mono); }
+    .del-tabs { display:flex; gap:0; align-items:center; background:var(--white); border:1px solid var(--light-gray); border-bottom:0; border-radius: var(--radius) var(--radius) 0 0; padding:0 8px; }
+    .del-tab { border:0; background:transparent; padding:12px 18px; font:600 14px var(--font-sans, inherit); color:var(--warm-gray); cursor:pointer; border-bottom:2px solid transparent; }
+    .del-tab.on { color:var(--charcoal); border-bottom-color:var(--terracotta, #D4704A); }
+    .del-tabs .stamp { margin-left:auto; }
+    .del-note { padding:8px 16px; font-size:12px; color:var(--warm-gray); background:#F5E6D0; border:1px solid var(--light-gray); border-top:0; }
+    .del-note.warn { background:#F8E4DC; color:#7A3A28; }
+    .del-palancas { display:none; gap:18px; align-items:center; padding:10px 16px; background:#fff; border:1px solid var(--light-gray); border-top:0; flex-wrap:wrap; font-size:12px; color:var(--warm-gray); }
+    .del-palancas.show { display:flex; }
+    .del-palancas label { display:flex; align-items:center; gap:8px; }
+    .del-palancas input[type=range] { width:120px; }
+    .del-palancas .val { font-family:var(--font-mono); font-size:12px; color:var(--charcoal); min-width:42px; }
+    .del-palancas .pal-note { font-size:11px; color:#7A3A28; }
+    .del-tree-wrap { overflow:auto; max-height:calc(100vh - 280px); border:1px solid var(--light-gray); border-top:0; border-radius:0 0 var(--radius) var(--radius); background:var(--cream, #FFF8F0); margin-bottom:28px; }
+    .del-grid { border-collapse:separate; border-spacing:0; font-size:12.5px; min-width:100%; }
+    .del-grid th, .del-grid td { padding:5px 8px; white-space:nowrap; border-bottom:1px solid var(--light-gray); }
+    .del-grid thead th { position:sticky; top:0; z-index:3; background:var(--midnight); color:#FFF8F0; font-weight:600; font-size:11px; letter-spacing:.02em; }
+    .del-grid thead th.sub { background:#2D4470; font-weight:400; color:#c9d4e8; }
+    .del-grid .concepto { position:sticky; left:0; z-index:2; background:var(--cream, #FFF8F0); min-width:280px; max-width:320px; text-align:left; box-shadow:4px 0 8px rgba(27,42,74,.06); }
+    .del-grid thead .concepto { z-index:4; background:var(--midnight); }
+    .del-grid .sec .concepto { font-weight:700; background:#E8EEF6; font-size:12px; letter-spacing:.04em; text-transform:uppercase; color:var(--midnight); }
+    .del-grid .tot .concepto { font-weight:700; }
+    .del-grid .tot td { font-weight:700; background:#F3EFE8; }
+    .del-grid .gop td { background:#E7F0EA; font-weight:700; }
+    .del-grid .cash td { background:#E8F1F8; font-weight:700; }
+    .del-grid .shad td { background:#F8EEE8; }
+    .del-grid .shad .concepto { background:#F8EEE8; }
+    .del-grid .child td { color:#4a4450; }
+    .del-grid .child .concepto { padding-left:28px; font-weight:400; }
+    .del-grid .gchild .concepto { padding-left:44px; color:var(--warm-gray); }
+    .del-grid .num { font-family:var(--font-mono); text-align:right; min-width:92px; }
+    .del-grid .neg { color:var(--critical, #C44A3A); }
+    .del-grid .blank { color:#c5bdb4; }
+    .del-grid .real { box-shadow: inset 0 -2px 0 #4A9FD4; }
+    .del-grid .qinc { background:#FBF6EE; }
+    .del-grid .proy { background:#f7f7f7; color:#6b7280; }
+    .del-grid .tog { width:18px; height:18px; border:1px solid var(--light-gray); background:#fff; border-radius:3px; cursor:pointer; font-size:11px; line-height:16px; display:inline-block; text-align:center; margin-right:6px; color:var(--midnight); }
+    .del-grid .tog.empty { visibility:hidden; }
+    .del-grid td.edit { cursor:cell; outline:1px dashed transparent; }
+    .del-tree.modelado td.edit:hover { outline-color:#4A9FD4; background:#eef6fb; }
+    .del-grid td.over { background:#FFF3D6 !important; }
+    .del-grid .demo { font-style:italic; }
   </style>
 </head>
 <body>
@@ -35,7 +76,7 @@
     <div class="content">
       <div class="page-head">
         <div class="title-block">
-          <h1>Entregables</h1>
+          <h1 id="page-h1">Entregables</h1>
           <div class="meta" id="page-meta">…</div>
         </div>
       </div>
@@ -48,14 +89,15 @@
   </main>
 </div>
 
-<script src="js/data.js?v=20260901c"></script>
-<script src="js/sonata-live.js?v=20260901c"></script>
-<script src="js/i18n.js?v=20260901c"></script>
-<script src="js/live-shell.js?v=20260901c"></script>
-<script src="js/nav.js?v=20260901c"></script>
-<script src="js/auth.js?v=20260901c"></script>
-<script src="js/help.js?v=20260901c"></script>
-<script src="js/agent-widget.js?v=20260901c"></script>
+<script src="js/data.js?v=20260901d"></script>
+<script src="js/sonata-live.js?v=20260901d"></script>
+<script src="js/i18n.js?v=20260901d"></script>
+<script src="js/live-shell.js?v=20260901d"></script>
+<script src="js/nav.js?v=20260901d"></script>
+<script src="js/auth.js?v=20260901d"></script>
+<script src="js/help.js?v=20260901d"></script>
+<script src="js/agent-widget.js?v=20260901d"></script>
+<script src="js/entregables-tree.js?v=20260901d"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   if (typeof isLiveMode === 'function' && isLiveMode()) {
@@ -66,63 +108,46 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function initLiveDeliverables() {
-  const lang = (typeof currentLang === 'function' ? currentLang() : 'es');
   const metaEl = document.getElementById('page-meta');
-  metaEl.textContent = lang === 'en'
-    ? 'Tayrona Sailing · July 2026 IN PROGRESS · nothing posted'
+  metaEl.textContent = (typeof t === 'function')
+    ? t('del.meta.live')
     : 'Tayrona Sailing · julio 2026 EN CURSO · nada causado';
   const slot = document.getElementById('del-live');
+  slot.innerHTML = '<div id="del-tree-slot"></div><div id="del-zones"></div>';
+  if (typeof initEntregablesTree === 'function') {
+    initEntregablesTree(document.getElementById('del-tree-slot'));
+  }
   try {
     const data = await fetchLiveDeliverables('sonata-001');
-    slot.innerHTML = renderPresente(data, lang) + renderLiveZones(data, lang);
+    document.getElementById('del-zones').innerHTML = renderLiveZones(data);
   } catch (err) {
-    slot.innerHTML = `<div class="panel" style="padding:18px;color:var(--warm-gray);">No se pudo cargar entregables: ${err.message}</div>`;
+    const msg = String(err && err.message ? err.message : err).replace(/[&<>"']/g, function (c) {
+      return ({'&':'&'+'amp;','<':'&'+'lt;','>':'&'+'gt;','"':'&'+'quot;',"'":'&#39;'}[c]);
+    });
+    document.getElementById('del-zones').innerHTML = `<div class="panel" style="padding:18px;color:var(--warm-gray);">${typeof t === 'function' ? t('del.error_load') : 'No se pudo cargar entregables'}: ${msg}</div>`;
   }
 }
 
-function renderPresente(data, lang) {
-  /* Sourced numbers only — dashboard ES xlsx data_only R28/R36 Jul, dump invoices. No GOP (formula cells empty). */
-  const kpis = [
-    { lbl: lang==='en' ? 'Cash end July (Alegra)' : 'Caja fin julio (Alegra)', val: 'COP 62.8M', foot: 'xlsx R28 · REAL' },
-    { lbl: lang==='en' ? 'July-dated invoices' : 'Facturas con fecha julio', val: '280 · COP 160.5M', foot: 'dump date filter · not createdAt' },
-    { lbl: lang==='en' ? 'July close' : 'Cierre julio', val: lang==='en' ? 'IN PROGRESS' : 'EN CURSO', foot: lang==='en' ? 'nothing posted' : 'nada causado' },
-    { lbl: lang==='en' ? 'Working file' : 'Archivo de trabajo', val: 'xlsx ES', foot: lang==='en' ? 'download below' : 'descarga abajo' },
-  ];
-  const tiles = kpis.map(k => `
-    <div style="background:var(--white);border:1px solid var(--light-gray);border-radius:var(--radius-lg);padding:14px 16px;">
-      <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--warm-gray);font-weight:700;">${k.lbl}</div>
-      <div style="font-family:var(--font-display);font-size:26px;color:var(--charcoal);margin-top:6px;">${k.val}</div>
-      <div style="font-size:12px;color:var(--warm-gray);margin-top:4px;">${k.foot}</div>
-    </div>`).join('');
-  return `
-    <div class="zone" id="zone-presente">
-      <div class="zone-head">
-        <div class="zname">${lang==='en' ? 'Present' : 'Presente'}</div>
-        <div class="zmeta">julio 2026 · EN CURSO</div>
-      </div>
-      <p class="zone-copy">${lang==='en'
-        ? 'Lean board from the live workbook. July is not closed. Modelado / palancas not wired — no demo projections.'
-        : 'Tablero lean del workbook en vivo. Julio no está cerrado. Modelado / palancas no conectados — sin proyecciones de demostración.'}</p>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:8px;">${tiles}</div>
-    </div>`;
-}
-
-function renderLiveZones(data, lang) {
+function renderLiveZones(data) {
   const zones = data.zones || {};
   const order = ['present', 'scenarios', 'past'];
+  const en = (typeof currentLang === 'function' && currentLang() === 'en');
   return order.map(zid => {
     const z = zones[zid] || {};
-    const title = lang === 'en' ? (z.title_en || zid) : (z.title_es || zid);
-    const copy = lang === 'en' ? (z.copy_en || '') : (z.copy_es || '');
+    const title = en ? (z.title_en || zid) : (z.title_es || zid);
+    const copy = en ? (z.copy_en || '') : (z.copy_es || '');
     const items = data[zid] || [];
     const body = items.length
-      ? items.map(f => renderLiveFile(f, lang)).join('')
+      ? items.map(f => renderLiveFile(f)).join('')
       : `<div class="empty-zone">${copy}</div>`;
+    const meta = items.length
+      ? items.length + ' ' + (typeof t === 'function' ? t('del.files') : (en ? 'files' : 'archivos'))
+      : (typeof t === 'function' ? t('del.empty') : (en ? 'empty' : 'vacío'));
     return `
       <div class="zone" id="zone-${zid}">
         <div class="zone-head">
           <div class="zname">${title}</div>
-          <div class="zmeta">${items.length ? items.length + (lang==='en'?' files':' archivos') : (lang==='en'?'empty':'vacío')}</div>
+          <div class="zmeta">${meta}</div>
         </div>
         ${items.length ? `<p class="zone-copy">${copy}</p>` : ''}
         ${body}
@@ -130,14 +155,14 @@ function renderLiveZones(data, lang) {
   }).join('');
 }
 
-function renderLiveFile(f, lang) {
+function renderLiveFile(f) {
   const cls = f.ready ? '' : 'not-ready';
   const href = (typeof liveDeliverableDownloadUrl === 'function')
     ? liveDeliverableDownloadUrl('sonata-001', f.id)
     : '#';
   const action = f.ready
-    ? `<a class="btn btn-primary btn-sm" href="${href}" target="_blank" rel="noopener">${lang==='en'?'Download':'Descargar'}</a>`
-    : `<span class="text-xs text-muted">${lang==='en'?'Not ready':'En preparación'}</span>`;
+    ? `<a class="btn btn-primary btn-sm" href="${href}" target="_blank" rel="noopener">${typeof t === 'function' ? t('del.download') : 'Descargar'}</a>`
+    : `<span class="text-xs text-muted">${typeof t === 'function' ? t('del.not_ready') : 'En preparación'}</span>`;
   const note = f.note ? `<div class="fnote">${f.note}</div>` : '';
   const stamp = f.stamp ? `<span class="stamp">${f.stamp}</span>` : '';
   return `
@@ -209,7 +234,11 @@ function renderDemoFile(f) {
 </script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  document.title = t('page.title_deliverables');
+  if (typeof t === 'function') {
+    document.title = t('page.title_deliverables');
+    const h1 = document.getElementById('page-h1');
+    if (h1) h1.textContent = t('del.h1');
+  }
 });
 </script>
 </body>
