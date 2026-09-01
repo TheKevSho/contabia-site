@@ -8,113 +8,45 @@
   <link rel="stylesheet" href="css/portal.css">
   <script src="js/theme.js"></script>
   <style>
-    .period-group {
-      margin-bottom: 22px;
-    }
-    .period-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      margin-bottom: 10px;
-      padding-bottom: 6px;
-      border-bottom: 1px solid var(--light-gray);
-    }
-    .period-head .pname {
-      font-family: var(--font-display);
-      color: var(--charcoal);
-      font-size: 19px;
-    }
-    .period-head .pmeta {
-      font-size: 12px;
-      color: var(--warm-gray);
-      font-family: var(--font-mono);
-    }
-
-    .file-row {
-      background: var(--white);
-      border: 1px solid var(--light-gray);
-      border-radius: var(--radius);
-      padding: 14px 16px;
-      margin-bottom: 8px;
-      display: grid;
-      grid-template-columns: 44px 1fr auto auto;
-      gap: 14px;
-      align-items: center;
-    }
+    .zone { margin-bottom: 32px; }
+    .zone-head { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; padding-bottom:6px; border-bottom:1px solid var(--light-gray); }
+    .zone-head .zname { font-family: var(--font-display); color: var(--charcoal); font-size: 20px; }
+    .zone-head .zmeta { font-size: 12px; color: var(--warm-gray); font-family: var(--font-mono); }
+    .zone-copy { font-size: 13.5px; color: var(--warm-gray); margin: 0 0 12px; line-height: 1.55; }
+    .file-row { background: var(--white); border: 1px solid var(--light-gray); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 8px; display: grid; grid-template-columns: 44px 1fr auto auto; gap: 14px; align-items: center; }
     .file-row.not-ready { opacity: .55; }
-    .file-row .ftype {
-      width: 44px; height: 44px;
-      border-radius: var(--radius);
-      display: flex; align-items: center; justify-content: center;
-      font-family: var(--font-mono);
-      font-size: 11.5px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      color: var(--on-dark);
-    }
-    .file-row .ftype.xlsx     { background: #1F7E3A; }
-    .file-row .ftype.pdf      { background: #B22222; }
-    .file-row .ftype.docx     { background: var(--ocean); }
-    .file-row .ftype.json     { background: var(--midnight); }
-
-    .file-row .fname {
-      font-weight: 600;
-      color: var(--charcoal);
-      font-size: 14.5px;
-    }
-    .file-row .fnote {
-      font-size: 12px;
-      color: var(--warm-gray);
-      margin-top: 3px;
-    }
-    .file-row .source-tag {
-      font-size: 10px;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      padding: 3px 8px;
-      border-radius: 10px;
-      font-weight: 700;
-      background: var(--sand);
-      color: var(--charcoal);
-      font-family: var(--font-mono);
-    }
-    .file-row .source-tag.free_scan { background: #FBE8C9; color: #876022; }
-    .file-row .fsize {
-      font-family: var(--font-mono);
-      font-size: 12.5px;
-      color: var(--warm-gray);
-    }
+    .file-row .ftype { width:44px; height:44px; border-radius: var(--radius); display:flex; align-items:center; justify-content:center; font-family: var(--font-mono); font-size:11.5px; font-weight:700; letter-spacing:1px; color: var(--on-dark); }
+    .file-row .ftype.xlsx { background:#1F7E3A; }
+    .file-row .ftype.csv  { background: var(--midnight); }
+    .file-row .ftype.md   { background: var(--ocean); }
+    .file-row .ftype.pdf  { background:#B22222; }
+    .file-row .fname { font-weight:600; color: var(--charcoal); font-size:14.5px; }
+    .file-row .fnote { font-size:12px; color: var(--warm-gray); margin-top:3px; }
+    .file-row .fsize { font-family: var(--font-mono); font-size:12.5px; color: var(--warm-gray); }
+    .empty-zone { background: var(--white); border: 1px dashed var(--light-gray); border-radius: var(--radius); padding: 18px 16px; color: var(--warm-gray); font-size: 13.5px; line-height: 1.55; }
+    .stamp { font-size:10px; letter-spacing:1px; text-transform:uppercase; padding:3px 8px; border-radius:10px; font-weight:700; background:#FBE8C9; color:#876022; font-family: var(--font-mono); }
   </style>
 </head>
 <body>
 <div class="shell">
   <div id="sidebar-mount"></div>
-
   <main class="main">
     <div id="topbar-mount"></div>
-
     <div class="content">
-
       <div class="page-head">
         <div class="title-block">
           <h1>Entregables</h1>
           <div class="meta" id="page-meta">…</div>
         </div>
-        <div class="actions">
-          <a class="btn btn-secondary" href="auditoria.html">Auditoría →</a>
-          <button class="btn btn-secondary" onclick="alert('Paquete completo descargado (mockup).')">↓ Todo</button>
-        </div>
       </div>
-
-      <div class="filter-chips" id="del-filters"></div>
-
-      <div id="del-list"></div>
-
+      <div id="del-live"></div>
+      <div id="del-demo" hidden>
+        <div class="filter-chips" id="del-filters"></div>
+        <div id="del-list"></div>
+      </div>
     </div>
   </main>
 </div>
-
-  
 
 <script src="js/data.js"></script>
 <script src="js/sonata-live.js"></script>
@@ -125,111 +57,127 @@
 <script src="js/help.js"></script>
 <script src="js/agent-widget.js"></script>
 <script>
-let currentDelFilter = 'all';
-
 document.addEventListener('DOMContentLoaded', () => {
-
   if (typeof isLiveMode === 'function' && isLiveMode()) {
-    const lang = (typeof currentLang === 'function' ? currentLang() : 'es');
-    const metaEl = document.getElementById('page-meta');
-    if (metaEl) metaEl.textContent = 'Tayrona Sailing · julio 2026 · EN CURSO';
-    const slot = document.querySelector('.content');
-    if (slot) {
-      const head = slot.querySelector('.page-head');
-      Array.from(slot.children).filter(el => el !== head).forEach(el => el.remove());
-      const wrap = document.createElement('div');
-      wrap.innerHTML = (typeof honestStubHtml === 'function')
-        ? honestStubHtml({ title: lang==='en' ? 'Not connected yet' : 'Aún no conectado' })
-        : '<div class="panel">Aún no conectado.</div>';
-      slot.appendChild(wrap);
-    }
+    initLiveDeliverables();
     return;
   }
-
-  const e = currentEntityData();
-  const meta = e.meta;
-  const ready = e.deliverables.filter(d => d.ready).length;
-
-  document.getElementById('page-meta').innerHTML =
-    `${meta.name} · archivo histórico · ${ready} de ${e.deliverables.length} listos para descargar`;
-
-  renderFilters(e);
-  renderList(e);
+  initDemoDeliverables();
 });
 
+async function initLiveDeliverables() {
+  const lang = (typeof currentLang === 'function' ? currentLang() : 'es');
+  const metaEl = document.getElementById('page-meta');
+  metaEl.textContent = lang === 'en'
+    ? 'Tayrona Sailing · July 2026 IN PROGRESS · nothing posted'
+    : 'Tayrona Sailing · julio 2026 EN CURSO · nada causado';
+  const slot = document.getElementById('del-live');
+  try {
+    const data = await fetchLiveDeliverables('sonata-001');
+    slot.innerHTML = renderLiveZones(data, lang);
+  } catch (err) {
+    slot.innerHTML = `<div class="panel" style="padding:18px;color:var(--warm-gray);">No se pudo cargar entregables: ${err.message}</div>`;
+  }
+}
+
+function renderLiveZones(data, lang) {
+  const zones = data.zones || {};
+  const order = ['present', 'scenarios', 'past'];
+  return order.map(zid => {
+    const z = zones[zid] || {};
+    const title = lang === 'en' ? (z.title_en || zid) : (z.title_es || zid);
+    const copy = lang === 'en' ? (z.copy_en || '') : (z.copy_es || '');
+    const items = data[zid] || [];
+    const body = items.length
+      ? items.map(f => renderLiveFile(f, lang)).join('')
+      : `<div class="empty-zone">${copy}</div>`;
+    return `
+      <div class="zone" id="zone-${zid}">
+        <div class="zone-head">
+          <div class="zname">${title}</div>
+          <div class="zmeta">${items.length ? items.length + (lang==='en'?' files':' archivos') : (lang==='en'?'empty':'vacío')}</div>
+        </div>
+        ${items.length ? `<p class="zone-copy">${copy}</p>` : ''}
+        ${body}
+      </div>`;
+  }).join('');
+}
+
+function renderLiveFile(f, lang) {
+  const cls = f.ready ? '' : 'not-ready';
+  const href = (typeof liveDeliverableDownloadUrl === 'function')
+    ? liveDeliverableDownloadUrl('sonata-001', f.id)
+    : '#';
+  const action = f.ready
+    ? `<a class="btn btn-primary btn-sm" href="${href}" target="_blank" rel="noopener">${lang==='en'?'Download':'Descargar'}</a>`
+    : `<span class="text-xs text-muted">${lang==='en'?'Not ready':'En preparación'}</span>`;
+  const note = f.note ? `<div class="fnote">${f.note}</div>` : '';
+  const stamp = f.stamp ? `<span class="stamp">${f.stamp}</span>` : '';
+  return `
+    <div class="file-row ${cls}">
+      <div class="ftype ${f.type||'xlsx'}">${(f.type||'FILE').toUpperCase()}</div>
+      <div>
+        <div class="fname">${f.name}</div>
+        ${note}
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+        ${stamp}
+        <div class="fsize">${f.size_label || ''}</div>
+      </div>
+      <div>${action}</div>
+    </div>`;
+}
+
+/* ---- demo path (Scrooge only) ---- */
+let currentDelFilter = 'all';
+function initDemoDeliverables() {
+  document.getElementById('del-demo').hidden = false;
+  const e = currentEntityData();
+  const meta = e.meta;
+  const ready = (e.deliverables || []).filter(d => d.ready).length;
+  document.getElementById('page-meta').innerHTML =
+    `${meta.name} · archivo histórico · ${ready} de ${(e.deliverables||[]).length} listos`;
+  renderFilters(e);
+  renderList(e);
+}
 function renderFilters(e) {
-  const cierreCount = e.deliverables.filter(d => d.source === 'cierre').length;
-  const scanCount   = e.deliverables.filter(d => d.source === 'free_scan').length;
+  const cierreCount = (e.deliverables||[]).filter(d => d.source === 'cierre').length;
+  const scanCount   = (e.deliverables||[]).filter(d => d.source === 'free_scan').length;
   const chips = [
-    { key: 'all',       label: `Todos (${e.deliverables.length})` },
-    { key: 'cierre',    label: `Cierres mensuales (${cierreCount})` },
+    { key: 'all', label: `Todos (${(e.deliverables||[]).length})` },
+    { key: 'cierre', label: `Cierres mensuales (${cierreCount})` },
     { key: 'free_scan', label: `Escaneo gratuito (${scanCount})` },
   ];
   document.getElementById('del-filters').innerHTML = chips.map(c => `
     <div class="filter-chip ${c.key===currentDelFilter?'active':''}" onclick="setDelFilter('${c.key}')">${c.label}</div>
   `).join('');
 }
-
 function setDelFilter(key) {
   currentDelFilter = key;
   const e = currentEntityData();
   renderFilters(e);
   renderList(e);
 }
-
 function renderList(e) {
-  let items = e.deliverables;
+  let items = e.deliverables || [];
   if (currentDelFilter !== 'all') items = items.filter(d => d.source === currentDelFilter);
-
-  /* group by period */
-  const byPeriod = items.reduce((acc, d) => {
-    (acc[d.period] = acc[d.period] || []).push(d);
-    return acc;
-  }, {});
-
-  /* sort periods most recent first — we'll trust insertion order matches data.js */
+  const byPeriod = items.reduce((acc, d) => { (acc[d.period] = acc[d.period] || []).push(d); return acc; }, {});
   const periods = Object.keys(byPeriod);
-
   document.getElementById('del-list').innerHTML = periods.length === 0
     ? `<div class="panel" style="text-align:center;color:var(--warm-gray);">Sin entregables en este filtro.</div>`
     : periods.map(p => {
       const files = byPeriod[p];
       const ready = files.filter(f => f.ready).length;
-      return `
-        <div class="period-group">
-          <div class="period-head">
-            <div class="pname">${p}</div>
-            <div class="pmeta">${ready} / ${files.length} listos</div>
-          </div>
-          ${files.map(f => renderFile(f)).join('')}
-        </div>`;
+      return `<div class="period-group"><div class="zone-head"><div class="zname">${p}</div><div class="zmeta">${ready} / ${files.length}</div></div>${files.map(renderDemoFile).join('')}</div>`;
     }).join('');
 }
-
-function renderFile(f) {
+function renderDemoFile(f) {
   const cls = f.ready ? '' : 'not-ready';
-  const sourceTag = f.source === 'free_scan'
-    ? `<span class="source-tag free_scan" title="Escaneo gratuito de ContabIA">FREE-SCAN</span>`
-    : '';
   const action = f.ready
-    ? (f.path
-        ? `<a class="btn btn-primary btn-sm" href="${f.path}" target="_blank">↓ Descargar</a>`
-        : `<button class="btn btn-primary btn-sm" onclick="alert('Descarga simulada — archivo en S3.')">↓ Descargar</button>`)
+    ? (f.path ? `<a class="btn btn-primary btn-sm" href="${f.path}" target="_blank">↓ Descargar</a>`
+              : `<button class="btn btn-primary btn-sm" onclick="alert('Descarga simulada.')">↓ Descargar</button>`)
     : `<span class="text-xs text-muted">En preparación</span>`;
-  const note = f.note ? `<div class="fnote">${f.note}</div>` : '';
-  return `
-    <div class="file-row ${cls}">
-      <div class="ftype ${f.type}">${f.type.toUpperCase()}</div>
-      <div>
-        <div class="fname">${f.name}</div>
-        ${note}
-      </div>
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
-        ${sourceTag}
-        <div class="fsize">${f.size}</div>
-      </div>
-      <div>${action}</div>
-    </div>`;
+  return `<div class="file-row ${cls}"><div class="ftype ${f.type}">${(f.type||'').toUpperCase()}</div><div><div class="fname">${f.name}</div></div><div class="fsize">${f.size||''}</div><div>${action}</div></div>`;
 }
 </script>
 <script>

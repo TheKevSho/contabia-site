@@ -33,13 +33,14 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Literal, Optional
 
-from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, UploadFile
+from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 import auth_users
 import boveda_data
+import deliverables_data
 from alegra_client import AlegraAuthError, AlegraClient
 from data_loader import load_exceptions, summarize
 from je_data import ACCEPTED_NO_ACTION, JOURNAL_ENTRIES, OPEN_JUDGMENT_CALLS, RECURRING_ROUTINES
@@ -52,6 +53,8 @@ DATA_DIR = Path(os.environ.get("CONTABIA_DATA_DIR", Path(__file__).parent / "dat
 DB_PATH = Path(os.environ.get("CONTABIA_DB_PATH", Path(__file__).parent / "sonata_mas_001.sqlite"))
 # Boveda uploads need persistent storage (Railway volume); registers stay in the repo.
 BOVEDA_DIR = Path(os.environ.get("CONTABIA_BOVEDA_DIR", DATA_DIR))
+# Catalog files (xlsx/csv/md) ship in the image. Volume `/data` does not have them.
+REPO_DATA_DIR = Path(__file__).parent / "data"
 
 # ---------------------------------------------------------------------------
 # Auth: named users (Kevin owner / Edwin CPA / Nick owner) via PORTAL_USERS_JSON.
@@ -72,13 +75,15 @@ app.add_middleware(
 )
 
 
-def require_auth(authorization: Optional[str] = Header(None)) -> dict:
+def require_auth(authorization: Optional[str] = Header(None), token: Optional[str] = Query(None)) -> dict:
     if not auth_users.USERS:
         raise HTTPException(
             status_code=503,
             detail="No portal users configured (set PORTAL_USERS_JSON, or PORTAL_USER+PORTAL_PASSWORD)",
         )
-    user = auth_users.user_from_authorization(authorization)
+    user = auth_users.user_from_authorization(authorization) if authorization else None
+    if not user and token:
+        user = auth_users.user_from_authorization(f"Bearer {token}")
     if not user:
         raise HTTPException(status_code=401, detail="Missing or invalid token - log in via /auth/login")
     return user
@@ -187,6 +192,38 @@ def _init_db() -> None:
 
 _init_db()
 seed_standing_rules(_db, "sonata-001")
+
+
+BOVEDA_SEED = [
+    ("Bold_Transacciones_2026-07.xlsx", "Bancos", ["julio", "bold", "AJ-J07-01"], "EX-J07-12"),
+    ("Bold_Transacciones_2026-07.md", "Bancos", ["julio", "bold"], "EX-J07-12"),
+    ("78100001780_JUL2026.xlsx", "Bancos", ["julio", "bancolombia"], "EX-J07-11"),
+    ("DetallePlanilla_38244858_2026_07_E.pdf", "Nómina", ["julio", "pila"], "EX-J07-09"),
+    ("exception_register_2026-07.csv", "Cierre", ["julio", "rfr"], None),
+    ("SonataMas_Dashboard_2026_ES.xlsx", "Cierre", ["julio", "dashboard"], None),
+]
+
+
+def _seed_boveda_from_repo() -> None:
+    """Idempotent: copy known July source docs into the volume if missing by filename."""
+    seed_dir = REPO_DATA_DIR / "boveda_seed"
+    if not seed_dir.exists():
+        return
+    existing = {r["filename"] for r in boveda_data.list_files(_db, "sonata-001")}
+    for filename, folder, tags, linked in BOVEDA_SEED:
+        if filename in existing:
+            continue
+        src = seed_dir / filename
+        if not src.exists():
+            continue
+        boveda_data.save_upload(
+            _db, BOVEDA_DIR, "sonata-001", filename, src.read_bytes(),
+            folder=folder, tags=tags, linked_exception_id=linked, uploaded_by="seed",
+        )
+        log.info("boveda seed: %s → %s", filename, folder)
+
+
+_seed_boveda_from_repo()
 
 
 def _status_overrides(table: str) -> dict[str, dict]:
@@ -630,7 +667,66 @@ def mark_boveda_file_processed(entity_id: str, file_id: str, linked_to: Optional
 
 
 # ---------------------------------------------------------------------------
-# Portal chat → Tayrona Hermes profile (direct).
+# Deliverables — three zones (present / scenarios / past). No mock cifras.
+# ---------------------------------------------------------------------------
+@app.get("/entities/{entity_id}/deliverables", dependencies=[Depends(require_auth)])
+def list_deliverables(entity_id: str):
+    _get_entity_or_404(entity_id)
+    items = deliverables_data.list_deliverables(REPO_DATA_DIR)
+    zones = deliverables_data.zones_meta()
+    return {
+        "zones": zones,
+        "items": items,
+        "present": [i for i in items if i["zone"] == "present"],
+        "scenarios": [i for i in items if i["zone"] == "scenarios"],
+        "past": [i for i in items if i["zone"] == "past"],
+        "nothing_posted": True,
+        "dry_run": DRY_RUN,
+        "july_closed": False,
+    }
+
+
+@app.get("/entities/{entity_id}/deliverables/{file_id}/download", dependencies=[Depends(require_auth)])
+def download_deliverable(entity_id: str, file_id: str):
+    _get_entity_or_404(entity_id)
+    rec = deliverables_data.get_file(REPO_DATA_DIR, file_id)
+    if not rec or not rec.get("exists"):
+        raise HTTPException(status_code=404, detail=f"Unknown or missing deliverable '{file_id}'")
+    path = Path(rec["stored_path"])
+    return FileResponse(path, filename=rec["filename"])
+
+
+def _july_briefing() -> str:
+    entity = ENTITIES["sonata-001"]
+    exceptions = _load_all_exceptions(entity)
+    overrides = _status_overrides("exception_status")
+    for e in exceptions:
+        if e["id"] in overrides:
+            e["status"] = overrides[e["id"]]["status"]
+    july = [e for e in exceptions if e.get("period") == "2026-07"]
+    open_rows = [e for e in july if e.get("status") == "open"]
+    closed_rows = [e for e in july if e.get("status") == "closed"]
+    live_jes = [
+        je for je in JOURNAL_ENTRIES
+        if je.get("bucket") == "live" and je.get("status") == "pending_edwin_approval"
+    ]
+    lines = [
+        f"July exceptions: {len(july)} total, {len(open_rows)} open, {len(closed_rows)} closed.",
+        "Closed: " + (", ".join(e["id"] for e in closed_rows) or "(none)"),
+        "Open (do not hide): " + ", ".join(
+            f"{e['id']} [{e.get('severity')}] {e.get('title','')[:80]}" for e in open_rows
+        ),
+        "Staged JEs (NOT posted, pending accountant): "
+        + ", ".join(f"{je['id']} ({je['description'][:60]})" for je in live_jes),
+        "Do NOT double-post Edwin already in Alegra: retefuente 5,555,000; seg social 2,164,950; deterioro 1,673,000.",
+        "Source doc in hand for AJ-J07-01: Bold_Transacciones_2026-07.xlsx (two link-pago 4.25M + 1.35M = 5.6M to 2805).",
+        "Dashboard download: Entregables → Actual → SonataMas_Dashboard_2026_ES.xlsx. Not Railway HTML.",
+        "July is NOT closed. August is en curso. Do not close August live.",
+    ]
+    return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
 # Hermes API server stays on loopback; this proxy is the only public hop.
 # WhatsApp self-chat on Kevin's personal number remains the document-forward
 # rail — the portal never invents cifras.
@@ -675,14 +771,18 @@ def portal_chat(entity_id: str, body: ChatBody, user: dict = Depends(require_aut
     if lang not in {"es", "en"}:
         lang = "es"
     session_id = body.session_id or f"portal-{entity_id}-{user.get('username', 'user')}"
+    briefing = _july_briefing()
     system = (
         "You are the ContabIA agent for Tayrona Sailing (Sonata Mas SAS, NIT 901528910, "
         "entity sonata-001). Period in progress: July 2026 (EN CURSO). "
         "Never invent cifras. If you do not have a live number, say so and point to "
-        "Excepciones / Comprobantes. Do not offer Cantamar as a live entity. "
+        "Excepciones / Comprobantes / Entregables. Do not offer Cantamar as a live entity. "
         "WhatsApp document intake is Kevin's personal self-chat — tell the user to "
         "forward files there, not to invent a ContabIA business number. "
-        f"Reply in {'Spanish' if lang == 'es' else 'English'}."
+        "Nothing posts to Alegra from this chat. dry_run stays true. "
+        f"Reply in {'Spanish' if lang == 'es' else 'English'}.\n\n"
+        "LIVE JULY QUEUE (same register as Excepciones / Comprobantes):\n"
+        f"{briefing}"
     )
     payload = {
         "model": "hermes-agent",

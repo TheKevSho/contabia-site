@@ -118,6 +118,22 @@ async function fetchLiveChatStatus(entityId) {
   return _liveFetch(entityId, '/chat/status');
 }
 
+async function fetchLiveDeliverables(entityId) {
+  return _liveFetch(entityId, '/deliverables');
+}
+
+function liveDeliverableDownloadUrl(entityId, fileId) {
+  const cfg = LIVE_CONFIG[entityId];
+  const token = sessionStorage.getItem('contabia_api_token') || '';
+  return `${cfg.api_base}/entities/${entityId}/deliverables/${fileId}/download?token=${encodeURIComponent(token)}`;
+}
+
+function liveBovedaDownloadUrl(entityId, fileId) {
+  const cfg = LIVE_CONFIG[entityId];
+  const token = sessionStorage.getItem('contabia_api_token') || '';
+  return `${cfg.api_base}/entities/${entityId}/boveda/${fileId}/download?token=${encodeURIComponent(token)}`;
+}
+
 async function patchLiveJournalEntry(entityId, jeId, status, rejectionNote) {
   return _liveFetch(entityId, `/journal-entries/${jeId}`, {
     method: 'PATCH',

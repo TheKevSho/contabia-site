@@ -352,8 +352,16 @@ function renderFile(f) {
 }
 
 function openFileDetail(id) {
-  const f = (currentEntityData().boveda || []).find(x => x.id === id);
+  const liveItems = window._vaultItems || [];
+  const f = liveItems.find(x => x.id === id) || (currentEntityData().boveda || []).find(x => x.id === id);
   if (!f) return;
+  const live = typeof isLiveMode === 'function' && isLiveMode();
+  if (live && typeof liveBovedaDownloadUrl === 'function' && f.id) {
+    const url = liveBovedaDownloadUrl('sonata-001', f.id);
+    const go = confirm(`${f.filename}\n\nCarpeta: ${f.folder}\nSubido: ${f.uploaded_at} por ${f.uploaded_by}\nVinculado: ${f.linked_to || '(nada)'}\n\n¿Descargar?`);
+    if (go) window.open(url, '_blank');
+    return;
+  }
   alert(
     `${f.filename}\n\n` +
     `Carpeta: ${f.folder}\n` +
@@ -368,7 +376,7 @@ function openFileDetail(id) {
 
 function adaptBovedaItem(f) {
   return {
-    id: f.id || f.filename,
+    id: f.file_id || f.id || f.filename,
     filename: f.filename || f.name || 'archivo',
     folder: f.folder || 'General',
     type: (f.type || (f.filename || '').split('.').pop() || 'file').toLowerCase(),
@@ -376,7 +384,7 @@ function adaptBovedaItem(f) {
     uploaded_at: (f.uploaded_at || f.created_at || '').slice(0, 16),
     uploaded_by: f.uploaded_by || 'portal',
     tags: f.tags || [],
-    linked_to: f.linked_to || '',
+    linked_to: f.linked_to || f.linked_exception_id || '',
     processed: !!f.processed,
   };
 }

@@ -30,7 +30,7 @@ const LIVE_NAV_VISIBLE = {
   reconciliacion: false,
   nomina: false,
   tributario: false,
-  deliverables: false,
+  deliverables: true,
   auditoria: false,
 };
 
