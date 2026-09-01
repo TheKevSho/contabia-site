@@ -157,7 +157,7 @@ async function renderLiveResumen() {
           <div class="meta">R-11-JUL · R-11-CATCHUP · R-14-JUL · AJ-J07-01 · AJ-J06-REVERSE</div>
           <div class="cta">${t('cta.revisar_jes')}</div>
         </div>
-        <div class="action-card routine" onclick="location.href='chat.html'">
+        <div class="action-card routine" onclick="if(typeof openAgentPanel==='function') openAgentPanel();">
           <div class="label">${lang === 'en' ? 'Agent' : 'Agente'}</div>
           <div class="title">${lang === 'en' ? 'Talk to Hermes (Tayrona)' : 'Hablar con Hermes (Tayrona)'}</div>
           <div class="meta">${lang === 'en' ? 'Forward files on personal WhatsApp self-chat.' : 'Reenvíe archivos por WhatsApp personal (self-chat).'}</div>
