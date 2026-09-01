@@ -57,7 +57,7 @@ function toggleHelpItem(el) {
 
 function askAgentFromHelp() {
   closeHelpPanel();
-  location.href = 'chat.html';
+  if (typeof openAgentPanel === 'function') openAgentPanel();
 }
 
 function renderHelpPanel() {

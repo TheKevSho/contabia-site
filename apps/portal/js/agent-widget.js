@@ -110,7 +110,6 @@ function mountAgentWidget(page) {
           <div class="t">Su agente</div>
           <div class="s"><span class="dot"></span>WhatsApp · cola julio</div>
         </div>
-        <div class="act" title="Pantalla completa" onclick="event.stopPropagation(); location.href='chat.html'">⤢</div>
         <div class="act" title="Minimizar" onclick="event.stopPropagation(); closeAgentPanel()">✕</div>
       </div>
       <div class="agent-body" id="agent-body"></div>

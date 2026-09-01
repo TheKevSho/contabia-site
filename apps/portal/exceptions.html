@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%231B2A4A%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27Georgia%27 font-size=%2718%27 fill=%27%23D4704A%27 text-anchor=%27middle%27 font-weight=%27bold%27%3EC%3C/text%3E%3C/svg%3E">
   <title id="page-title">ContabIA — Excepciones</title>
-  <link rel="stylesheet" href="css/portal.css">
-  <script src="js/theme.js"></script>
+  <link rel="stylesheet" href="css/portal.css?v=20260901c">
+  <script src="js/theme.js?v=20260901c"></script>
   <style>
     .exc-table th, .exc-table td { padding: 12px 14px; font-size: 13.5px; }
     .exc-table tr { cursor: pointer; }
@@ -134,6 +134,21 @@
       <div id="p-rec" style="font-size:13.5px;line-height:1.7;color:var(--charcoal);"></div>
     </div>
 
+    <div class="panel-section" id="p-docs-wrap" style="display:none;">
+      <div class="lbl">Notas / docs relacionados</div>
+      <div id="p-docs" style="font-size:13px;line-height:1.6;color:var(--charcoal);font-family:var(--font-mono);"></div>
+    </div>
+
+    <div class="panel-section" id="p-chat-wrap">
+      <div class="lbl">Hablar de este ítem</div>
+      <div id="p-chat-thread" style="max-height:180px;overflow-y:auto;background:var(--cream);border:1px solid var(--light-gray);border-radius:var(--radius);padding:10px;margin-bottom:8px;font-size:13px;line-height:1.5;"></div>
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="p-chat-input" placeholder="Pregunte sobre esta excepción…" autocomplete="off"
+          style="flex:1;padding:9px 12px;border:1px solid var(--light-gray);border-radius:var(--radius);font-size:13.5px;font-family:var(--font-body);background:var(--white);color:var(--charcoal);">
+        <button class="btn btn-primary btn-sm" type="button" onclick="sendExcPanelChat()">Enviar</button>
+      </div>
+    </div>
+
     <div class="panel-actions">
       <button class="btn btn-secondary btn-sm" onclick="closeExcPanel()" id="panel-btn-cerrar">Cerrar</button>
       <button class="btn-reject" id="p-btn-reject">Rechazar</button>
@@ -142,18 +157,18 @@
   </div>
 </div>
 
-<script src="js/portal.js"></script>
-<script src="js/data.js"></script>
-<script src="js/sonata-live.js"></script>
-<script src="js/i18n.js"></script>
-<script src="js/live-shell.js"></script>
-<script src="js/nav.js"></script>
-<script src="js/auth.js"></script>
+<script src="js/portal.js?v=20260901c"></script>
+<script src="js/data.js?v=20260901c"></script>
+<script src="js/sonata-live.js?v=20260901c"></script>
+<script src="js/i18n.js?v=20260901c"></script>
+<script src="js/live-shell.js?v=20260901c"></script>
+<script src="js/nav.js?v=20260901c"></script>
+<script src="js/auth.js?v=20260901c"></script>
 
   
 
-<script src="js/help.js"></script>
-<script src="js/agent-widget.js"></script>
+<script src="js/help.js?v=20260901c"></script>
+<script src="js/agent-widget.js?v=20260901c"></script>
 <script>
 let currentExcFilter = 'all';
 let liveExceptions = null;     // populated when live mode is active
@@ -289,6 +304,7 @@ function openExcDetail(id) {
   document.getElementById('p-conf').innerHTML          = confidenceBar(x.ai_confidence);
   document.getElementById('p-btn-reject').onclick  = () => alert(t('exc.demo.rejected_alert'));
   document.getElementById('p-btn-approve').onclick = () => alert(t('exc.demo.approved_alert'));
+  fillExcSideChat(x);
   document.getElementById('exc-panel').classList.add('open');
   document.body.style.overflow = 'hidden';
   if (typeof openAgentOnItem === 'function') openAgentOnItem('exc', x);
@@ -439,6 +455,7 @@ function openLiveExcDetail(id) {
   document.getElementById('p-btn-reject').onclick  = () => decideLiveExc(x.id, 'rejected');
   document.getElementById('p-btn-approve').onclick = () => decideLiveExc(x.id, 'approved');
 
+  fillExcSideChat(x);
   document.getElementById('exc-panel').classList.add('open');
   document.body.style.overflow = 'hidden';
   if (typeof openAgentOnItem === 'function') openAgentOnItem('exc', x);
@@ -455,6 +472,55 @@ async function decideLiveExc(excId, status) {
     await initLivePage(liveEntityId);
   } catch (err) {
     alert(t_fmt('exc.save_error', {msg: err.message}));
+  }
+}
+
+function fillExcSideChat(x) {
+  const docs = (typeof relatedDocsFor === 'function') ? relatedDocsFor(x.id) : [];
+  const wrap = document.getElementById('p-docs-wrap');
+  const docsEl = document.getElementById('p-docs');
+  if (wrap && docsEl) {
+    if (docs.length) {
+      wrap.style.display = '';
+      docsEl.textContent = docs.join(' · ');
+    } else {
+      wrap.style.display = 'none';
+      docsEl.textContent = '';
+    }
+  }
+  const thread = document.getElementById('p-chat-thread');
+  if (thread) {
+    const lang = (typeof currentLang === 'function' ? currentLang() : 'es');
+    const intro = lang === 'en'
+      ? `This is ${x.id}. Related: ${docs.join(' · ') || 'none on file'}. Ask about this item — I will not invent figures.`
+      : `Esto es ${x.id}. Relacionado: ${docs.join(' · ') || 'sin .md en archivo'}. Pregunte sobre este ítem. No invento cifras.`;
+    thread.innerHTML = `<div style="color:var(--warm-gray);">${intro}</div>`;
+  }
+  const input = document.getElementById('p-chat-input');
+  if (input && !input._wired) {
+    input._wired = true;
+    input.addEventListener('keypress', ev => { if (ev.key === 'Enter') sendExcPanelChat(); });
+  }
+}
+
+async function sendExcPanelChat() {
+  const input = document.getElementById('p-chat-input');
+  const text = (input && input.value || '').trim();
+  if (!text) return;
+  input.value = '';
+  const thread = document.getElementById('p-chat-thread');
+  if (thread) {
+    thread.innerHTML += `<div style="margin-top:8px;text-align:right;"><b>Usted</b> · ${text}</div>`;
+    thread.scrollTop = thread.scrollHeight;
+  }
+  if (typeof dispatchAgentUserMessage === 'function') {
+    await dispatchAgentUserMessage(text);
+    const msgs = (typeof getAgentThread === 'function') ? getAgentThread() : [];
+    const last = msgs.filter(m => m.who === 'agent').pop();
+    if (thread && last) {
+      thread.innerHTML += `<div style="margin-top:8px;"><b>Agente</b> · ${last.text}</div>`;
+      thread.scrollTop = thread.scrollHeight;
+    }
   }
 }
 </script>
