@@ -214,7 +214,7 @@ function adaptLiveException(e) {
 
 const JE_GROUP_LABEL = {
   A_ready_to_post:   'A · Listo para postear',
-  B_estimated:       'B · Estimado — Edwin confirma cifra',
+  B_estimated:       'B · Estimado — Contador confirma cifra',
   C_disclosure_only: 'C · Solo revelar, no postear',
 };
 const JE_GROUP_PRIORITY = {

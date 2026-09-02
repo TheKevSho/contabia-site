@@ -4,13 +4,13 @@ ASIENTOS_PROPUESTOS_CONSOLIDADO_2026-07-06_EN.md (the accountant-facing
 consolidated draft-entries doc). Grouped exactly as that document groups them:
 
   A - ready to post as-is (complete entry, verified)
-  B - estimated amount, Edwin confirms rate/structure before posting
+  B - estimated amount, accountant confirms rate/structure before posting
   C - contingencies to disclose, not book
-  D - open + quantified, no entry yet, just needs Edwin's judgment call
+  D - open + quantified, no entry yet, just needs accountant's judgment call
   E - recurring routines to activate once approved
 
 Nothing in this file has been posted to Alegra. `status` is always
-"pending_edwin_approval" until an operator (Edwin, via the portal) flips it —
+"pending_edwin_approval" until an operator (accountant, via the portal) flips it —
 see main.py's PATCH /entities/{id}/journal-entries/{je_id}.
 """
 
@@ -27,7 +27,7 @@ JOURNAL_ENTRIES = [
         "basis": (
             "Cash paid COP 19,563,595 vs. payroll accrual COP 8,360,000 (verified "
             "against NOMINA ENERO 2026.pdf, exact match). Booked as owner loan (CxC), "
-            "not a distribution. Art. 35 not imputed - Edwin documents basis (residual R1)."
+            "not a distribution. Art. 35 not imputed - The accountant documents basis (residual R1)."
         ),
         "linked_exceptions": ["EX-9.2"],
         "status": "pending_edwin_approval",
@@ -39,14 +39,14 @@ JOURNAL_ENTRIES = [
         "group": "A_ready_to_post",
         "description": "PayPal asset write-down",
         "lines": [
-            {"account": "TBD by Edwin (correction/expense)", "debit": 3838372, "credit": 0},
+            {"account": "TBD by accountant (correction/expense)", "debit": 3838372, "credit": 0},
             {"account": "PayPal cash", "debit": 0, "credit": 3838372},
         ],
         "basis": (
             "Real USD balance at 31-Jan-2026 = 809.97 (verified two independent ways), "
             "revalued at certified TRM 3,670.47 = COP 2,972,971. Books carried "
-            "6,811,343 - gross receipts booked without netting fees/payouts. Edwin "
-            "picks the offsetting account."
+            "6,811,343 - gross receipts booked without netting fees/payouts. The "
+            "accountant picks the offsetting account."
         ),
         "linked_exceptions": ["EX-6.3", "EX-8.2"],
         "status": "pending_edwin_approval",
@@ -72,7 +72,7 @@ JOURNAL_ENTRIES = [
         "group": "A_ready_to_post",
         "description": "1305 polluted by non-customers reclass",
         "lines": [
-            {"account": "(destination account per Edwin)", "debit": 9251376, "credit": 0},
+            {"account": "(destination account per accountant)", "debit": 9251376, "credit": 0},
             {"account": "1305 Clientes", "debit": 0, "credit": 9251376},
         ],
         "basis": (
@@ -95,7 +95,7 @@ JOURNAL_ENTRIES = [
         "basis": (
             "IBC add-back base COP 1,859,050 (Cristiam/Carlos/Raul/Ovier all exceed "
             "40%). Estimated incremental employer aportes @16.522% ~= 307,152. "
-            "Pending: Edwin confirms exact PILA rates before posting."
+            "Pending: accountant confirms exact PILA rates before posting."
         ),
         "linked_exceptions": ["EX-9.6"],
         "status": "pending_edwin_approval",
@@ -110,7 +110,7 @@ JOURNAL_ENTRIES = [
         "basis": (
             "January's 400,000 interest verified consistent with 1%/mo amortization "
             "table - no restatement needed. Withholding ESTIMATED at 28,000 (7% x "
-            "400,000, rendimientos financieros) - Edwin confirms rate/Form 350 code "
+            "400,000, rendimientos financieros) - The accountant confirms rate/Form 350 code "
             "before posting. From March onward, activate as recurring (R-14)."
         ),
         "linked_exceptions": ["EX-5.6", "EX-12.6"],
@@ -121,12 +121,12 @@ JOURNAL_ENTRIES = [
     {
         "id": "AJ-01-02",
         "group": "B_estimated",
-        "description": "Retefuente remediation (three overlapping figures - Edwin to reconcile)",
+        "description": "Retefuente remediation (three overlapping figures - accountant to reconcile)",
         "lines": [],  # Likely a Form 350 correction filing, not a pure GL entry.
         "basis": (
             "EX-5.1 (1,174,647) + EX-5.2 (700,000 est.) + EX-10.1 (1,900,000 aggregate) "
             "may be the same underlying shortfall viewed three ways. Recommendation: "
-            "Edwin reconciles into one number before structuring the entry."
+            "The accountant reconciles into one number before structuring the entry."
         ),
         "linked_exceptions": ["EX-5.1", "EX-5.2", "EX-10.1"],
         "status": "pending_edwin_approval",
@@ -137,11 +137,11 @@ JOURNAL_ENTRIES = [
         "id": "AJ-07-R11",
         "group": "B_estimated",
         "description": "Depreciation (fixed-asset register drafted, useful lives unconfirmed)",
-        "lines": [],  # Not booked until Edwin approves the FA register.
+        "lines": [],  # Not booked until the accountant approves the FA register.
         "basis": (
             "Draft FA register prepared from real Alegra cost data + assumed DIAN "
             "standard useful lives. Estimated monthly depreciation ~1,055,951 "
-            "(annual ~12,671,412). Not booked until Edwin approves the register; "
+            "(annual ~12,671,412). Not booked until the accountant approves the register; "
             "once approved, activate as recurring."
         ),
         "linked_exceptions": ["EX-12.2", "EX-14.1"],
@@ -158,7 +158,7 @@ JOURNAL_ENTRIES = [
             "Kevin confirmed he will not sign Art. 128 CST pacts for Cristiam/Carlos/"
             "Raul/Ovier. Full bonus is salary-constitutive by default: ~2,850,753/mo, "
             "~34,209,037/yr. Standing rule (decision #15) - contingency until a pact "
-            "is signed, not a booked liability. Recommend Edwin documents as an "
+            "is signed, not a booked liability. Recommend the accountant document as an "
             "explicit accepted-risk decision (same treatment as RA-2/RA-4)."
         ),
         "linked_exceptions": ["EX-9.4", "EX-11.1"],
@@ -173,7 +173,7 @@ JOURNAL_ENTRIES = [
         "lines": [],
         "basis": (
             "Owner-loan booking (AJ-N1-N2) activates Art. 35 by legal default; "
-            "company decision #14 is not to impute it. Edwin documents the basis "
+            "company decision #14 is not to impute it. The accountant documents the basis "
             "at review (residual R1)."
         ),
         "linked_exceptions": ["EX-12.3"],
@@ -183,14 +183,14 @@ JOURNAL_ENTRIES = [
     },
 ]
 
-# Group D — open, quantified, no entry yet, just needs Edwin's judgment call.
+# Group D — open, quantified, no entry yet, just needs accountant's judgment call.
 # Not journal entries — surfaced as exceptions with status=open, listed here for
 # convenience since the consolidated doc treats them as a distinct bucket.
 OPEN_JUDGMENT_CALLS = [
     {"ref": "EX-6.1", "title": "Bancolombia unreconciled net gap", "amount_cop": 1616492,
      "needed": "Line-by-line match (data complete, work pending)"},
     {"ref": "EX-12.8", "title": "BBVA January cuota gap", "amount_cop": 215480,
-     "needed": "Edwin's explanation (grace period? correction?)"},
+     "needed": "Accountant's explanation (grace period? correction?)"},
     {"ref": "EX-10.6", "title": "Dormant 135595 balance", "amount_cop": 24641000,
      "needed": "Confirm balance's origin"},
     {"ref": "EX-6.2", "title": "BBVA opening adjustment", "amount_cop": 1210212,
@@ -210,7 +210,7 @@ OPEN_JUDGMENT_CALLS = [
         "from the original due date either way, but a voluntary correction before DIAN opens "
         "an audit carries only the correction penalty, while DIAN finding it first carries the "
         "much larger sancion por inexactitud. ~3.0M/mo unbooked historically (Jan onward per "
-        "the Jun-2026 audit pass) - Edwin's call: file the voluntary correction now, or "
+        "the Jun-2026 audit pass) - Accountant's call: file the voluntary correction now, or "
         "reaffirm the RA-2 no-remediation disposition with that penalty delta in view."
      )},
 ]
@@ -224,7 +224,7 @@ RECURRING_ROUTINES = [
      "status": "July ready: COP 3,549,289 (Bancolombia 1,335,748 + BBVA 2,213,541)"},
 ]
 
-# July 2026 live-period JEs (golden month). Nothing posted. Edwin retefuente /
+# July 2026 live-period JEs (golden month). Nothing posted. Accountant retefuente /
 # seg-social / deterioro already in Alegra — do not duplicate those.
 JOURNAL_ENTRIES += [
     {
@@ -235,7 +235,7 @@ JOURNAL_ENTRIES += [
             {"account": "5160xx Depreciación PPE", "debit": 1038987, "credit": 0},
             {"account": "159215 Depreciación acumulada", "debit": 0, "credit": 1038987},
         ],
-        "basis": "Asset register monthly = COP 1,038,987. Edwin posted this exact amount Feb–May; skipped Jan+Jun (catch-up is R-11-CATCHUP) and has not posted July.",
+        "basis": "Asset register monthly = COP 1,038,987. The accountant posted this exact amount Feb–May; skipped Jan+Jun (catch-up is R-11-CATCHUP) and has not posted July.",
         "linked_exceptions": ["EX-J07-10"],
         "status": "pending_edwin_approval",
         "period": "2026-07",
@@ -250,7 +250,7 @@ JOURNAL_ENTRIES += [
             {"account": "5160xx Depreciación PPE (Anna Leeza Jan24-Jun26)", "debit": 7500000, "credit": 0},
             {"account": "159215 Depreciación acumulada", "debit": 0, "credit": 9577974},
         ],
-        "basis": "Edwin skipped Jan+Jun on the 43-asset register. Anna Leeza (COP 60M, 5% SL = 250k/mo) has never been depreciated; 30 months Jan 2024–Jun 2026 = 7.5M. Going forward add 250k to monthly R-11.",
+        "basis": "The accountant skipped Jan+Jun on the 43-asset register. Anna Leeza (COP 60M, 5% SL = 250k/mo) has never been depreciated; 30 months Jan 2024–Jun 2026 = 7.5M. Going forward add 250k to monthly R-11.",
         "linked_exceptions": ["EX-J07-10", "EX-J07-13"],
         "status": "pending_edwin_approval",
         "period": "2026-07",
@@ -264,7 +264,7 @@ JOURNAL_ENTRIES += [
             {"account": "5305xx Gasto financiero — intereses", "debit": 3549289, "credit": 0},
             {"account": "2410 Intereses por pagar", "debit": 0, "credit": 3549289},
         ],
-        "basis": "Bancolombia 7810099111 interest 1,335,748 + BBVA 9638124968 interest 2,213,541. Edwin has not posted July interest.",
+        "basis": "Bancolombia 7810099111 interest 1,335,748 + BBVA 9638124968 interest 2,213,541. The accountant has not posted July interest.",
         "linked_exceptions": ["EX-J07-10"],
         "status": "pending_edwin_approval",
         "period": "2026-07",

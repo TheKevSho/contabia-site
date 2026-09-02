@@ -209,7 +209,7 @@ async function dispatchAgentUserMessage(text) {
     } else if (typeof agentReply === 'function') {
       reply = agentReply(text);
     } else {
-      reply = 'Agente no conectado. Reenvíe por WhatsApp a su chat personal de Hermes.';
+      reply = 'Agente no conectado. Reenvíe por WhatsApp a su chat personal de ContabIA.';
     }
     const msgs = getAgentThread();
     if (msgs.length && msgs[msgs.length - 1].text === '…') msgs.pop();

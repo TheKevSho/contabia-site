@@ -71,7 +71,7 @@ function honestStubHtml(opts) {
   opts = opts || {};
   const title = opts.title || (typeof t === 'function' ? t('not_wired') : 'Aún no conectado');
   const copy = opts.copy || (typeof t === 'function' ? t('not_wired_copy') : 'Esta pantalla no tiene un endpoint en vivo. No se muestran cifras de demostración.');
-  const wa = typeof t === 'function' ? t('wa_fwd') : 'Reenvíe documentos a su chat personal con Hermes.';
+  const wa = typeof t === 'function' ? t('wa_fwd') : 'Reenvíe documentos a su chat personal de ContabIA.';
   return `
     <div class="alert-banner">
       <div class="alert-text">
@@ -133,7 +133,7 @@ function applyLiveHelpers() {
       connectors: [
         { id: 'alegra', name: 'Alegra', status: 'ok', last_sync: 'julio 2026' },
         { id: 'fareharbor', name: 'FareHarbor', status: 'ok', last_sync: 'julio 2026' },
-        { id: 'whatsapp', name: 'WhatsApp (Hermes)', status: 'ok', last_sync: 'self-chat' },
+        { id: 'whatsapp', name: 'WhatsApp (ContabIA)', status: 'ok', last_sync: 'agent chat' },
       ],
       closeSummary: {
         period: '2026-07',
@@ -201,12 +201,12 @@ function applyLiveHelpers() {
     if (lang === 'en') {
       return [{
         who: 'agent',
-        text: `Hi${first ? ', ' + first : ''}. I'm the ContabIA agent for Tayrona Sailing. July 2026 is IN PROGRESS. ${open} July exceptions are still open. I will not invent figures. Forward documents to your personal Hermes WhatsApp chat.`,
+        text: `Hi${first ? ', ' + first : ''}. I'm the ContabIA agent for Tayrona Sailing. July 2026 is IN PROGRESS. ${open} July exceptions are still open. I will not invent figures. Forward documents to your personal ContabIA WhatsApp chat.`,
       }];
     }
     return [{
       who: 'agent',
-      text: `Hola${first ? ', ' + first : ''}. Soy el agente ContabIA de Tayrona Sailing. Julio 2026 está EN CURSO. ${open} excepciones de julio siguen abiertas. No invento cifras. Reenvíe documentos a su chat personal de Hermes en WhatsApp.`,
+      text: `Hola${first ? ', ' + first : ''}. Soy el agente ContabIA de Tayrona Sailing. Julio 2026 está EN CURSO. ${open} excepciones de julio siguen abiertas. No invento cifras. Reenvíe documentos a su chat personal de ContabIA en WhatsApp.`,
     }];
   };
 }

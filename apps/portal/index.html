@@ -153,21 +153,18 @@ async function renderLiveResumen() {
         </div>
         <div class="action-card" onclick="location.href='journal-entries.html'">
           <div class="label">${t('queue.por_aprobar')}</div>
-          <div class="title">${lang === 'en' ? `${jesPending} July JEs waiting on Edwin` : `${jesPending} JEs de julio esperan a Edwin`}</div>
+          <div class="title">${lang === 'en' ? `${jesPending} July JEs waiting on accountant` : `${jesPending} JEs de julio esperan al contador`}</div>
           <div class="meta">R-11-JUL · R-11-CATCHUP · R-14-JUL · AJ-J07-01 · AJ-J06-REVERSE</div>
           <div class="cta">${t('cta.revisar_jes')}</div>
         </div>
         <div class="action-card routine" onclick="if(typeof openAgentPanel==='function') openAgentPanel();">
           <div class="label">${lang === 'en' ? 'Agent' : 'Agente'}</div>
-          <div class="title">${lang === 'en' ? 'Talk to Hermes (Tayrona)' : 'Hablar con Hermes (Tayrona)'}</div>
+          <div class="title">${lang === 'en' ? 'Talk to your Agent (Tayrona)' : 'Hablar con tu Agente (Tayrona)'}</div>
           <div class="meta">${lang === 'en' ? 'Forward files on personal WhatsApp self-chat.' : 'Reenvíe archivos por WhatsApp personal (self-chat).'}</div>
           <div class="cta">${lang === 'en' ? 'Open chat →' : 'Abrir chat →'}</div>
         </div>
       </div>`;
-    const note = `<div class="panel" style="padding:16px 18px;font-size:13.5px;line-height:1.6;color:var(--charcoal);">${lang === 'en'
-      ? `FH vs Alegra 82% gap was retracted (EX-J07-14 closed). Cantamar is not on this account. Baseline Jan–Jun: ${base.total||0} historical rows.`
-      : `La brecha FH–Alegra del 82% fue retractada (EX-J07-14 cerrada). Cantamar no está en esta cuenta. Línea base ene–jun: ${base.total||0} filas históricas.`}</div>`;
-    document.getElementById('resumen-sections').innerHTML = alert + cifras + queue + note;
+    document.getElementById('resumen-sections').innerHTML = alert + cifras + queue;
   } catch (err) {
     document.getElementById('resumen-sections').innerHTML = `<div class="alert-banner crit"><div class="alert-text"><div class="icon">!</div><div class="copy"><strong>${lang === 'en' ? 'Could not load live summary.' : 'No se pudo cargar el resumen en vivo.'}</strong> ${err.message}</div></div></div>`;
   }

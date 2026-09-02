@@ -291,14 +291,14 @@ async function initLivePage(entityId) {
 
     document.getElementById('page-meta').innerHTML =
       `${summary.meta.name} · ${cfg.period_label} <span class="live-pill"><span class="dot"></span>Datos reales</span> · ` +
-      `${jeData.items.length} comprobantes propuestos (${pending} esperan a Edwin)`;
+      `${jeData.items.length} comprobantes propuestos (${pending} esperan al contador)`;
 
     if (pending > 0) {
       document.getElementById('alert-slot').innerHTML = `
         <div class="alert-banner">
           <div class="alert-text">
             <div class="icon">!</div>
-            <div class="copy"><strong>${pending} comprobante${pending===1?'':'s'} esperan aprobación de Edwin.</strong> Nada se postea a Alegra hasta que Edwin apruebe cada uno (ver apps/api/main.py — POST de cierre deliberadamente no implementado en esta pasada).</div>
+            <div class="copy"><strong>${pending} comprobante${pending===1?'':'s'} esperan aprobación del Contador.</strong> Nada se postea a Alegra hasta que el Contador apruebe cada uno (ver apps/api/main.py — POST de cierre deliberadamente no implementado en esta pasada).</div>
           </div>
         </div>`;
     }
