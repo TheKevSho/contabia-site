@@ -48,11 +48,21 @@ def load_exceptions(csv_path: Path, period: str = "2026-01") -> list[dict]:
                     "phase": row.get("Phase", "").strip(),
                     "severity": _SEVERITY.get(row.get("Severity", "").strip().upper(), "medium"),
                     "title": row.get("Title", "").strip(),
+                    # Bilingual rendition. The register row carries ES in
+                    # Title_ES / Disposition_ES; EN stays in Title / Disposition.
+                    # A blank ES cell falls back to the EN value so the portal
+                    # never renders an empty cell.
+                    "title_es": (row.get("Title_ES") or "").strip() or row.get("Title", "").strip(),
                     "amount_cop": _amount(row.get("Amount_COP")),
                     "owner": row.get("Owner", "").strip() or None,
                     "proposed_je_ref": je_ref,
                     "status": (row.get("Status") or "open").strip().lower(),
                     "disposition": row.get("Disposition", "").strip() or None,
+                    "disposition_es": (
+                        (row.get("Disposition_ES") or "").strip()
+                        or row.get("Disposition", "").strip()
+                        or None
+                    ),
                     "accepted_risk_tag": (row.get("Accepted_Risk") or "").strip() or None,
                     "kind": (row.get("Kind") or "").strip() or None,
                     "ending": (row.get("Ending") or "").strip() or None,

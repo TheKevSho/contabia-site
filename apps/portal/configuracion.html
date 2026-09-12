@@ -125,18 +125,18 @@
 
       <div class="page-head">
         <div class="title-block">
-          <h1>Configuración</h1>
+          <h1 id="page-h1">Configuración</h1>
           <div class="meta" id="page-meta">…</div>
         </div>
       </div>
 
       <div class="conf-tabs" id="conf-tabs">
-        <button class="conf-tab active" data-tab="entidad">Entidad</button>
-        <button class="conf-tab" data-tab="conectores">Conectores</button>
-        <button class="conf-tab" data-tab="reglas">Reglas del contador</button>
-        <button class="conf-tab" data-tab="otas">OTAs</button>
-        <button class="conf-tab" data-tab="equipo">Equipo</button>
-        <button class="conf-tab" data-tab="notif">Notificaciones</button>
+        <button class="conf-tab active" data-tab="entidad" id="tab-entidad">Entidad</button>
+        <button class="conf-tab" data-tab="conectores" id="tab-conectores">Conectores</button>
+        <button class="conf-tab" data-tab="reglas" id="tab-reglas">Reglas del contador</button>
+        <button class="conf-tab" data-tab="otas" id="tab-otas">OTAs</button>
+        <button class="conf-tab" data-tab="equipo" id="tab-equipo">Equipo</button>
+        <button class="conf-tab" data-tab="notif" id="tab-notif">Notificaciones</button>
       </div>
 
       <div class="conf-section active" id="sec-entidad"></div>
@@ -163,6 +163,7 @@
 <script src="js/agent-widget.js?v=20260901c"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+  applyConfigChromeI18n();
   const live = typeof isLiveMode === 'function' && isLiveMode();
   if (live) {
     renderLiveConfig();
@@ -170,6 +171,45 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   renderDemoConfig();
 });
+
+function confLang() {
+  return (typeof currentLang === 'function' ? currentLang() : 'es');
+}
+
+function confT(key, fallback) {
+  return (typeof t === 'function') ? t(key) : (fallback != null ? fallback : key);
+}
+
+/* Static chrome — the tab strip and the page title are written in HTML, so
+   they are translated once here rather than inside each render path. Without
+   this the tabs stayed Spanish in EN mode (and vice versa). */
+function applyConfigChromeI18n() {
+  document.title = confT('page.title_config', 'ContabIA — Configuración');
+  const h1 = document.getElementById('page-h1');
+  if (h1) h1.textContent = confT('conf.h1', 'Configuración');
+  const tabs = {
+    'tab-entidad': 'conf.tab_entidad',
+    'tab-conectores': 'conf.tab_conectores',
+    'tab-reglas': 'conf.tab_reglas',
+    'tab-otas': 'conf.tab_otas',
+    'tab-equipo': 'conf.tab_equipo',
+    'tab-notif': 'conf.tab_notif',
+  };
+  Object.entries(tabs).forEach(([id, key]) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = confT(key, el.textContent);
+  });
+}
+
+/* The two owners of Sonata Mas. Nick is a co-owner, not a manager
+   (File 28 B2.8) — and the login already reflects that: PORTAL_USERS_JSON
+   carries nick as role=owner. Ana Michelle is the manager. */
+const LIVE_TEAM = [
+  { initials: 'KC', name: 'Kevin Carey', email: 'admin@contabia.co', roleKey: 'role.owner', roleLabel: 'owner' },
+  { initials: 'NG', name: 'Nicolás Giraldo', email: 'tayronasailing@gmail.com', roleKey: 'role.co_owner', roleLabel: 'co-owner' },
+  { initials: 'AB', name: 'Ana Michelle Benavides', email: 'tayronasailing@gmail.com', roleKey: 'role.manager', roleLabel: 'manager' },
+  { initials: 'EM', name: 'Edwin Montenegro', email: 'edwin@contabia.co', roleKey: 'role.accountant', roleLabel: 'accountant' },
+];
 
 function renderDemoConfig() {
   const e = currentEntityData();
@@ -320,17 +360,21 @@ function renderLiveConfig() {
   document.getElementById('page-meta').innerHTML =
     `${meta.name} · ${meta.legal_name} · NIT ${meta.nit}`;
 
+  const periodLabel = meta.period === 'Julio 2026'
+    ? confT('period_month_july', 'Julio 2026')
+    : (meta.period || '');
+
   document.getElementById('sec-entidad').innerHTML = `
     <div class="panel">
-      ${field('Razón social',     meta.legal_name)}
-      ${field('Nombre comercial', meta.name)}
-      ${field('NIT',              meta.nit, true)}
-      ${field('Régimen tributario','Responsable de IVA · Régimen ordinario')}
-      ${field('Municipio ICA',    'Santa Marta · 5,5 × 1.000')}
-      ${field('Sistema contable', meta.accounting_system || 'Alegra')}
-      ${field('PMS',              meta.pms || 'FareHarbor')}
-      ${field('Banco principal',  meta.bank_primary || 'Bancolombia')}
-      ${field('Periodo activo',   'Julio 2026 · EN CURSO')}
+      ${field(confT('conf.field_razon', 'Razón social'),         meta.legal_name)}
+      ${field(confT('conf.field_comercial', 'Nombre comercial'), meta.name)}
+      ${field(confT('conf.field_nit', 'NIT'),                    meta.nit, true)}
+      ${field(confT('conf.field_regimen', 'Régimen tributario'), confT('conf.regimen_value', 'Responsable de IVA · Régimen ordinario'))}
+      ${field(confT('conf.field_municipio', 'Municipio ICA'),    confT('conf.municipio_value', 'Santa Marta · 5,5 × 1.000'))}
+      ${field(confT('conf.field_sistema', 'Sistema contable'),   meta.accounting_system || 'Alegra')}
+      ${field(confT('conf.field_pms', 'PMS'),                    meta.pms || 'FareHarbor')}
+      ${field(confT('conf.field_banco', 'Banco principal'),      meta.bank_primary || 'Bancolombia')}
+      ${field(confT('conf.field_periodo', 'Periodo activo'),     `${periodLabel} · ${confT('period_in_progress', 'EN CURSO')}`)}
     </div>`;
 
   document.getElementById('sec-conectores').innerHTML = (e.connectors || []).map(c => `
@@ -339,42 +383,52 @@ function renderLiveConfig() {
         <span class="dot ${c.status==='ok'?'':c.status}"></span>
         <div>
           <div class="name">${c.name}</div>
-          <div class="sync">Última sincronización: ${c.last_sync}</div>
+          <div class="sync">${confTfmt('conf.ultima_sync', { last_sync: c.last_sync }, 'Última sincronización: ' + c.last_sync)}</div>
         </div>
       </div>
     </div>`).join('');
 
   document.getElementById('sec-otas').innerHTML = `
     <div class="panel" style="padding:18px;color:var(--warm-gray);font-size:13.5px;">
-      Desglose OTA de julio aún no está cableado a un endpoint. No se muestran cifras de demostración.
+      ${confT('conf.no_endpoint_demo', 'Desglose OTA de julio aún no está cableado a un endpoint. No se muestran cifras de demostración.')}
     </div>`;
 
+  /* Equipo — Kevin and Nick are both owners (Nick is the co-owner), Ana
+     Michelle is the manager, Edwin is the accountant. Nick's live login
+     already carries role=owner; only this display was wrong. */
   document.getElementById('sec-equipo').innerHTML = `
     <div class="panel">
-      <div class="team-row">
-        <div class="av">KC</div>
-        <div><div class="name">Kevin Carey</div><div class="email">kevin</div></div>
-        <span class="role">owner</span>
-      </div>
-      <div class="team-row">
-        <div class="av">EM</div>
-        <div><div class="name">Edwin Montenegro</div><div class="email">edwin</div></div>
-        <span class="role">accountant</span>
-      </div>
-      <div class="team-row">
-        <div class="av">NG</div>
-        <div><div class="name">Nicolás Giraldo</div><div class="email">nick</div></div>
-        <span class="role">manager</span>
-      </div>
+      ${LIVE_TEAM.map(u => `
+        <div class="team-row">
+          <div class="av">${u.initials}</div>
+          <div>
+            <div class="name">${u.name}</div>
+            <div class="email">${u.email}</div>
+          </div>
+          <span class="role">${confT(u.roleKey, u.roleLabel)}</span>
+          <span class="login"></span>
+        </div>`).join('')}
+    </div>
+    <div style="margin-top:14px;">
+      <button class="btn btn-secondary" onclick="invitarMiembro()">${confT('conf.btn_invitar', '+ Invitar miembro')}</button>
     </div>`;
 
   document.getElementById('sec-notif').innerHTML = `
     <div class="panel" style="padding:18px;color:var(--warm-gray);font-size:13.5px;">
-      Notificaciones: reenvíe documentos a su chat personal de Hermes en WhatsApp.
+      ${confT('conf.notif_live', 'Notificaciones: reenvíe documentos a su chat personal de ContabIA en WhatsApp.')}
     </div>`;
 
   bindConfTabs();
   renderLiveRules('sonata-001');
+}
+
+function confTfmt(key, vars, fallback) {
+  if (typeof t_fmt === 'function') return t_fmt(key, vars);
+  return fallback != null ? fallback : key;
+}
+
+function invitarMiembro() {
+  alert(confT('conf.invitar', 'Invitar nuevo miembro (mockup).'));
 }
 
 function field(label, value, mono) {
@@ -394,58 +448,65 @@ async function renderLiveRules(entityId) {
   const sec = document.getElementById('sec-reglas');
   try {
     const rules = await fetchLiveRules(entityId);
-    const cat = c => c ? `<span class="rule-tag">${c}</span>` : '';
+    const lang = confLang();
+    /* Category tags are enum values, not prose — map them through i18n so
+       "Centro de costos" doesn't read Spanish in EN mode. */
+    const cat = c => c
+      ? `<span class="rule-tag">${confT('conf.cat.' + c, c)}</span>`
+      : '';
     const src = s => s === 'motor_fix'
-      ? '<span class="rule-tag" style="background:var(--sand);">regla global (motor)</span>'
-      : '<span class="rule-tag">regla del cliente</span>';
+      ? `<span class="rule-tag" style="background:var(--sand);">${confT('conf.regla_global_motor', 'regla global (motor)')}</span>`
+      : `<span class="rule-tag">${confT('conf.regla_cliente', 'regla del cliente')}</span>`;
+    /* The rule body itself is bilingual in the DB: pick the rendition that
+       matches the active language, falling back to whichever exists. */
+    const ruleBody = r => lang === 'en'
+      ? (r.rule_text_en || r.rule_text_es || r.rule_text || '')
+      : (r.rule_text_es || r.rule_text_en || r.rule_text || '');
     sec.innerHTML = `
       <div style="margin-bottom:14px;font-size:13.5px;color:var(--charcoal);">
-        Reglas de configuración de la empresa — <strong>datos reales</strong>.
-        Se aplican en cada cierre; el motor nunca vuelve a preguntar lo que ya está aquí.
-        <strong>${rules.length} activa${rules.length===1?'':'s'}</strong>.
+        ${confT('conf.live_reglas_header', 'Reglas de configuración de la empresa — datos reales. Se aplican en cada cierre; el motor nunca vuelve a preguntar lo que ya está aquí.')}
+        <strong>${confTfmt('conf.reglas_count', { n: rules.length, plural: rules.length === 1 ? '' : 's' }, rules.length + ' activa')}</strong>.
       </div>
       ${rules.length === 0 ? `
         <div style="padding:18px;background:var(--cream);border-radius:8px;font-size:13.5px;color:var(--warm-gray);">
-          Aún no hay reglas registradas. Cada decisión repetible (categorización de un
-          proveedor, tratamiento de comisiones, centro de costos por defecto) se guarda
-          aquí una sola vez.
+          ${confT('conf.no_reglas_live', 'Aún no hay reglas registradas. Cada decisión repetible (categorización de un proveedor, tratamiento de comisiones, centro de costos por defecto) se guarda aquí una sola vez.')}
         </div>` : rules.map(r => `
         <div class="rule-card">
           <div class="rule-toggle on" data-rule="${r.rule_id}" onclick="toggleLiveRule('${entityId}','${r.rule_id}', this)"></div>
           <div>
-            <div class="rule-when">${r.rule_text}</div>
-            <div class="rule-meta">${r.rule_id} · ${(r.created_at||'').slice(0,10)} · autor: ${r.created_by||'portal'}${r.linked_exception_id ? ' · excepción: '+r.linked_exception_id : ''}</div>
+            <div class="rule-when">${ruleBody(r)}</div>
+            <div class="rule-meta">${r.rule_id} · ${(r.created_at||'').slice(0,10)} · ${confTfmt('conf.autor', { who: r.created_by || 'portal' }, 'autor: ' + (r.created_by || 'portal'))}${r.linked_exception_id ? ' · ' + confTfmt('conf.excepcion_prefix', { id: r.linked_exception_id }, 'excepción: ' + r.linked_exception_id) : ''}</div>
           </div>
           <div>${cat(r.category)} ${src(r.source)}</div>
         </div>`).join('')}
       <div style="margin-top:18px;" class="panel">
-        <div style="font-weight:700;font-size:14px;margin-bottom:10px;color:var(--charcoal);">+ Nueva regla</div>
+        <div style="font-weight:700;font-size:14px;margin-bottom:10px;color:var(--charcoal);">${confT('conf.btn_nueva_regla', '+ Nueva regla')}</div>
         <div class="form-group">
           <textarea id="new-rule-text" class="form-input" rows="2"
-            placeholder="Ej.: Las facturas de Inversiones Marina Turística llevan centro de costos según el muelle/embarcación indicado en la descripción."></textarea>
+            placeholder="${confT('conf.nueva_regla_placeholder', 'Ej.: Las facturas de Inversiones Marina Turística llevan centro de costos según el muelle/embarcación indicado en la descripción.')}"></textarea>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
           <select id="new-rule-cat" class="form-input" style="max-width:200px;">
-            <option value="categorization">Categorización</option>
-            <option value="retention">Retenciones</option>
-            <option value="cost_center">Centro de costos</option>
-            <option value="banking">Bancos / pagos</option>
-            <option value="payroll">Nómina</option>
-            <option value="account_map">Mapeo de cuentas (posting)</option>
-            <option value="other">Otra</option>
+            <option value="categorization">${confT('conf.cat.categorization', 'Categorización')}</option>
+            <option value="retention">${confT('conf.cat.retention', 'Retenciones')}</option>
+            <option value="cost_center">${confT('conf.cat.cost_center', 'Centro de costos')}</option>
+            <option value="banking">${confT('conf.cat.banking', 'Bancos / pagos')}</option>
+            <option value="payroll">${confT('conf.cat.payroll', 'Nómina')}</option>
+            <option value="account_map">${confT('conf.cat.account_map', 'Mapeo de cuentas (posting)')}</option>
+            <option value="other">${confT('conf.cat.other', 'Otra')}</option>
           </select>
-          <input id="new-rule-exc" class="form-input" style="max-width:180px;" placeholder="Excepción (opcional): EX-J07-08">
-          <button class="btn btn-primary" onclick="saveLiveRule('${entityId}')">Guardar regla</button>
+          <input id="new-rule-exc" class="form-input" style="max-width:180px;" placeholder="${confT('conf.excepcion_opcional', 'Excepción (opcional): EX-J07-08')}">
+          <button class="btn btn-primary" onclick="saveLiveRule('${entityId}')">${confT('conf.btn_guardar', 'Guardar regla')}</button>
           <span id="rule-save-msg" style="font-size:12.5px;color:var(--warm-gray);"></span>
         </div>
       </div>
       <div style="margin-top:24px;padding:14px 18px;background:var(--cream);border-radius:8px;font-size:13px;color:var(--warm-gray);">
-        <strong style="color:var(--charcoal);">Reglas del sistema</strong> (ley tributaria, USALI, conectores) — read-only, no editables.
+        <strong style="color:var(--charcoal);">${confT('conf.reglas_sistema_header', 'Reglas del sistema')}</strong> ${confT('conf.reglas_sistema_sub', '(ley tributaria, USALI, conectores) — read-only, no editables. Transparencia, no opinión.')}
       </div>`;
   } catch (err) {
     sec.insertAdjacentHTML('afterbegin',
       `<div style="padding:12px 16px;margin-bottom:12px;background:var(--cream);border-left:3px solid var(--warning);font-size:13px;">
-         Modo en vivo: no se pudo cargar reglas reales (${err.message}). Mostrando mockup.
+         ${confTfmt('conf.error_reglas', { msg: err.message }, 'Modo en vivo: no se pudo cargar reglas reales. Mostrando mockup.')}
        </div>`);
   }
 }
@@ -453,8 +514,8 @@ async function renderLiveRules(entityId) {
 async function saveLiveRule(entityId) {
   const text = document.getElementById('new-rule-text').value.trim();
   const msg = document.getElementById('rule-save-msg');
-  if (!text) { msg.textContent = 'Escribe la regla primero.'; return; }
-  msg.textContent = 'Guardando…';
+  if (!text) { msg.textContent = confT('conf.escribe_regla', 'Escribe la regla primero.'); return; }
+  msg.textContent = confT('conf.guardando', 'Guardando…');
   try {
     await createLiveRule(entityId, text,
       document.getElementById('new-rule-cat').value,
@@ -462,7 +523,7 @@ async function saveLiveRule(entityId) {
       document.getElementById('new-rule-exc').value.trim() || null);
     renderLiveRules(entityId);
   } catch (err) {
-    msg.textContent = 'Error: ' + err.message;
+    msg.textContent = confT('conf.error_prefix', 'Error: ') + err.message;
   }
 }
 
@@ -474,7 +535,7 @@ async function toggleLiveRule(entityId, ruleId, el) {
     if (!nowOn) renderLiveRules(entityId);  // deactivated rules drop off the active list
   } catch (err) {
     el.classList.toggle('on');  // revert on failure
-    alert('No se pudo actualizar la regla: ' + err.message);
+    alert(confT('conf.regla_no_actualizada', 'No se pudo actualizar la regla: ') + err.message);
   }
 }
 </script>

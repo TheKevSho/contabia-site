@@ -47,6 +47,60 @@ function isLiveMode() {
          !!sessionStorage.getItem('contabia_api_token');
 }
 
+/* ---- i18n shims ----------------------------------------------------
+   This file loads BEFORE i18n.js in every page, but nothing here runs at
+   parse time — the adapters and fetchers are called after DOMContentLoaded,
+   by which point t()/t_fmt()/currentLang() are defined. Guard anyway so a
+   page that drops i18n.js still renders instead of throwing.
+   -------------------------------------------------------------------- */
+
+function _liveLang() {
+  return (typeof currentLang === 'function' ? currentLang() : 'es');
+}
+
+/* Exception Phase is a register field ("5 Expenses", "Cost Centers") that the
+   row subtitle prints verbatim. Map it through i18n; an unknown phase falls
+   through to the raw register value rather than leaking a "phase.X" key.
+
+   Reach i18n through t(), never by touching the I18N object directly: I18N is
+   a `const` in i18n.js, so it is not reliably visible from another file (a
+   bare `typeof I18N` can read 'undefined' and silently no-op the lookup).
+   t() returns the key itself on a miss, which is how the miss is detected. */
+function _phaseLabel(ph, lang) {
+  if (!ph) return '';
+  const key = 'phase.' + ph;
+  let v = null;
+  try {
+    const pack = (typeof I18N === 'object' && I18N) ? I18N[lang || _liveLang()] : null;
+    if (pack && typeof pack[key] === 'string') v = pack[key];
+  } catch (e) { v = null; }
+  if (v == null && typeof t === 'function') v = t(key);
+  return (v && v !== key) ? v : ph;
+}
+
+function _t(key, fallbackEs) {
+  if (typeof t === 'function') return t(key);
+  return fallbackEs != null ? fallbackEs : key;
+}
+
+function _t_fmt(key, vars, fallbackEs) {
+  if (typeof t_fmt === 'function') return t_fmt(key, vars);
+  return fallbackEs != null ? fallbackEs : key;
+}
+
+/* Bilingual data rows ({en, es}) collapse to the active language. */
+function _pick(item, lang) {
+  if (item == null || typeof item !== 'string') {
+    if (item && typeof item === 'object') {
+      const en = item.en, es = item.es;
+      if (lang === 'en') return en != null ? en : (es != null ? es : item);
+      return es != null ? es : (en != null ? en : item);
+    }
+    return item;
+  }
+  return item;
+}
+
 /* ---- fetch helpers ------------------------------------------------- */
 
 async function _liveFetch(entityId, path, opts) {
@@ -68,9 +122,10 @@ async function fetchLiveSummary(entityId) {
   return _liveFetch(entityId, '/summary');
 }
 
-async function fetchLiveExceptions(entityId) {
+async function fetchLiveExceptions(entityId, lang) {
   const raw = await _liveFetch(entityId, '/exceptions');
-  return raw.map(adaptLiveException);
+  const use = lang || _liveLang();
+  return raw.map(e => adaptLiveException(e, use));
 }
 
 async function patchLiveException(entityId, excId, status, rejectionNote) {
@@ -81,9 +136,9 @@ async function patchLiveException(entityId, excId, status, rejectionNote) {
   });
 }
 
-async function fetchLiveJournalEntries(entityId) {
+async function fetchLiveJournalEntries(entityId, lang) {
   const raw = await _liveFetch(entityId, '/journal-entries');
-  return adaptLiveJournalEntries(raw);
+  return adaptLiveJournalEntries(raw, lang || _liveLang());
 }
 
 async function fetchLiveBoveda(entityId) {
@@ -149,16 +204,23 @@ async function fetchLiveRules(entityId) {
 }
 
 async function createLiveRule(entityId, ruleText, category, source, linkedExceptionId) {
+  // The author writes in one language; record it in that rendition and mirror
+  // it into the other so the Reglas tab is never blank in either mode. A
+  // translator (or the agent) can refine the mirror later.
+  const es = _liveLang() !== 'en';
+  const body = {
+    rule_text: ruleText,
+    category: category || null,
+    source: source || 'client_choice',
+    linked_exception_id: linkedExceptionId || null,
+    created_by: sessionStorage.getItem('contabia_role') || 'portal',
+  };
+  if (es) body.rule_text_es = ruleText;
+  else body.rule_text_en = ruleText;
   return _liveFetch(entityId, '/rules', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      rule_text: ruleText,
-      category: category || null,
-      source: source || 'client_choice',
-      linked_exception_id: linkedExceptionId || null,
-      created_by: sessionStorage.getItem('contabia_role') || 'portal',
-    }),
+    body: JSON.stringify(body),
   });
 }
 
@@ -184,23 +246,39 @@ async function patchLiveRule(entityId, ruleId, patch) {
 
 const SEVERITY_TO_PRIORITY = { high: 'high', medium: 'medium', low: 'low' };
 
-function adaptLiveException(e) {
+function adaptLiveException(e, lang) {
+  const use = lang || _liveLang();
+  const es = use !== 'en';
   const descParts = [];
-  if (e.amount_cop != null) descParts.push(`Monto: COP ${e.amount_cop.toLocaleString('es-CO')}`);
-  if (e.owner) descParts.push(`Responsable: ${e.owner}`);
-  if (e.proposed_je_ref) descParts.push(`JE propuesto: ${e.proposed_je_ref}`);
+  if (e.amount_cop != null) {
+    descParts.push(_t_fmt('exc.live_desc_monto',
+      { amount: e.amount_cop.toLocaleString('es-CO') }, 'Monto: COP '));
+  }
+  if (e.owner) {
+    descParts.push(_t_fmt('exc.live_desc_responsable', { owner: e.owner }, 'Responsable: '));
+  }
+  if (e.proposed_je_ref) {
+    descParts.push(_t_fmt('exc.live_desc_je', { je: e.proposed_je_ref }, 'JE propuesto: '));
+  }
   const isLive = e.period && e.period >= '2026-07';
   const periodTag = e.period ? ` · ${e.period}` : '';
   const gateTag = e.gate_b === 'disclose_forward' ? ' · Gate B' : '';
   const handled = (window.RULE_HANDLED_IDS || new Set()).has(e.id);
+  // title / disposition arrive in both renditions from the register CSV.
+  // The non-active one is the fallback so a row missing its translation
+  // still renders something readable rather than blank.
+  const title = es ? (e.title_es || e.title) : (e.title || e.title_es);
+  const rec = es
+    ? (e.disposition_es || e.disposition || '')
+    : (e.disposition || e.disposition_es || '');
   return {
     id: e.id,
-    subtype: `${e.phase || ''}${periodTag}${gateTag}${e.accepted_risk_tag ? ' · ' + e.accepted_risk_tag : ''}${handled ? ' · rule' : ''}`,
+    subtype: `${_phaseLabel(e.phase, use)}${periodTag}${gateTag}${e.accepted_risk_tag ? ' · ' + e.accepted_risk_tag : ''}${handled ? ' · ' + _t('exc.rule_tag', 'regla') : ''}`,
     status: e.status,
     priority: SEVERITY_TO_PRIORITY[e.severity] || 'medium',
-    title: e.title,
+    title: title,
     description: descParts.join(' — ') || '',
-    ai_recommendation: e.disposition || '',
+    ai_recommendation: rec,
     ai_confidence: null,
     created_at: null,
     period: e.period || null,
@@ -212,10 +290,10 @@ function adaptLiveException(e) {
   };
 }
 
-const JE_GROUP_LABEL = {
-  A_ready_to_post:   'A · Listo para postear',
-  B_estimated:       'B · Estimado — Contador confirma cifra',
-  C_disclosure_only: 'C · Solo revelar, no postear',
+const JE_GROUP_KEY = {
+  A_ready_to_post:   'je.group_a_ready',
+  B_estimated:       'je.group_b_estimated',
+  C_disclosure_only: 'je.group_c_disclose',
 };
 const JE_GROUP_PRIORITY = {
   A_ready_to_post: 'high',
@@ -223,17 +301,19 @@ const JE_GROUP_PRIORITY = {
   C_disclosure_only: 'low',
 };
 
-function adaptLiveJE(je, group) {
+function adaptLiveJE(je, group, lang) {
+  const use = lang || _liveLang();
+  const es = use !== 'en';
   const period = je.period || '2026-01';
   const bucket = je.bucket || (period >= '2026-07' ? 'live' : 'baseline');
   return {
     id: je.id,
     group,
-    subtype: JE_GROUP_LABEL[group] || group,
+    subtype: _t(JE_GROUP_KEY[group], ''),
     status: je.status,
     priority: JE_GROUP_PRIORITY[group] || 'medium',
-    title: je.description,
-    description: je.basis || '',
+    title: es ? (je.description_es || je.description) : (je.description || je.description_es),
+    description: es ? (je.basis_es || je.basis || '') : (je.basis || je.basis_es || ''),
     ai_confidence: null,
     created_at: null,
     period,
@@ -246,20 +326,33 @@ function adaptLiveJE(je, group) {
   };
 }
 
-function adaptLiveJournalEntries(resp) {
+function adaptLiveJournalEntries(resp, lang) {
   // main.py's response keys are 'ready_to_post'/'estimated'/'disclosure_only'
   // (no letter prefix) -- but each JE object already carries its own
   // 'group' field (A_ready_to_post/B_estimated/C_disclosure_only, set in
   // je_data.py), so read the group off the item itself rather than
   // re-deriving it from the bucket key. Confirmed against a live response,
   // not assumed from the README's abbreviated example.
+  const use = lang || _liveLang();
+  const es = use !== 'en';
   const buckets = ['ready_to_post', 'estimated', 'disclosure_only'];
   const items = [];
-  buckets.forEach(key => (resp[key] || []).forEach(je => items.push(adaptLiveJE(je, je.group))));
+  buckets.forEach(key => (resp[key] || []).forEach(je => items.push(adaptLiveJE(je, je.group, use))));
   return {
     items,
-    open_judgment_calls: resp.open_judgment_calls || [],
-    recurring_routines: resp.recurring_routines || [],
-    accepted_no_action: resp.accepted_no_action || [],
+    // open_judgment_calls is empty today; kept bilingual-safe for when the
+    // motor starts emitting {title_es, needed_es} on these rows.
+    open_judgment_calls: (resp.open_judgment_calls || []).map(o => Object.assign({}, o, {
+      title: es ? (o.title_es || o.title) : (o.title || o.title_es),
+      needed: es ? (o.needed_es || o.needed) : (o.needed || o.needed_es),
+    })),
+    // rutinas: description + status are prose, so they carry *_es twins
+    recurring_routines: (resp.recurring_routines || []).map(r => ({
+      id: r.id,
+      description: es ? (r.description_es || r.description) : (r.description || r.description_es),
+      status: es ? (r.status_es || r.status) : (r.status || r.status_es),
+    })),
+    // "ya aceptado": list of {en, es} pairs
+    accepted_no_action: (resp.accepted_no_action || []).map(item => _pick(item, use)),
   };
 }

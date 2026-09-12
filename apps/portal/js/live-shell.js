@@ -44,7 +44,7 @@ const LIVE_SONATA_META = {
   close_status: 'in_progress',
   accountant: 'Edwin Montenegro',
   owner: 'Kevin Carey',
-  manager: 'Nicolás Giraldo',
+  manager: 'Ana Michelle Benavides',
   accounting_system: 'Alegra',
   pms: 'FareHarbor',
   bank_primary: 'Bancolombia',

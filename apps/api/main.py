@@ -141,6 +141,14 @@ def _db():
         conn.close()
 
 
+def _ensure_column(conn, table: str, column: str, decl: str) -> None:
+    """Idempotent ALTER TABLE ... ADD COLUMN for volumes created before the
+    column existed. SQLite has no ADD COLUMN IF NOT EXISTS, so read PRAGMA."""
+    have = {r["name"] for r in conn.execute(f"PRAGMA table_info({table})").fetchall()}
+    if column not in have:
+        conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {decl}")
+
+
 def _init_db() -> None:
     with _db() as conn:
         conn.execute(
@@ -169,6 +177,8 @@ def _init_db() -> None:
                 rule_id TEXT PRIMARY KEY,
                 entity_id TEXT NOT NULL,
                 rule_text TEXT NOT NULL,
+                rule_text_es TEXT,
+                rule_text_en TEXT,
                 category TEXT,
                 source TEXT NOT NULL DEFAULT 'client_choice',
                 audit_tag TEXT,
@@ -180,6 +190,11 @@ def _init_db() -> None:
             )
             """
         )
+        # Existing volumes predate the bilingual columns (CREATE TABLE IF NOT
+        # EXISTS never alters). Add them in place so the Reglas tab can read
+        # both renditions without losing the rows already configured.
+        _ensure_column(conn, "company_rules", "rule_text_es", "TEXT")
+        _ensure_column(conn, "company_rules", "rule_text_en", "TEXT")
         conn.execute(
             """
             CREATE TABLE IF NOT EXISTS posting_log (
@@ -432,7 +447,9 @@ def patch_journal_entry(entity_id: str, je_id: str, patch: JEPatch):
 # as friction (File 13 Operating Principle 5).
 # ---------------------------------------------------------------------------
 class RuleCreate(BaseModel):
-    rule_text: str
+    rule_text: Optional[str] = None          # legacy single-language field
+    rule_text_es: Optional[str] = None
+    rule_text_en: Optional[str] = None
     category: Optional[str] = None          # categorization | retention | payroll | banking | other
     source: Literal["client_choice", "motor_fix"] = "client_choice"
     audit_tag: Optional[Literal["no_obligation", "informed_decline"]] = None
@@ -442,9 +459,25 @@ class RuleCreate(BaseModel):
 
 class RulePatch(BaseModel):
     rule_text: Optional[str] = None
+    rule_text_es: Optional[str] = None
+    rule_text_en: Optional[str] = None
     category: Optional[str] = None
     active: Optional[bool] = None
     audit_tag: Optional[Literal["no_obligation", "informed_decline"]] = None
+
+
+def _rule_out(row) -> dict:
+    """Every rule leaves the API with both renditions populated.
+
+    Rows seeded before the bilingual columns existed carry only `rule_text`;
+    fill whichever rendition is missing from it so the Reglas tab never renders
+    a blank rule. `rule_text` keeps mirroring the Spanish for legacy readers."""
+    r = dict(row)
+    legacy = (r.get("rule_text") or "").strip()
+    es = (r.get("rule_text_es") or "").strip() or legacy
+    en = (r.get("rule_text_en") or "").strip() or legacy
+    r["rule_text_es"], r["rule_text_en"], r["rule_text"] = es, en, es or en
+    return r
 
 
 @app.get("/entities/{entity_id}/rules", dependencies=[Depends(require_auth)])
@@ -455,34 +488,44 @@ def list_rules(entity_id: str, include_inactive: bool = False):
         q += " AND active = 1"
     q += " ORDER BY created_at DESC"
     with _db() as conn:
-        return [dict(r) for r in conn.execute(q, (entity_id,)).fetchall()]
+        return [_rule_out(r) for r in conn.execute(q, (entity_id,)).fetchall()]
 
 
 @app.post("/entities/{entity_id}/rules", dependencies=[Depends(require_auth)])
 def create_rule(entity_id: str, body: RuleCreate):
     _get_entity_or_404(entity_id)
+    es = (body.rule_text_es or body.rule_text or "").strip()
+    en = (body.rule_text_en or body.rule_text or "").strip()
+    if not es and not en:
+        raise HTTPException(status_code=400, detail="rule_text is required")
     rule_id = f"CR-{uuid.uuid4().hex[:8]}"
     with _db() as conn:
         conn.execute(
             """
             INSERT INTO company_rules
-                (rule_id, entity_id, rule_text, category, source, audit_tag,
-                 linked_exception_id, created_by)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                (rule_id, entity_id, rule_text, rule_text_es, rule_text_en,
+                 category, source, audit_tag, linked_exception_id, created_by)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            (rule_id, entity_id, body.rule_text, body.category, body.source,
-             body.audit_tag, body.linked_exception_id, body.created_by),
+            (rule_id, entity_id, es or en, es or en, en or es, body.category,
+             body.source, body.audit_tag, body.linked_exception_id, body.created_by),
         )
         row = conn.execute("SELECT * FROM company_rules WHERE rule_id = ?", (rule_id,)).fetchone()
-    return dict(row)
+    return _rule_out(row)
 
 
 @app.patch("/entities/{entity_id}/rules/{rule_id}", dependencies=[Depends(require_auth)])
 def patch_rule(entity_id: str, rule_id: str, body: RulePatch):
     _get_entity_or_404(entity_id)
     sets, vals = [], []
-    if body.rule_text is not None:
-        sets.append("rule_text = ?"); vals.append(body.rule_text)
+    # A bare `rule_text` edit is the legacy path: treat it as the Spanish
+    # rendition and keep the legacy column in step with it.
+    if body.rule_text is not None or body.rule_text_es is not None:
+        es = body.rule_text_es if body.rule_text_es is not None else body.rule_text
+        sets.append("rule_text_es = ?"); vals.append(es)
+        sets.append("rule_text = ?"); vals.append(es)
+    if body.rule_text_en is not None:
+        sets.append("rule_text_en = ?"); vals.append(body.rule_text_en)
     if body.category is not None:
         sets.append("category = ?"); vals.append(body.category)
     if body.active is not None:
@@ -500,7 +543,7 @@ def patch_rule(entity_id: str, rule_id: str, body: RulePatch):
         if cur.rowcount == 0:
             raise HTTPException(status_code=404, detail=f"Unknown rule '{rule_id}'")
         row = conn.execute("SELECT * FROM company_rules WHERE rule_id = ?", (rule_id,)).fetchone()
-    return dict(row)
+    return _rule_out(row)
 
 
 # ---------------------------------------------------------------------------

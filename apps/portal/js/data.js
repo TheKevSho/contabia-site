@@ -38,19 +38,17 @@ const DATA = {
       accountant: { name: 'Edwin Restrepo',   initials: 'ER', email: 'edwin@balinessa.co'  },
       manager:    { name: 'Yaritza González', initials: 'YG', email: 'yaritza@cantamar.co' },
     },
-    /* NOTE (2026-07-26, File 28 B2.8): Nick is modeled here as manager, but
-       the real decision is Nick + Kevin both land as owner at Sonata Mas.
-       Not fixed yet, deliberately: this table only supports one person per
-       (entity, role) slot, and nobody actually needs individual access to
-       this mock anymore now that the public /demo entry point (B2.6) covers
-       role-preview access. Revisit as part of the real entitlements-table
-       design (B2.2) once Sonata Mas/Tayrona Sailing is genuinely live in the
-       portal on real auth — that table should support multiple users per
-       role from the start. */
+    /* NOTE (2026-07-26, File 28 B2.8): Nick is a co-owner at Sonata Mas, not
+       a manager. This table only holds one person per (entity, role) slot, so
+       `owner` stays Kevin and Nick is listed as the co-owner in the Equipo tab
+       (configuracion.html LIVE_TEAM), which is what a person actually sees.
+       Ana Michelle Benavides is the manager. Revisit as part of the real
+       entitlements-table design (B2.2) — that table should support multiple
+       users per role from the start. */
     'sonata-001': {
-      owner:      { name: 'Kevin Carey',      initials: 'KC', email: 'kevin@cantamar.co'        },
-      accountant: { name: 'Edwin Restrepo',   initials: 'ER', email: 'edwin@balinessa.co'       },
-      manager:    { name: 'Nicolás Giraldo',  initials: 'NG', email: 'nick@tayronasailing.co'   },
+      owner:      { name: 'Kevin Carey',      initials: 'KC', email: 'admin@contabia.co'        },
+      accountant: { name: 'Edwin Montenegro', initials: 'EM', email: 'edwin@contabia.co'        },
+      manager:    { name: 'Ana Michelle Benavides', initials: 'AB', email: 'tayronasailing@gmail.com' },
     },
   },
 
@@ -480,9 +478,9 @@ const DATA = {
       nit: '901.528.910-1',
       period: 'Julio 2026',
       period_iso: '2026-07',
-      accountant: 'Edwin Restrepo',
+      accountant: 'Edwin Montenegro',
       owner: 'Kevin Carey',
-      manager: 'Nicolás Giraldo',
+      manager: 'Ana Michelle Benavides',
       accounting_system: 'Alegra',
       pms: 'LobbyPMS',
       bank_primary: 'BBVA',
@@ -825,9 +823,10 @@ const DATA = {
         { id:'r-4', type:'threshold', when:'JE > COP 5.000.000',                   action:'Requiere doble aprobación (Dueño + Contador)', enabled:false, hits_30d:0, author:'Edwin (borrador)' },
       ],
       team: [
-        { id:'u-1', name:'Kevin Carey',     role:'Dueño',    email:'kevin@cantamar.co',         last_login:'hace 3h' },
-        { id:'u-2', name:'Edwin Restrepo',  role:'Contador', email:'edwin@balinessa.co',        last_login:'ayer 17:00' },
-        { id:'u-3', name:'Nicolás Giraldo', role:'Gerente',  email:'nick@tayronasailing.co',    last_login:'hace 12 min' },
+        { id:'u-1', name:'Kevin Carey',     role:'Dueño',    email:'admin@contabia.co',         last_login:'hace 3h' },
+        { id:'u-2', name:'Edwin Montenegro',role:'Contador', email:'edwin@contabia.co',         last_login:'ayer 17:00' },
+        { id:'u-3', name:'Nicolás Giraldo', role:'Co-dueño', email:'tayronasailing@gmail.com',  last_login:'hace 12 min' },
+        { id:'u-4', name:'Ana Michelle Benavides', role:'Gerente', email:'tayronasailing@gmail.com', last_login:'hace 1h' },
       ],
       notifications: [
         { event:'Excepción crítica creada',         email:true,  whatsapp:true,  recipients:'Dueño + Contador' },
