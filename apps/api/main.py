@@ -98,7 +98,8 @@ ENTITIES = {
         "name": "SONATA MAS S.A.S. (Tayrona Sailing)",
         "nit": "901528910-3",
         "csv": DATA_DIR / "exception_register.csv",          # Jan-June baseline register
-        "csv_live": DATA_DIR / "exception_register_2026-07.csv",  # live-period exceptions
+        "csv_live": DATA_DIR / "exception_register_2026-07.csv",  # July + August live
+        "csv_aug": DATA_DIR / "exception_register_2026-08.csv",
         "opening_balance_lock": "2026-06-30",
         "live_period": "2026-07",
         "baseline_periods": "2026-01..2026-06",
@@ -120,6 +121,12 @@ def _get_entity_or_404(entity_id: str) -> dict:
 def _load_all_exceptions(entity: dict) -> list[dict]:
     rows = load_exceptions(entity["csv"], period="2026-01")
     rows += load_exceptions(entity["csv_live"], period=entity["live_period"])
+    # csv_live already concatenates Jul+Aug; csv_aug is the August-only file.
+    # Dedupe by id so we can keep both files without double-counting.
+    if entity.get("csv_aug"):
+        extra = load_exceptions(entity["csv_aug"], period="2026-08")
+        seen = {e["id"] for e in rows}
+        rows += [e for e in extra if e["id"] not in seen]
     return rows
 
 

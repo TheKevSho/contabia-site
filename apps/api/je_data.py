@@ -224,78 +224,71 @@ RECURRING_ROUTINES = [
      "status": "July ready: COP 3,549,289 (Bancolombia 1,335,748 + BBVA 2,213,541)"},
 ]
 
-# July 2026 live-period JEs (golden month). Nothing posted. Accountant retefuente /
-# seg-social / deterioro already in Alegra — do not duplicate those.
+# July/August open-period JEs (2026-09-12). Nothing posted. Do not duplicate
+# Edwin retefuente / seg-social / deterioro. Do not post R-14 (5305 already in
+# payment asientos). Do not post AJ-J07-01 (280505 already at cash).
 JOURNAL_ENTRIES += [
     {
-        "id": "R-11-JUL",
+        "id": "OJ-4",
         "group": "A_ready_to_post",
-        "description": "July 2026 depreciation (43-asset register, excl. Anna Leeza)",
+        "description": "Nick June 5105 package catch-up (clone CC-AC-453)",
         "lines": [
-            {"account": "5160xx Depreciación PPE", "debit": 1038987, "credit": 0},
-            {"account": "159215 Depreciación acumulada", "debit": 0, "credit": 1038987},
+            {"account": "510506 Sueldos", "debit": 5000000, "credit": 0},
+            {"account": "510548 Bonificaciones", "debit": 3760000, "credit": 0},
+            {"account": "510530 Cesantías", "debit": 416667, "credit": 0},
+            {"account": "510536 Prima de servicios", "debit": 416667, "credit": 0},
+            {"account": "510539 Vacaciones", "debit": 208333, "credit": 0},
+            {"account": "510533 Intereses sobre cesantías", "debit": 4167, "credit": 0},
+            {"account": "250505 Salarios y prestaciones sociales", "debit": 0, "credit": 8360000},
+            {"account": "261005 Cesantias.", "debit": 0, "credit": 416667},
+            {"account": "261020 Prima de servicios.", "debit": 0, "credit": 416667},
+            {"account": "261015 Vacaciones.", "debit": 0, "credit": 208333},
+            {"account": "261010 intereses sobre cesantías.", "debit": 0, "credit": 4167},
+            {"account": "237005 Aportes E.P.S", "debit": 0, "credit": 200000},
+            {"account": "238030 Aportes a pensión", "debit": 0, "credit": 200000},
         ],
-        "basis": "Asset register monthly = COP 1,038,987. The accountant posted this exact amount Feb–May; skipped Jan+Jun (catch-up is R-11-CATCHUP) and has not posted July.",
-        "linked_exceptions": ["EX-J07-10"],
+        "basis": (
+            "Jan–May and July each book 9,805,834 Dr 5105 for Nicolas Giraldo Camargo "
+            "CC 79983085. June = 0. Cash already paid June via 250505. Date 2026-08-31 "
+            "(open). Do not restate June. August Nick accrual is EX-A08-01 (Edwin) — not this JE."
+        ),
+        "linked_exceptions": ["EX-J07-16"],
         "status": "pending_edwin_approval",
-        "period": "2026-07",
+        "period": "2026-08",
         "bucket": "live",
     },
     {
-        "id": "R-11-CATCHUP",
+        "id": "OJ-5",
         "group": "A_ready_to_post",
-        "description": "Depreciation catch-up: Jan+Jun skipped (2,077,974) + Anna Leeza 30 months (7,500,000)",
+        "description": "Office PPE dep Jun+Jul catch-up (clone CC-AC-495 × 2)",
         "lines": [
-            {"account": "5160xx Depreciación PPE (Jan+Jun)", "debit": 2077974, "credit": 0},
-            {"account": "5160xx Depreciación PPE (Anna Leeza Jan24-Jun26)", "debit": 7500000, "credit": 0},
-            {"account": "159215 Depreciación acumulada", "debit": 0, "credit": 9577974},
+            {"account": "Depreciación de propiedad, planta y equipo", "debit": 2077974, "credit": 0},
+            {"account": "159215 Depre equipo de oficina", "debit": 0, "credit": 2077974},
         ],
-        "basis": "The accountant skipped Jan+Jun on the 43-asset register. Anna Leeza (COP 60M, 5% SL = 250k/mo) has never been depreciated; 30 months Jan 2024–Jun 2026 = 7.5M. Going forward add 250k to monthly R-11.",
-        "linked_exceptions": ["EX-J07-10", "EX-J07-13"],
+        "basis": (
+            "Office dep 1,038,987 ran Jan–May and August (CC-AC-437…441, 495). June and July = 0. "
+            "Do not add August. Do not add Anna Leeza / fleet (EX-12.2)."
+        ),
+        "linked_exceptions": ["EX-J07-17"],
         "status": "pending_edwin_approval",
-        "period": "2026-07",
+        "period": "2026-08",
         "bucket": "live",
     },
     {
-        "id": "R-14-JUL",
+        "id": "AJ-J07-05",
         "group": "A_ready_to_post",
-        "description": "July 2026 loan interest accrual",
+        "description": "Clear Bold FEC8056756 phantom AP (fees already netted)",
         "lines": [
-            {"account": "5305xx Gasto financiero — intereses", "debit": 3549289, "credit": 0},
-            {"account": "2410 Intereses por pagar", "debit": 0, "credit": 3549289},
+            {"account": "2205 Cuentas por pagar a proveedores", "debit": 163985, "credit": 0},
+            {"account": "111020 bold", "debit": 0, "credit": 163985},
         ],
-        "basis": "Bancolombia 7810099111 interest 1,335,748 + BBVA 9638124968 interest 2,213,541. The accountant has not posted July interest.",
-        "linked_exceptions": ["EX-J07-10"],
+        "basis": (
+            "FP-8246 already expensed 158,257 + IVA 5,728. Bold nets fees (Jul merchant "
+            "deduction 577,735.85). No 163,985 on Jul Bancolombia. Do not pay cash."
+        ),
+        "linked_exceptions": ["EX-J07-05"],
         "status": "pending_edwin_approval",
-        "period": "2026-07",
-        "bucket": "live",
-    },
-    {
-        "id": "AJ-J07-01",
-        "group": "A_ready_to_post",
-        "description": "Bold link-pago prepayments deferred to 2805 (voyages after July)",
-        "lines": [
-            {"account": "1110xx Bold clearing / CxC", "debit": 5600000, "credit": 0},
-            {"account": "2805 Ingresos recibidos por anticipado", "debit": 0, "credit": 5600000},
-        ],
-        "basis": "Pablo Alonso 4,250,000 (Sonata 11 Aug + DragonLady 14 Aug 50%) + Camilo Mendoza 1,350,000 (16 Aug Anna Leeza 50%). Datáfono POS 3,541,500 stays in July revenue.",
-        "linked_exceptions": ["EX-J07-12"],
-        "status": "pending_edwin_approval",
-        "period": "2026-07",
-        "bucket": "live",
-    },
-    {
-        "id": "AJ-J06-REVERSE",
-        "group": "A_ready_to_post",
-        "description": "Recognize June Bold link-pago that rendered in July (2805 reverse)",
-        "lines": [
-            {"account": "2805 Ingresos recibidos por anticipado", "debit": 3641000, "credit": 0},
-            {"account": "4145 Ingresos por servicios", "debit": 0, "credit": 3641000},
-        ],
-        "basis": "Standing motor rule: every channel, bidirectional. Five June link-pago items totaling COP 3,641,000 whose voyages rendered in July.",
-        "linked_exceptions": ["EX-J07-12"],
-        "status": "pending_edwin_approval",
-        "period": "2026-07",
+        "period": "2026-08",
         "bucket": "live",
     },
 ]

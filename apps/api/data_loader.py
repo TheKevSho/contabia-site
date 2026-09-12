@@ -54,6 +54,8 @@ def load_exceptions(csv_path: Path, period: str = "2026-01") -> list[dict]:
                     "status": (row.get("Status") or "open").strip().lower(),
                     "disposition": row.get("Disposition", "").strip() or None,
                     "accepted_risk_tag": (row.get("Accepted_Risk") or "").strip() or None,
+                    "kind": (row.get("Kind") or "").strip() or None,
+                    "ending": (row.get("Ending") or "").strip() or None,
                     "period": row_period,
                     "gate_b": gate_b,
                 }
