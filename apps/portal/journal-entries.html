@@ -389,11 +389,20 @@ function renderLiveList() {
     : liveJEData.items.filter(x => x.status === currentJEFilter);
 
   const groupOrder = ['A_ready_to_post', 'B_estimated', 'C_disclosure_only'];
+  /* Heading text comes from i18n.js via t() rather than a shared const — a
+     top-level `const` in another script file is not reliably reachable, and
+     t() already resolves the active language. */
+  const groupKey = {
+    A_ready_to_post: 'je.group_a_ready',
+    B_estimated: 'je.group_b_estimated',
+    C_disclosure_only: 'je.group_c_disclose',
+  };
   let html = '';
   groupOrder.forEach(g => {
     const groupItems = items.filter(x => x.group === g);
     if (!groupItems.length) return;
-    html += `<div class="group-heading">${JE_GROUP_LABEL[g]}</div>`;
+    const label = typeof t === 'function' ? t(groupKey[g]) : g;
+    html += `<div class="group-heading">${label && label !== groupKey[g] ? label : g}</div>`;
     html += groupItems.map(je => renderLiveJECard(je)).join('');
   });
   if (!html) html = `<div class="panel" style="text-align:center;color:var(--warm-gray);">${t('je.nothing_in_filter')}</div>`;
