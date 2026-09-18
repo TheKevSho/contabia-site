@@ -23,6 +23,7 @@ Run:
     pip install -r requirements.txt
     PORTAL_PASSWORD=... ALEGRA_EMAIL=... ALEGRA_API_TOKEN=... uvicorn main:app
 """
+import calendar
 import json
 import logging
 import os
@@ -206,6 +207,25 @@ def _init_db() -> None:
                 result TEXT,
                 payload TEXT,
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        )
+        # Idempotency ledger for the write path (review finding #1, 2026-09-17):
+        # a JE posts at most once per (entity, period) even under double-submit.
+        # Claim-before-post: INSERT OR IGNORE against this PK; rowcount 1 == we
+        # own the claim. Failed claims are released (row deleted) for retry;
+        # posting_log above keeps the full attempt history either way.
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS posted_journals (
+                entity_id TEXT NOT NULL,
+                period TEXT NOT NULL,
+                je_id TEXT NOT NULL,
+                status TEXT NOT NULL DEFAULT 'claimed',
+                alegra_id TEXT,
+                payload TEXT,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (entity_id, period, je_id)
             )
             """
         )
@@ -547,25 +567,174 @@ def patch_rule(entity_id: str, rule_id: str, body: RulePatch):
 
 
 # ---------------------------------------------------------------------------
-# Posting - the "~20-line addition" from the 2026-07-10 handoff, plus the
-# guards it always needed. DRY_RUN defaults true: nothing writes to Alegra
-# until the env flag is flipped at July close (File 28 A2.6).
+# Posting - the hardened write path (code-review findings #1/#2/#5/#6/#8,
+# 2026-09-17). SoR-agnostic guards over the Alegra transport:
+#   - idempotency: posted_journals PK (entity_id, period, je_id), claim-before-post
+#   - period scoping: a JE whose own period != the close being posted is skipped
+#   - real month-end posting date (calendar.monthrange), never -31/-28 hardcodes
+#   - balance assert: unbalanced JEs never reach the transport
+#   - account-map gate: live posting refuses any line not in company_rules
+#     account_map (was a comment precondition - now code)
+#   - traceability: observations carry linked source doc/exception ids
+# DRY_RUN defaults true: the claim ledger is untouched in dry-run (a rehearsal
+# must not consume idempotency claims), payloads go to posting_log only.
 # ---------------------------------------------------------------------------
-def _je_to_alegra_payload(je: dict, period: str) -> dict:
-    """Build the /journals payload. Account names here are the register's
-    human-readable names; live posting requires an account-id mapping rule
-    (company_rules category 'account_map') before the flag ever flips."""
+def _last_day_of_period(period: str) -> str:
+    """Real month-end date for 'YYYY-MM' via calendar.monthrange, so February
+    is 28/29 and 30/31-day months post on the right day (kills the -31/-28
+    hardcode that would date an August JE 2026-07-31 under a July close)."""
+    year, month = (int(p) for p in period.split("-"))
+    return f"{period}-{calendar.monthrange(year, month)[1]:02d}"
+
+
+def _je_debit_credit(je: dict) -> tuple[float, float]:
+    """(debit total, credit total) across the JE's lines, COP-rounded."""
+    dr = sum(float(l.get("debit") or 0) for l in je.get("lines", []))
+    cr = sum(float(l.get("credit") or 0) for l in je.get("lines", []))
+    return round(dr, 2), round(cr, 2)
+
+
+def _je_is_balanced(je: dict, tol: float = 1.0) -> bool:
+    """Balance assert: debits == credits within 1 COP."""
+    dr, cr = _je_debit_credit(je)
+    return abs(dr - cr) <= tol
+
+
+def _account_map(conn, entity_id: str) -> dict[str, str]:
+    """Human account name -> SoR account id, from company_rules category
+    'account_map'. Same source of truth the Phase 8 assembler reads
+    (assemble_jes.load_account_map) - the poster and the assembler must agree
+    on what 'mapped' means. Accepts JSON-object rules or 'name=id' lines.
+    Missing rows -> {} (the live gate then refuses everything)."""
+    mapping: dict[str, str] = {}
+    try:
+        rows = conn.execute(
+            "SELECT rule_text, rule_text_es, rule_text_en FROM company_rules "
+            "WHERE entity_id = ? AND category = 'account_map' AND active = 1",
+            (entity_id,),
+        ).fetchall()
+    except sqlite3.Error:
+        return mapping
+    for r in rows:
+        text = (r["rule_text"] or r["rule_text_es"] or r["rule_text_en"] or "").strip()
+        if not text:
+            continue
+        try:
+            obj = json.loads(text)
+            if isinstance(obj, dict):
+                mapping.update({str(k): str(v) for k, v in obj.items()})
+                continue
+        except (json.JSONDecodeError, ValueError):
+            pass
+        for line in text.splitlines():
+            if "=" in line:
+                name, _, aid = line.partition("=")
+                if name.strip() and aid.strip():
+                    mapping[name.strip()] = aid.strip()
+    return mapping
+
+
+def _unmapped_accounts(je: dict, acct_map: dict[str, str]) -> list[str]:
+    """Line accounts with no entry in the account map - the live-gate trigger."""
+    return sorted({
+        str(l.get("account")) for l in je.get("lines", [])
+        if l.get("account") and l["account"] not in acct_map
+    })
+
+
+def _already_posted(conn, entity_id: str, period: str, je_id: str) -> bool:
+    """True when a posted_journals row exists for this (entity, period, je) -
+    either claimed in-flight or confirmed posted. The double-submit check."""
+    row = conn.execute(
+        "SELECT 1 FROM posted_journals WHERE entity_id = ? AND period = ? AND je_id = ?",
+        (entity_id, period, je_id),
+    ).fetchone()
+    return row is not None
+
+
+def _claim_posting(conn, entity_id: str, period: str, je_id: str) -> bool:
+    """Claim-before-post: INSERT OR IGNORE on the PK. rowcount 1 == the claim
+    is ours and we may post; rowcount 0 == someone already claimed/posted it."""
+    cur = conn.execute(
+        "INSERT OR IGNORE INTO posted_journals (entity_id, period, je_id, status) "
+        "VALUES (?, ?, ?, 'claimed')",
+        (entity_id, period, je_id),
+    )
+    return cur.rowcount == 1
+
+
+def _confirm_posting(conn, entity_id: str, period: str, je_id: str,
+                     alegra_id, payload: Optional[dict] = None) -> None:
+    """Mark a claimed row as posted, with the SoR reference id and the payload
+    that landed (for audit). Called after a successful post OR after a
+    read-back finds the journal already landed."""
+    conn.execute(
+        "UPDATE posted_journals SET status = 'posted', alegra_id = ?, payload = ? "
+        "WHERE entity_id = ? AND period = ? AND je_id = ?",
+        (str(alegra_id) if alegra_id is not None else None,
+         json.dumps(payload, default=str) if payload else None,
+         entity_id, period, je_id),
+    )
+
+
+def _release_posting(conn, entity_id: str, period: str, je_id: str) -> None:
+    """Release a failed claim so a retry can pick it up. The PK row is
+    deleted; posting_log retains the failed attempt for the audit trail."""
+    conn.execute(
+        "DELETE FROM posted_journals WHERE entity_id = ? AND period = ? AND je_id = ?",
+        (entity_id, period, je_id),
+    )
+
+
+def _alegra_has_je(client, payload: dict) -> Optional[str]:
+    """Alegra read-back: has a journal with this exact observations signature
+    already landed? Used on client-side error to catch the
+    timeout-but-succeeded duplicate case (review finding #1). Returns the
+    Alegra journal id when found, else None. Any transport failure in the
+    read-back itself is treated as 'not confirmed' (None) - the caller then
+    releases the claim for a retry that will re-check."""
+    try:
+        journals = client.get_journals(start=payload["date"], end=payload["date"])
+    except Exception:
+        log.warning("posting read-back failed for %s; treating as not landed", payload.get("date"))
+        return None
+    if not isinstance(journals, list):
+        return None
+    want = str(payload.get("observations", ""))
+    for journal in journals:
+        if not isinstance(journal, dict):
+            continue
+        obs = str(journal.get("observations") or journal.get("notes") or "")
+        if obs.strip() == want.strip() or (want and want in obs):
+            return journal.get("id")
+    return None
+
+
+def _je_to_alegra_payload(je: dict, period: str,
+                          acct_map: Optional[dict[str, str]] = None) -> dict:
+    """Build the /journals payload. Posting date comes from the JE's real
+    month-end (_last_day_of_period). Account names resolve through the shared
+    account_map with the human name kept beside the SoR id (review finding
+    #8: traceability survives the transport). Observations carry linked
+    source doc/exception ids so every posted comprobante cites its SSOT."""
+    acct_map = acct_map or {}
+    obs_parts = [f"ContabIA {je['id']}: {je['description']}"]
+    linked = je.get("linked_docs") or je.get("linked_exceptions") or []
+    if linked:
+        obs_parts.append("Linked: " + ", ".join(str(x) for x in linked))
+    entries = []
+    for line in je.get("lines", []):
+        account_name = line["account"]
+        entries.append({
+            "account": acct_map.get(account_name, account_name),
+            "account_name": account_name,
+            "debit": line.get("debit") or 0,
+            "credit": line.get("credit") or 0,
+        })
     return {
-        "date": f"{period}-31" if period.endswith("-07") else f"{period}-28",
-        "observations": f"ContabIA {je['id']}: {je['description']}",
-        "entries": [
-            {
-                "account": line["account"],
-                "debit": line.get("debit") or 0,
-                "credit": line.get("credit") or 0,
-            }
-            for line in je.get("lines", [])
-        ],
+        "date": _last_day_of_period(period),
+        "observations": " | ".join(obs_parts),
+        "entries": entries,
     }
 
 
@@ -573,46 +742,110 @@ def _je_to_alegra_payload(je: dict, period: str) -> dict:
 def post_period(entity_id: str, period: str):
     _get_entity_or_404(entity_id)
     overrides = _status_overrides("je_status")
-    approved, skipped = [], []
-    for je in JOURNAL_ENTRIES:
-        status = overrides.get(je["id"], {}).get("status", je["status"])
-        if status != "approved_by_edwin":
-            skipped.append({"je_id": je["id"], "reason": f"status={status}"})
-            continue
-        if je["id"] in GATE_B_BLOCKED_JES:
-            skipped.append({
-                "je_id": je["id"],
-                "reason": "gate_b: touches an already-filed retefuente base - disclose forward, never post (File 28 A1.3)",
-            })
-            continue
-        approved.append(je)
-
-    results = []
     client = None
-    if not DRY_RUN:
-        try:
-            client = AlegraClient()
-        except AlegraAuthError as exc:
-            raise HTTPException(status_code=503, detail=str(exc)) from exc
+    acct_map: dict[str, str] = {}
 
-    for je in approved:
-        payload = _je_to_alegra_payload(je, period)
-        if DRY_RUN:
-            outcome = {"je_id": je["id"], "dry_run": True, "would_post": payload}
-        else:
+    with _db() as conn:
+        acct_map = _account_map(conn, entity_id)
+
+        approved, skipped = [], []
+        for je in JOURNAL_ENTRIES:
+            # Period scoping (finding #2): never post a JE into a close that
+            # is not its own period.
+            if str(je.get("period", "")) != period:
+                skipped.append({
+                    "je_id": je["id"],
+                    "reason": f"je.period={je.get('period')} != closing period {period}",
+                })
+                continue
+            status = overrides.get(je["id"], {}).get("status", je["status"])
+            if status != "approved_by_edwin":
+                skipped.append({"je_id": je["id"], "reason": f"status={status}"})
+                continue
+            if je["id"] in GATE_B_BLOCKED_JES:
+                skipped.append({
+                    "je_id": je["id"],
+                    "reason": "gate_b: touches an already-filed retefuente base - disclose forward, never post (File 28 A1.3)",
+                })
+                continue
+            # Balance assert (finding #5): unbalanced JEs never reach the
+            # transport, in dry-run or live.
+            if not _je_is_balanced(je):
+                dr, cr = _je_debit_credit(je)
+                skipped.append({
+                    "je_id": je["id"],
+                    "reason": f"unbalanced: Dr {dr:,.2f} != Cr {cr:,.2f}",
+                })
+                continue
+            # Account-map gate (finding #6): live posting refuses any line
+            # whose account is not in company_rules account_map. Dry-run does
+            # not refuse - it reports what would be refused by the live gate.
+            if not DRY_RUN:
+                unmapped = _unmapped_accounts(je, acct_map)
+                if unmapped:
+                    skipped.append({
+                        "je_id": je["id"],
+                        "reason": f"account_map: unmapped accounts {unmapped} (live path requires every line mapped)",
+                    })
+                    continue
+            approved.append(je)
+
+        if not DRY_RUN:
             try:
-                resp = client.post_journal(payload)
-                outcome = {"je_id": je["id"], "dry_run": False, "posted": True, "alegra_id": resp.get("id")}
-            except Exception as exc:  # keep looping; report per-entry
-                outcome = {"je_id": je["id"], "dry_run": False, "posted": False, "error": str(exc)}
-        results.append(outcome)
-        with _db() as conn:
+                client = AlegraClient()
+            except AlegraAuthError as exc:
+                raise HTTPException(status_code=503, detail=str(exc)) from exc
+            assert client is not None  # live path never posts without transport
+
+        results = []
+        for je in approved:
+            payload = _je_to_alegra_payload(je, period, acct_map)
+            if DRY_RUN:
+                # Rehearsal: log the exact payload, claim nothing. A dry run
+                # must not consume an idempotency claim.
+                outcome = {
+                    "je_id": je["id"], "period": period, "dry_run": True,
+                    "would_post": payload,
+                    "date": payload["date"],
+                    "observations": payload["observations"],
+                }
+            else:
+                if not _claim_posting(conn, entity_id, period, je["id"]):
+                    outcome = {
+                        "je_id": je["id"], "dry_run": False, "posted": False,
+                        "reason": "already posted (posted_journals claim failed - idempotent skip)",
+                    }
+                else:
+                    try:
+                        resp = client.post_journal(payload)
+                        alegra_id = resp.get("id") if isinstance(resp, dict) else resp
+                        _confirm_posting(conn, entity_id, period, je["id"], alegra_id, payload)
+                        outcome = {"je_id": je["id"], "dry_run": False, "posted": True, "alegra_id": alegra_id}
+                    except Exception as exc:  # keep looping; report per-entry
+                        landed = _alegra_has_je(client, payload)
+                        if landed is not None:
+                            # Timeout-but-landed: the read-back confirms the
+                            # journal exists - confirm, don't re-post.
+                            _confirm_posting(conn, entity_id, period, je["id"], landed, payload)
+                            outcome = {
+                                "je_id": je["id"], "dry_run": False, "posted": True,
+                                "alegra_id": landed,
+                                "note": f"client error ({exc}) but Alegra read-back found the journal - confirmed to avoid duplicate",
+                            }
+                        else:
+                            _release_posting(conn, entity_id, period, je["id"])
+                            outcome = {
+                                "je_id": je["id"], "dry_run": False, "posted": False,
+                                "error": str(exc), "released": True,
+                                "note": "claim released for retry; read-back found no landing",
+                            }
+            results.append(outcome)
             conn.execute(
                 "INSERT INTO posting_log (entity_id, period, je_id, dry_run, result, payload) VALUES (?, ?, ?, ?, ?, ?)",
                 (entity_id, period, je["id"], 1 if DRY_RUN else 0,
                  json.dumps(outcome, default=str), json.dumps(payload, default=str)),
             )
-        log.info("posting[%s dry_run=%s] %s", period, DRY_RUN, outcome)
+            log.info("posting[%s dry_run=%s] %s", period, DRY_RUN, outcome)
 
     return {
         "period": period,
