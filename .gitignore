@@ -3,3 +3,4 @@
 # Motor/dev artifacts - derived, never committed
 apps/api/.venv/
 *.sqlite
+apps/api/data/boveda/
