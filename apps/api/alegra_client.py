@@ -84,12 +84,23 @@ class AlegraClient:
             params["date_end"] = end
         return self._get("/invoices", params=params)
 
-    def get_bills(self, start: Optional[str] = None, end: Optional[str] = None) -> Any:
+    def get_bills(self, start_date: Optional[str] = None, end_date: Optional[str] = None,
+                  start: Optional[int] = None, limit: Optional[int] = None) -> Any:
+        """Purchase docs (facturas de compra + registered received FE).
+
+        Pagination params matter: the Alegra API caps page size at 30 and the
+        pre-close gate (Motor-Checklist Phase 1.6) MUST page to exhaustion —
+        the 2026-09-17 review found a gate that silently dropped bills past
+        the first 30. `start` = offset, `limit` = page size."""
         params = {}
-        if start:
-            params["date_start"] = start
-        if end:
-            params["date_end"] = end
+        if start_date:
+            params["date_start"] = start_date
+        if end_date:
+            params["date_end"] = end_date
+        if start is not None:
+            params["start"] = start
+        if limit is not None:
+            params["limit"] = limit
         return self._get("/bills", params=params)
 
     def get_bank_accounts(self) -> Any:
