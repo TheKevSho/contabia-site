@@ -43,9 +43,11 @@ import auth_users
 import boveda_data
 import deliverables_data
 from alegra_client import AlegraAuthError, AlegraClient
+from assemble_jes import _account_mapped  # fork 2026-09-18-B: single 'mapped' predicate shared with Phase 8
 from data_loader import load_exceptions, summarize
 from je_data import ACCEPTED_NO_ACTION, JOURNAL_ENTRIES, OPEN_JUDGMENT_CALLS, RECURRING_ROUTINES
 from seed_rules import seed_standing_rules
+from account_map_seed import seed_account_map
 
 log = logging.getLogger("contabia.api")
 logging.basicConfig(level=logging.INFO)
@@ -234,6 +236,8 @@ def _init_db() -> None:
 
 _init_db()
 seed_standing_rules(_db, "sonata-001")
+seed_account_map(_db)  # Sonata account_map (fork 2026-09-18-B) — seeds BOTH
+# entity ids from the one committed source ('sonata-001' portal + 'tayrona' CLI)
 
 
 BOVEDA_SEED = [
@@ -635,10 +639,14 @@ def _account_map(conn, entity_id: str) -> dict[str, str]:
 
 
 def _unmapped_accounts(je: dict, acct_map: dict[str, str]) -> list[str]:
-    """Line accounts with no entry in the account map - the live-gate trigger."""
+    """Line accounts not mapped to a REAL SoR id - the live-gate trigger.
+    Same predicate as the Phase 8 assembler (_account_mapped): a stub key
+    ('1110xx Bold clearing') is 'mapped' once its map VALUE is a real id; a
+    key missing from the map, or mapped to a placeholder value, is not
+    (fork 2026-09-18-B — poster and assembler agree on 'mapped')."""
     return sorted({
         str(l.get("account")) for l in je.get("lines", [])
-        if l.get("account") and l["account"] not in acct_map
+        if l.get("account") and not _account_mapped(l["account"], acct_map)
     })
 
 

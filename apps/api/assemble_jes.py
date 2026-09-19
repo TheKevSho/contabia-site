@@ -93,10 +93,23 @@ def load_account_map(entity_id: str, db_path: Path = DB_PATH) -> dict[str, str]:
 # Per-JE validation
 # ---------------------------------------------------------------------------
 def _looks_like_placeholder(account: str) -> bool:
-    """A stub account code the recon phases emit (e.g. '1110xx', '5115xx')
-    that cannot be posted to any SoR."""
-    a = str(account)
-    return "xx" in a.lower()
+    """A placeholder account string ('1110xx…', 'PENDING:…') — never
+    postable, whether it appears as a line account or as a map VALUE. The
+    recon phases emit 'xx' stubs on purpose; a map VALUE that is itself a
+    placeholder means the map is not resolved, so it does not count as
+    'mapped' (fork 2026-09-18-B)."""
+    a = str(account).lower()
+    return "xx" in a or "pending" in a
+
+
+def _account_mapped(account: str, acct_map: dict[str, str]) -> bool:
+    """A line account is 'mapped' (postable) when it is a map KEY whose VALUE
+    resolves to a real SoR account id. A stub key like '1110xx Bold clearing'
+    counts as mapped as soon as its map value is a real id. This is the SAME
+    predicate the poster's live gate (main._unmapped_accounts) applies, so
+    poster and assembler cannot drift on what 'mapped' means."""
+    value = acct_map.get(account)
+    return value is not None and not _looks_like_placeholder(value)
 
 
 def _ssot_backed(je: dict) -> bool:
@@ -127,10 +140,13 @@ def validate_je(je: dict, acct_map: dict[str, str]) -> dict:
     if not balanced:
         issues.append(f"unbalanced: Dr {debit_total:,.0f} != Cr {credit_total:,.0f}")
 
-    # account mapping (postability): every line's account must resolve
+    # account mapping (postability): every line's account must resolve to a
+    # REAL SoR id through the map (fork 2026-09-18-B: a stub key is mapped
+    # when its VALUE is a real id; a key missing from the map, or mapped to a
+    # placeholder value, is not — the poster's _unmapped_accounts agrees)
     unmapped = [
         l.get("account") for l in lines
-        if l.get("account") and (l["account"] not in acct_map or _looks_like_placeholder(l["account"]))
+        if l.get("account") and not _account_mapped(l["account"], acct_map)
     ]
     account_mapped = len(unmapped) == 0 and bool(lines)
     if unmapped:

@@ -63,15 +63,32 @@ def test_unbalanced_je_is_critical_and_not_postable():
     assert any("unbalanced" in i for i in v["issues"])
 
 
-def test_placeholder_account_is_high_and_not_postable():
-    """The 'xx' stubs the recon phases emit must never reach a SoR."""
+def test_stub_key_mapped_to_real_sor_id_is_postable():
+    """Fork 2026-09-18-B: a phase stub ('1110xx Bold clearing') is MAPPED the
+    moment its map VALUE is a real SoR id — the poster (_unmapped_accounts)
+    and the assembler share the predicate, so a resolved map key is postable
+    even though the key string still contains 'xx'."""
     v = validate_je(_je(lines=[
-        {"account": "1110xx", "debit": 100, "credit": 0},
+        {"account": "1110xx Bold clearing", "debit": 100, "credit": 0},
         {"account": "250505", "debit": 0, "credit": 100},
-    ]), {**ACCT_MAP, "1110xx": "99"})  # even if "mapped", xx is a placeholder
-    assert v["priority"] == "HIGH"
-    assert v["account_mapped"] is False
-    assert v["postable"] is False
+    ]), {**ACCT_MAP, "1110xx Bold clearing": "4567"})
+    assert v["account_mapped"] is True
+    assert v["postable"] is True
+    assert v["priority"] == "LOW"  # approved + balanced + mapped + traceable
+
+
+def test_stub_key_mapped_to_placeholder_value_is_still_high():
+    """A map VALUE that is itself a placeholder means the map is unresolved:
+    a stub whose value is 'xx' / 'PENDING:…' never counts as mapped and never
+    posts — the degenerate-map guard (fork 2026-09-18-B)."""
+    for bad_value in ("xx", "PENDING:111020", "1110xx"):
+        v = validate_je(_je(lines=[
+            {"account": "1110xx Bold clearing", "debit": 100, "credit": 0},
+            {"account": "250505", "debit": 0, "credit": 100},
+        ]), {**ACCT_MAP, "1110xx Bold clearing": bad_value})
+        assert v["account_mapped"] is False, bad_value
+        assert v["postable"] is False, bad_value
+        assert v["priority"] == "HIGH", bad_value
 
 
 def test_unmapped_account_is_high_and_not_postable():
@@ -133,6 +150,37 @@ def test_empty_batch_does_not_crash_and_is_not_ready():
     assert pkg["summary"]["jes"] == 0
     assert pkg["ready_to_post"] is False
     assert pkg["blockers"] == []
+
+
+# --- Sonata account_map drift guard (2026-09-18) --------------------------
+
+def test_seeded_map_covers_every_account_the_phases_emit():
+    """Drift guard: the committed Sonata account_map seed must cover EVERY
+    account string the recon phases can emit. If a phase adds/renames an
+    ACCT_* constant (or the seed drifts), this fails — and with it the
+    'mapped' contract the poster and the assembler share. Note it asserts on
+    the phase CONSTANTS, so 2805xx (deferred) is covered even though the July
+    mock run suppresses that JE (EX-J07-12 already booked)."""
+    from account_map_seed import SONATA_MAP_ENTRIES
+    from bank_recon import ACCT_BANK, ACCT_BANK_GMF
+    from expense_recon import (ACCT_AP, ACCT_EXPENSE, ACCT_PAYROLL_EXPENSE,
+                               ACCT_PAYROLL_PAYABLE)
+    from revenue_recon import (ACCT_BOLD_CLEARING, ACCT_DEFERRED, ACCT_FEES,
+                               ACCT_REVENUE)
+
+    phase_keys = {
+        ACCT_BOLD_CLEARING, ACCT_DEFERRED, ACCT_FEES, ACCT_REVENUE,
+        ACCT_AP, ACCT_EXPENSE, ACCT_PAYROLL_EXPENSE, ACCT_PAYROLL_PAYABLE,
+        ACCT_BANK, ACCT_BANK_GMF,
+    }
+    seeded_keys = {str(e["key"]) for e in SONATA_MAP_ENTRIES}
+    assert seeded_keys == phase_keys, (
+        "phase/seed drift — seed-only: " + str(sorted(seeded_keys - phase_keys))
+        + " | phase-only: " + str(sorted(phase_keys - seeded_keys))
+    )
+    # every entry carries the accounting judgment (PUC) — a slot without a
+    # PUC decision is itself a fence that must trip loudly
+    assert all(str(e.get("puc")) for e in SONATA_MAP_ENTRIES)
 
 
 if __name__ == "__main__":

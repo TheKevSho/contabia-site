@@ -45,6 +45,12 @@ UNMATCHED_CREDIT_FLAG = 100_000  # Phase 8.3: bank unreconciled > COP 100k bank
 INTERACCOUNT_MARKERS = ("transferencia cta suc", "transferencia virtual", "cta cajero",
                         "transferencia cta", "nequi", "consignacion", "reintegro")
 
+# Accounts are honest placeholders until the Sonata account_map exists
+# (review finding #3a); the strings are the map keys the poster AND the
+# assembler resolve (fork 2026-09-18-B).
+ACCT_BANK = "1110xx Bancos"
+ACCT_BANK_GMF = "5305xx Gastos bancarios (GMF)"
+
 
 # ---------------------------------------------------------------------------
 # Statement line model
@@ -209,9 +215,9 @@ def run_bank_recon(entity: str, period: str, *, mock: bool = False,
     gmf_je = None
     if abs(gmf_diff) > 1:
         if gmf_diff > 0:
-            side_d, side_c = "5305xx Gastos bancarios (GMF)", "1110xx Bancos"
+            side_d, side_c = ACCT_BANK_GMF, ACCT_BANK
         else:
-            side_d, side_c = "1110xx Bancos", "5305xx Gastos bancarios (GMF)"
+            side_d, side_c = ACCT_BANK, ACCT_BANK_GMF
         gmf_je = {
             "je_id": f"BNK-{period}-01",
             "description": f"GMF true-up {period}: recorded {recorded_gmf:,.2f} vs expected (debits x 0.004) {expected_gmf:,.2f}",
