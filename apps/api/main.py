@@ -48,6 +48,7 @@ from data_loader import load_exceptions, summarize
 from je_data import ACCEPTED_NO_ACTION, JOURNAL_ENTRIES, OPEN_JUDGMENT_CALLS, RECURRING_ROUTINES
 from seed_rules import seed_standing_rules
 from account_map_seed import seed_account_map
+from gate_sources_seed import seed_gate_sources
 
 log = logging.getLogger("contabia.api")
 logging.basicConfig(level=logging.INFO)
@@ -237,6 +238,9 @@ def _init_db() -> None:
 _init_db()
 seed_standing_rules(_db, "sonata-001")
 seed_account_map(_db)  # Sonata account_map (fork 2026-09-18-B) — seeds BOTH
+seed_gate_sources(_db)  # Per-entity applicable-sources config for the pre-close
+# gate (which gate items apply to this entity, which signals to match, which are
+# year-scoped or provisional). Same one-committed-source pattern as the map.
 # entity ids from the one committed source ('sonata-001' portal + 'tayrona' CLI)
 
 

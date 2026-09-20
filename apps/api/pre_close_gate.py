@@ -47,6 +47,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
 
+import boveda_source  # tree-aware period resolution: one canonical source
+
 DB_PATH = Path(os.environ.get("CONTABIA_DB_PATH", Path(__file__).parent / "sonata_mas_001.sqlite"))
 GATE_PAGE_SIZE = 30  # Alegra /bills cap (Phase 1.6, File 07: "paginate /bills to exhaustion")
 
@@ -139,30 +141,39 @@ def _period_in_name(name: str, period: str) -> bool:
     return any(t.lower() in low for t in tokens)
 
 
-def _scan_dir(data_dir: Path, period: str) -> list[dict]:
-    """All files under data_dir with a timestamp/title hinting at `period`."""
-    found = []
-    if not data_dir.exists():
-        return found
-    for p in sorted(data_dir.rglob("*")):
-        if not p.is_file():
-            continue
-        rel = str(p.relative_to(data_dir)).lower()
-        if _period_in_name(rel, period):
-            found.append({"filename": p.name, "path": str(p)})
-    return found
+def _scan_dir(data_dir: Path, period: str,
+              *, year_scope: bool = False) -> list[dict]:
+    """Files carrying `period`, resolved across the WHOLE tree.
+
+    Thin wrapper over boveda_source. The vault tree is the canonical source, so
+    a month bundle is not a prerequisite for finding the month's evidence: the
+    period's PILA in payroll/, its exception register in a staged intake bundle
+    and an annual PMS export all resolve. On a flat dir (the --mock corpus, a
+    legacy boveda_seed) the result is exactly what the old rglob produced.
+    """
+    return boveda_source.scan_period_files(data_dir, period,
+                                           year_scope=year_scope)
 
 
-def _canonical_rows(db_path: Path, period: str) -> list[dict]:
-    """canonical_documents rows for the period (derived index; skip on any
-    DB problem — the filesystem scan still runs)."""
+def _canonical_rows(db_path: Path, period: str) -> tuple[list[dict], list[dict]]:
+    """canonical_documents rows for the period, split into (live, stale).
+
+    LIVE  = the row is registered AND the file still exists on disk.
+    STALE = the row is registered but its path is gone (deleted mock dirs,
+            moved bundles, a cleaned temp volume).
+
+    A registered-but-absent file must NEVER satisfy the gate: counting it as
+    present is the same error class as counting a provisional file — the
+    evidence does not exist. Stale rows are reported instead of trusted, so a
+    derived index can never quietly green a close. (Skip on any DB problem —
+    the filesystem scan still runs.)"""
     if not Path(db_path).exists():
-        return []
+        return [], []
     try:
         conn = sqlite3.connect(str(db_path))
         conn.row_factory = sqlite3.Row
         try:
-            return [dict(r) for r in conn.execute(
+            rows = [dict(r) for r in conn.execute(
                 "SELECT doc_id, filename, path, vendor, doc_type, period "
                 "FROM canonical_documents WHERE period = ?",
                 (period,),
@@ -170,48 +181,159 @@ def _canonical_rows(db_path: Path, period: str) -> list[dict]:
         finally:
             conn.close()
     except sqlite3.Error:
-        return []
+        return [], []
+    live, stale = [], []
+    for r in rows:
+        (live if r.get("path") and Path(r["path"]).exists() else stale).append(r)
+    return live, stale
+
+
+def _sources_config(entity: str, db_path: Path) -> dict:
+    """Per-entity applicable-sources config (company_rules/gate_sources).
+    Empty dict == not configured, which means STRICT LEGACY behaviour (every
+    item applicable, default patterns) — an unconfigured client must never be
+    loosened by accident."""
+    try:
+        from gate_sources_seed import load_gate_sources
+
+        return load_gate_sources(entity, db_path)
+    except Exception as exc:  # a config read must never block a close
+        print(f"warning: gate_sources config unavailable ({exc}); "
+              "strict legacy gate", file=sys.stderr)
+        return {}
 
 
 def check_data_availability(entity: str, period: str,
-                            data_dir: Path, db_path: Path = DB_PATH) -> dict:
-    """Phase 1 gate. Every item carries its evidence: matching files and/or
-    indexed canonical docs. Missing item -> gate fails."""
-    files = _scan_dir(data_dir, period)
-    docs = _canonical_rows(db_path, period)
+                            data_dir: Path, db_path: Path = DB_PATH,
+                            sources_config: Optional[dict] = None) -> dict:
+    """Phase 1 gate — config-aware.
+
+    Every item carries its evidence AND its applicability. The per-entity
+    config (company_rules, category='gate_sources') can say, per item:
+      * not applicable   -> reported ⊘ with its basis; never counted missing;
+      * narrowed signals -> file_pats/doc_types overridden for this entity
+        (kills the false pass where FareHarbor's generic bookings report
+        satisfied "Booking.com");
+      * period_scope 'year' -> the signal is a running export, so match the
+        year rather than the month (RESERVAS 2026.xlsx);
+      * provisional      -> the file is present but is NOT this period's data
+        (the June-duplicate OTA reports). It does NOT satisfy the gate: it
+        blocks with its own reason, because posting June revenue as July is
+        exactly the error this gate exists to stop.
+
+    The scan is tree-aware (boveda_source), so evidence outside the month
+    folder is FOUND instead of reported missing. Unconfigured entity -> strict
+    legacy. Missing applicable item -> gate fails.
+    """
+    cfg = sources_config if sources_config is not None else _sources_config(entity, db_path)
+    docs, stale_docs = _canonical_rows(db_path, period)
     checks = []
-    missing = []
+    missing: list[str] = []
+    not_applicable: list[dict] = []
+    provisional: list[dict] = []
+    scanned: dict[str, list[dict]] = {}
+
+    def files_for(scope: str) -> list[dict]:
+        if scope not in scanned:
+            scanned[scope] = _scan_dir(data_dir, period,
+                                       year_scope=(scope == "year"))
+        return scanned[scope]
+
     for item in GATE_ITEMS:
+        key = item["key"]
+        item_cfg = cfg.get(key) or {}
+        applicable = bool(item_cfg.get("applicable", True))
+        scope = item_cfg.get("period_scope", "period")
+        file_pats = item_cfg.get("file_pats")
+        if file_pats is None:
+            file_pats = item.get("file_pats", [])
+        doc_types = item_cfg.get("doc_types")
+        if doc_types is None:
+            doc_types = item.get("doc_types", [])
+        basis = item_cfg.get("basis_en") or item_cfg.get("basis_es") or ""
+        is_provisional = bool(item_cfg.get("provisional"))
+
+        if not applicable:
+            checks.append({
+                "item": key,
+                "label": item["label"],
+                "status": "not_applicable",
+                "available": True,
+                "applicable": False,
+                "sources": [],
+                "basis": basis,
+                "period_scope": scope,
+                "provisional": False,
+            })
+            not_applicable.append({"item": key, "basis": basis})
+            continue
+
+        files = files_for(scope)
         file_hits = [
             f for f in files
-            if any(p in f["filename"].lower() for p in item.get("file_pats", []))
+            if any(p in f["filename"].lower() for p in file_pats)
         ]
-        doc_hits = [
-            d for d in docs
-            if (d.get("doc_type") in item.get("doc_types", []))
-            or (d.get("vendor") or "").lower() in [v.lower() for v in item.get("vendor_pats", [])]
-        ]
+        doc_hits = [d for d in docs if d.get("doc_type") in doc_types]
         sources = sorted({f["path"] for f in file_hits} | {d["path"] for d in doc_hits})
-        ok = bool(sources)
+        # A provisional item is PRESENT but is not this period's data (e.g. the
+        # June-duplicate OTA reports). It must never satisfy the gate.
+        ok = bool(sources) and not is_provisional
         checks.append({
-            "item": item["key"],
+            "item": key,
             "label": item["label"],
+            # Self-describing status so the JSON report is readable without
+            # cross-referencing the top-level lists (ok / provisional /
+            # missing / not_applicable).
+            "status": ("provisional" if (is_provisional and sources)
+                       else "ok" if ok else "missing"),
             "available": ok,
+            "applicable": True,
             "sources": sources,
+            "basis": basis,
+            "period_scope": scope,
+            "provisional": is_provisional and bool(sources),
+            "found_in": sorted({f.get("kind", "dir") for f in file_hits}),
         })
+        if is_provisional and sources:
+            provisional.append({
+                "item": key,
+                "note": ("evidence on disk is NOT this period's data — "
+                         "collect the real report before posting"),
+                "basis": basis,
+            })
         if not ok:
-            missing.append(item["key"])
+            missing.append(key)
+    if missing or provisional:
+        bits = []
+        if missing:
+            bits.append("missing data: " + ", ".join(missing))
+        if provisional:
+            bits.append("evidence present but NOT this period's data: "
+                        + ", ".join(p["item"] for p in provisional))
+        verdict = ("GATE FAILED — stop, don't run the motor; "
+                   + "; ".join(bits) + ".")
+    else:
+        verdict = "GATE PASSED — data in hand for the close."
+        if not_applicable:
+            verdict += (f" {len(not_applicable)} item(s) not applicable to this "
+                        "entity (config: company_rules/gate_sources).")
+    if stale_docs:
+        verdict += (f" ⚠️  {len(stale_docs)} registered document(s) ignored — "
+                    "their path no longer exists (stale index rows).")
+
     return {
         "gate": "data_availability",
         "entity": entity,
         "period": period,
+        "data_dir": str(data_dir),
+        "provenance": boveda_source.resolve_period_roots(data_dir, period),
         "checks": checks,
         "missing": missing,
-        "gate_passed": not missing,
-        "verdict": (
-            "GATE PASSED — data in hand for the close." if not missing else
-            "GATE FAILED — stop, don't run the motor; contact the client for missing data: " + ", ".join(missing)
-        ),
+        "not_applicable": not_applicable,
+        "provisional": provisional,
+        "stale_index": stale_docs,
+        "gate_passed": not missing and not provisional,
+        "verdict": verdict,
     }
 
 
@@ -319,29 +441,66 @@ def format_gate(report: dict) -> str:
         "╚══════════════════════════════════════════════════╝",
         "─── Phase 1 · data availability ───",
     ]
-    for c in report["data_gate"]["checks"]:
-        mark = "✅" if c["available"] else "❌"
-        out.append(f"  {mark} {c['label']}")
+    dg = report["data_gate"]
+    for c in dg["checks"]:
+        if not c.get("applicable", True):
+            mark = "⊘"
+        elif c.get("provisional"):
+            mark = "⏳"
+        else:
+            mark = "✅" if c["available"] else "❌"
+        scope = c.get("period_scope")
+        suffix = f"   [scope: {scope}]" if scope and scope != "period" else ""
+        out.append(f"  {mark} {c['label']}{suffix}")
         for s in c["sources"]:
             out.append(f"        {s}")
-    out.append(f"  → {report['data_gate']['verdict']}")
+        if not c.get("applicable", True):
+            out.append(f"        ⊘ not applicable — {c.get('basis') or 'no basis recorded'}")
+        elif c.get("provisional"):
+            out.append(f"        ⏳ PROVISIONAL — {c.get('basis') or 'evidence is not this period'}")
+    if dg.get("not_applicable"):
+        out.append(f"  ⊘ {len(dg['not_applicable'])} item(s) not applicable to this entity "
+                   "(config: company_rules/gate_sources)")
+    if dg.get("provisional"):
+        out.append(f"  ⏳ {len(dg['provisional'])} item(s) PROVISIONAL — present but NOT this "
+                   "period's data; collect before posting")
+    out.append(f"  → {dg['verdict']}")
+    prov = dg.get("provenance") or {}
+    if prov.get("roots"):
+        out.append(f"  ℹ️  source tree: {prov.get('shape')} · {len(prov['roots'])} "
+                   "root(s) resolved at read time, nothing copied")
+        for r in prov["roots"]:
+            out.append(f"        [{r['kind']}] {r['root']} — {r['reason']}")
+        for x in prov.get("excluded", []):
+            out.append(f"        (skipped) {x['root']} — {x['reason']}")
     out += ["", "─── Phase 1.6 · received-document integrity ───"]
     d = report["received_docs"]
-    out.append(f"  Bills pulled: {d['bills_pulled']} (pages: {d['pages_used']}, paged to exhaustion: {d['paged_to_exhaustion']})")
-    out.append(f"  Flagged: {d['flagged_count']}")
-    for f in d["flagged"]:
-        out.append(f"  🚩 [{f['flag']}] {f['doc_id']}: {f['message']}")
-    if d["errors"]:
-        out += [f"  💥 [{e['flag']}] {e['doc_id']}: {e['error']}" for e in d["errors"]]
-    out.append(f"  ℹ️  {d['completeness_caveat']}")
+    if d.get("skipped"):
+        out.append(f"  ⚠️  SKIPPED — {d.get('reason')}")
+    else:
+        out.append(f"  Bills pulled: {d['bills_pulled']} (pages: {d['pages_used']}, paged to exhaustion: {d['paged_to_exhaustion']})")
+        out.append(f"  Flagged: {d['flagged_count']}")
+        for f in d["flagged"]:
+            out.append(f"  🚩 [{f['flag']}] {f['doc_id']}: {f['message']}")
+        if d["errors"]:
+            out += [f"  💥 [{e['flag']}] {e['doc_id']}: {e['error']}" for e in d["errors"]]
+        out.append(f"  ℹ️  {d['completeness_caveat']}")
     return "\n".join(out)
 
 
 def run_gate(entity: str, period: str, *, mock: bool = False,
              data_dir: Optional[Path] = None,
-             db_path: Path = DB_PATH) -> dict:
+             db_path: Path = DB_PATH,
+             skip_docs: bool = False) -> dict:
     """Run Phase 1 + 1.6 and return the composite report. With --mock the
-    data dir is synthetic and the /bills pull hits the paged fake."""
+    data dir is synthetic and the /bills pull hits the paged fake.
+
+    A live run resolves the data dir from the VAULT TREE (boveda_source.
+    canonical_root) unless --data-dir overrides it — the tree is the canonical
+    source, so no second copy is ever made. --skip-docs runs Phase 1 only (no
+    Alegra credentials needed) and the report says so explicitly rather than
+    implying the integrity check passed.
+    """
     if mock:
         dd = _mock_data_dir(period)
         client = _PagedBillsAPI()
@@ -349,20 +508,40 @@ def run_gate(entity: str, period: str, *, mock: bool = False,
         docs_report = check_received_docs(client, period)
         docs_report["transport"] = "mock (65-doc paged API; >30 exercised)"
     else:
-        dd = data_dir or (Path(__file__).parent / "data" / "boveda_tayrona")
+        if data_dir is not None:
+            dd = Path(data_dir)
+        else:
+            dd = boveda_source.canonical_root(entity)
+            if not dd.exists():
+                legacy = Path(__file__).parent / "data" / "boveda_tayrona"
+                if legacy.exists():
+                    dd = legacy
         if not dd.exists():
             raise FileNotFoundError(
                 f"data dir not found: {dd} (use --data-dir or --mock)"
             )
-        from alegra_client import AlegraAuthError, AlegraClient
-
-        try:
-            client = AlegraClient()
-        except AlegraAuthError as exc:
-            raise RuntimeError(f"Alegra credentials missing for live /bills: {exc}") from exc
         data_report = check_data_availability(entity, period, dd, db_path)
-        docs_report = check_received_docs(client, period)
-        docs_report["transport"] = "live Alegra API"
+        if skip_docs:
+            docs_report = {
+                "gate": "received_docs_integrity",
+                "period": period,
+                "skipped": True,
+                "reason": ("--skip-docs: Phase 1.6 not run (needs Alegra "
+                           "credentials). Registered purchase docs were NOT "
+                           "verified for this period."),
+                "flagged": [],
+                "flagged_count": 0,
+                "errors": [],
+            }
+        else:
+            from alegra_client import AlegraAuthError, AlegraClient
+
+            try:
+                client = AlegraClient()
+            except AlegraAuthError as exc:
+                raise RuntimeError(f"Alegra credentials missing for live /bills: {exc}") from exc
+            docs_report = check_received_docs(client, period)
+            docs_report["transport"] = "live Alegra API"
 
     return {
         "phase": "pre_close_gate",
@@ -374,7 +553,13 @@ def run_gate(entity: str, period: str, *, mock: bool = False,
         "gate_passed": data_report["gate_passed"] and not docs_report["errors"],
         "blockers": [
             *(f"data: missing {m}" for m in data_report["missing"]),
+            *(f"data: provisional {p['item']} — {p['note']}"
+              for p in data_report.get("provisional", [])),
             *(f"docs: {e['flag']} {e['doc_id']}: {e['error']}" for e in docs_report["errors"]),
+        ],
+        "notices": [
+            *(f"not-applicable: {n['item']} — {n['basis']}"
+              for n in data_report.get("not_applicable", [])),
         ],
     }
 
@@ -385,13 +570,17 @@ def main() -> int:
     parser.add_argument("period", help="Period YYYY-MM")
     parser.add_argument("--mock", action="store_true", help="Synthetic data dir + paged /bills fake")
     parser.add_argument("--json", action="store_true", help="Print JSON to stdout")
-    parser.add_argument("--data-dir", type=Path, help="Period data dir (default data/boveda_tayrona)")
+    parser.add_argument("--data-dir", type=Path,
+                        help="Period data dir (default: the vault tree, via boveda_source)")
+    parser.add_argument("--skip-docs", action="store_true",
+                        help="Phase 1 only — skip the Alegra /bills integrity check (no credentials needed)")
     parser.add_argument("--db", type=Path, default=DB_PATH, help="SQLite path for the derived index")
     args = parser.parse_args()
 
     try:
         report = run_gate(args.entity, args.period, mock=args.mock,
-                          data_dir=args.data_dir, db_path=args.db)
+                          data_dir=args.data_dir, db_path=args.db,
+                          skip_docs=args.skip_docs)
     except (FileNotFoundError, RuntimeError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
