@@ -4,6 +4,13 @@
 (`_cowork/HANDOFF_2026-09-09_coded-motor-build`, `…09-18_motor-rebuild-complete`,
 `…09-19_gate-applicable-sources-and-july-run`). If this file and the code disagree, the code wins.*
 
+> **FROZEN 2026-09-29.** The motor now lives in `contabia_ui/motor/` (fork `TheKevSho/contabia_ui`,
+> branch `kevin/portal-port`), copied byte-identical from `d86e536`. Fixes and changes go **there only**;
+> do not edit the motor files in `apps/api/` any more. Parity receipt: Tayrona 2026-07, mock and live
+> (phases 1–6) give identical reports, apart from the scratch DB path and one line number. Client
+> registers (`data/exception_register*.csv`) stay out of the new repo. They are read from
+> `CONTABIA_REGISTERS_DIR`, which wins the same way `data/` did here.
+
 ## One line
 
 The motor turns **one company's documents for one month** into **exceptions + balanced, proposed journal
